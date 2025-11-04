@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { SkillChart } from '@/components/dashboard/SkillChart';
 import { StreakHeatmap } from '@/components/dashboard/StreakHeatmap';
@@ -9,7 +9,7 @@ import { AILessonSuggestions } from '@/components/dashboard/AILessonSuggestions'
 import { motion } from 'framer-motion';
 import DashboardHeader from '@/components/DashboardHeader';
 import { Card, CardContent } from '@/components/ui/card';
-import { Award, Calendar, Trophy, Zap } from 'lucide-react';
+import { Award, Brain, Calendar, Trophy, Zap } from 'lucide-react';
 
 const LearnerDashboard = () => {
   const { user } = useAuth();
@@ -147,6 +147,20 @@ const LearnerDashboard = () => {
           <p className="text-lg text-muted-foreground">
             Keep crushing those goals!
           </p>
+          <div className="flex flex-wrap gap-3">
+            <Link to="/lessons">
+              <Button variant="accent" size="lg" className="gap-2">
+                <Brain className="w-5 h-5" />
+                Browse Lessons
+              </Button>
+            </Link>
+            <Link to="/test">
+              <Button variant="outline-brutal" size="lg" className="gap-2">
+                <Trophy className="w-5 h-5" />
+                Take a Test
+              </Button>
+            </Link>
+          </div>
         </motion.div>
 
         {/* Stats Overview */}

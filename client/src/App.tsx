@@ -15,6 +15,10 @@ import NotFound from './pages/NotFound';
 import LearnerDashboard from './pages/LearnerDashboard';
 import RecruiterDashboard from './pages/RecruiterDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import Lesson from './pages/Lesson';
+import Test from './pages/Test';
+import LessonsLibrary from './pages/LessonsLibrary';
+import Leaderboard from './pages/Leaderboard';
 
 const queryClient = new QueryClient();
 
@@ -73,6 +77,17 @@ const App = () => (
                   // <ProtectedRoute requireAuth={true}>
                   <AdminDashboard />
                   // </ProtectedRoute>
+                }
+              />
+              <Route path="/lesson" element={<Lesson />} />
+              <Route path="/test" element={<Test />} />
+              <Route path="/lessons" element={<LessonsLibrary />} />
+              <Route
+                path="/leaderboard"
+                element={
+                  <ProtectedRoute requireAuth={true}>
+                    <Leaderboard />
+                  </ProtectedRoute>
                 }
               />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
