@@ -4,20 +4,40 @@ import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function Hero() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
   const handleStartLearning = () => {
-    if (isAuthenticated) {
-      navigate('/profile');
+    if (isAuthenticated && user) {
+      // Redirect based on role
+      switch (user.role) {
+        case 'admin':
+          navigate('/admin/dashboard');
+          break;
+        case 'recruiter':
+          navigate('/recruiter/dashboard');
+          break;
+        default:
+          navigate('/dashboard');
+      }
     } else {
       navigate('/auth');
     }
   };
 
   const handleForRecruiters = () => {
-    if (isAuthenticated) {
-      navigate('/profile');
+    if (isAuthenticated && user) {
+      // Redirect based on role
+      switch (user.role) {
+        case 'admin':
+          navigate('/admin/dashboard');
+          break;
+        case 'recruiter':
+          navigate('/recruiter/dashboard');
+          break;
+        default:
+          navigate('/dashboard');
+      }
     } else {
       navigate('/auth');
     }

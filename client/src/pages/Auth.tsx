@@ -82,7 +82,24 @@ const Auth = () => {
     try {
       if (isLogin) {
         await login(formData.email, formData.password);
-        navigate('/profile');
+        // Get user data to determine redirect
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          // Redirect based on role
+          switch (userData.role) {
+            case 'admin':
+              navigate('/admin/dashboard');
+              break;
+            case 'recruiter':
+              navigate('/recruiter/dashboard');
+              break;
+            default:
+              navigate('/dashboard');
+          }
+        } else {
+          navigate('/dashboard');
+        }
       } else {
         await register(
           formData.username,
@@ -127,7 +144,23 @@ const Auth = () => {
         // Create a mock credential for backend compatibility
         await googleLogin(tokenResponse.access_token, email, name, picture);
 
-        navigate('/profile');
+        // Redirect based on role
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          switch (userData.role) {
+            case 'admin':
+              navigate('/admin/dashboard');
+              break;
+            case 'recruiter':
+              navigate('/recruiter/dashboard');
+              break;
+            default:
+              navigate('/dashboard');
+          }
+        } else {
+          navigate('/dashboard');
+        }
       } catch (error) {
         console.error('Google login error:', error);
       } finally {

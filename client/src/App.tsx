@@ -12,6 +12,9 @@ import Profile from './pages/Profile';
 import VerifyEmail from './pages/VerifyEmail';
 import ResetPassword from './pages/ResetPassword';
 import NotFound from './pages/NotFound';
+import LearnerDashboard from './pages/LearnerDashboard';
+import RecruiterDashboard from './pages/RecruiterDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 
 const queryClient = new QueryClient();
 
@@ -46,6 +49,30 @@ const App = () => (
                   <ProtectedRoute requireAuth={true}>
                     <Profile />
                   </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute requireAuth={true}>
+                    <LearnerDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/recruiter/dashboard"
+                element={
+                  // <ProtectedRoute requireAuth={true}>
+                  <RecruiterDashboard />
+                  // </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/dashboard"
+                element={
+                  // <ProtectedRoute requireAuth={true}>
+                  <AdminDashboard />
+                  // </ProtectedRoute>
                 }
               />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { User, LogOut } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -10,9 +10,28 @@ import CTA from '@/components/CTA';
 
 const Index = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
+  };
+
+  const handleProfileClick = () => {
+    if (user) {
+      // Redirect based on role
+      switch (user.role) {
+        case 'admin':
+          navigate('/admin/dashboard');
+          break;
+        case 'recruiter':
+          navigate('/recruiter/dashboard');
+          break;
+        default:
+          navigate('/dashboard');
+      }
+    } else {
+      navigate('/profile');
+    }
   };
 
   return (
@@ -21,12 +40,14 @@ const Index = () => {
       <nav className="fixed top-0 right-0 p-4 z-50 flex gap-2">
         {isAuthenticated && user ? (
           <>
-            <Link to="/profile">
-              <Button variant="outline" className="gap-2">
-                <User className="w-4 h-4" />
-                {user.username}
-              </Button>
-            </Link>
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={handleProfileClick}
+            >
+              <User className="w-4 h-4" />
+              {user.username}
+            </Button>
             <Button variant="hero" className="gap-2" onClick={handleLogout}>
               <LogOut className="w-4 h-4" />
               Logout
