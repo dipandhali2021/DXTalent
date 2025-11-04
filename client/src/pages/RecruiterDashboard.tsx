@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import {
   Select,
   SelectContent,
@@ -21,20 +20,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  Home,
   Search,
-  Users,
-  Calendar,
-  Settings,
-  LogOut,
-  Menu,
-  X,
   TrendingUp,
   Mail,
   ExternalLink,
   Filter,
+  Users,
+  Calendar,
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
 import {
@@ -48,11 +42,11 @@ import {
   LineChart,
   Line,
 } from 'recharts';
+import DashboardHeader from '@/components/DashboardHeader';
 
 const RecruiterDashboard = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [skillFilter, setSkillFilter] = useState('all');
   const [leagueFilter, setLeagueFilter] = useState('all');
@@ -135,18 +129,6 @@ const RecruiterDashboard = () => {
     ],
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/');
-  };
-
-  const sidebarItems = [
-    { icon: Home, label: 'Dashboard', path: '/dashboard' },
-    { icon: Users, label: 'Talent Search', path: '/talent' },
-    { icon: Calendar, label: 'Interviews', path: '/interviews' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
-  ];
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
@@ -163,77 +145,14 @@ const RecruiterDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <motion.aside
-        initial={{ x: -300 }}
-        animate={{ x: sidebarOpen || window.innerWidth >= 1024 ? 0 : -300 }}
-        className="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-card brutal-border-r p-6 space-y-6 overflow-y-auto"
-      >
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">DXTalent</h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <X className="w-5 h-5" />
-          </Button>
-        </div>
-
-        <Separator className="bg-border" />
-
-        <nav className="space-y-2">
-          {sidebarItems.map((item) => (
-            <Link key={item.path} to={item.path}>
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-3 hover:bg-primary/10"
-              >
-                <item.icon className="w-5 h-5" />
-                {item.label}
-              </Button>
-            </Link>
-          ))}
-        </nav>
-
-        <Separator className="bg-border" />
-
-        <Button
-          variant="outline-brutal"
-          className="w-full gap-2"
-          onClick={handleLogout}
-        >
-          <LogOut className="w-4 h-4" />
-          Logout
-        </Button>
-      </motion.aside>
+    <div className="min-h-screen bg-background">
+      {/* Header Navigation */}
+      <DashboardHeader role="recruiter" />
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        {/* Header */}
-        <header className="sticky top-0 z-40 bg-card brutal-border-b p-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <Menu className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">Recruiter Dashboard 💼</h1>
-              <p className="text-sm text-muted-foreground">
-                Find and connect with top talent
-              </p>
-            </div>
-          </div>
-        </header>
-
         {/* Dashboard Content */}
-        <main className="p-6 space-y-6">
+        <main className="container mx-auto px-4 md:px-6 lg:px-8 py-6 space-y-6">
           {/* Talent Search Section */}
           <Card className="brutal-border brutal-shadow">
             <CardHeader>
@@ -283,223 +202,263 @@ const RecruiterDashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Candidate Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockData.candidates.map((candidate) => (
-              <Card
-                key={candidate.id}
-                className="brutal-border brutal-shadow hover:scale-[1.02] transition-transform"
-              >
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="brutal-border h-16 w-16">
-                      <AvatarImage src={candidate.avatar} />
-                      <AvatarFallback className="text-lg">
-                        {candidate.name
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg">{candidate.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        @{candidate.username}
-                      </p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Badge variant="default" className="brutal-border">
-                      {candidate.league}
-                    </Badge>
-                    <div className="text-right">
-                      <div className="font-bold text-primary">
-                        {candidate.xp.toLocaleString()}
+          {/* Main Content Grid: Left (Candidates & Charts) + Right (Invites & Actions) */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            {/* Left Side: Candidate Cards & Charts (3/4 width) */}
+            <div className="lg:col-span-3 space-y-4">
+              {/* Top Candidates Header */}
+              <div className="space-y-1">
+                <h2 className="text-2xl md:text-3xl font-bold">
+                  Top Candidates
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Based on recent activity & performance
+                </p>
+              </div>
+
+              {/* Candidate Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {mockData.candidates.map((candidate) => (
+                  <Card
+                    key={candidate.id}
+                    className="brutal-border brutal-shadow hover:scale-[1.02] transition-transform"
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="brutal-border h-12 w-12">
+                          <AvatarImage src={candidate.avatar} />
+                          <AvatarFallback className="text-sm">
+                            {candidate.name
+                              .split(' ')
+                              .map((n) => n[0])
+                              .join('')}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-base">
+                            {candidate.name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground">
+                            @{candidate.username}
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground">XP</div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <div className="text-muted-foreground">Accuracy</div>
-                      <div className="font-bold">{candidate.accuracy}%</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Streak</div>
-                      <div className="font-bold">{candidate.streak} days</div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-sm text-muted-foreground mb-2">
-                      Top Skills
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {candidate.topSkills.map((skill, idx) => (
+                    </CardHeader>
+                    <CardContent className="space-y-3 pt-0">
+                      <div className="flex items-center justify-between">
                         <Badge
-                          key={idx}
-                          variant="secondary"
+                          variant="default"
                           className="brutal-border text-xs"
                         >
-                          {skill}
+                          {candidate.league}
                         </Badge>
-                      ))}
-                    </div>
-                  </div>
+                        <div className="text-right">
+                          <div className="font-bold text-primary text-sm">
+                            {candidate.xp.toLocaleString()}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            XP
+                          </div>
+                        </div>
+                      </div>
 
-                  <div className="flex gap-2">
-                    <Button variant="hero" className="flex-1 gap-2" size="sm">
-                      <Mail className="w-4 h-4" />
-                      Invite
-                    </Button>
-                    <Button variant="outline-brutal" size="sm">
-                      <ExternalLink className="w-4 h-4" />
-                    </Button>
-                  </div>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <div className="text-xs text-muted-foreground">
+                            Accuracy
+                          </div>
+                          <div className="font-bold text-sm">
+                            {candidate.accuracy}%
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted-foreground">
+                            Streak
+                          </div>
+                          <div className="font-bold text-sm">
+                            {candidate.streak} days
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1.5">
+                          Top Skills
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {candidate.topSkills.map((skill, idx) => (
+                            <Badge
+                              key={idx}
+                              variant="secondary"
+                              className="brutal-border text-xs py-0"
+                            >
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button
+                          variant="hero"
+                          className="flex-1 gap-1 text-sm"
+                          size="sm"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                          Invite
+                        </Button>
+                        <Button variant="outline-brutal" size="sm">
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Analytics Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Skill Demand Chart */}
+                <Card className="brutal-border brutal-shadow">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <TrendingUp className="w-4 h-4" />
+                      Trending Skills
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={240}>
+                      <BarChart data={mockData.skillDemand}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
+                        <XAxis dataKey="skill" fontSize={12} />
+                        <YAxis fontSize={12} />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--card))',
+                            border: '3px solid hsl(var(--border))',
+                            borderRadius: '0.75rem',
+                            fontSize: '12px',
+                          }}
+                        />
+                        <Bar
+                          dataKey="demand"
+                          fill="hsl(var(--primary))"
+                          stroke="hsl(var(--border))"
+                          strokeWidth={2}
+                          radius={[8, 8, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                {/* Activity Chart */}
+                <Card className="brutal-border brutal-shadow">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Users className="w-4 h-4" />
+                      Active Learners
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={240}>
+                      <LineChart data={mockData.weeklyActivity}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
+                        <XAxis dataKey="week" fontSize={12} />
+                        <YAxis fontSize={12} />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--card))',
+                            border: '3px solid hsl(var(--border))',
+                            borderRadius: '0.75rem',
+                            fontSize: '12px',
+                          }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="learners"
+                          stroke="hsl(var(--accent))"
+                          strokeWidth={2}
+                          dot={{ fill: 'hsl(var(--accent))', r: 4 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* Right Side: Recent Invites & Quick Actions (1/4 width) */}
+            <div className="space-y-4">
+              {/* Recent Invites (Interview Management) */}
+              <Card className="brutal-border brutal-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Mail className="w-4 h-4" />
+                    Recent Invites
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {mockData.interviews.map((interview) => (
+                    <div
+                      key={interview.id}
+                      className="p-3 bg-muted/50 brutal-border rounded-lg flex items-center justify-between"
+                    >
+                      <div className="flex-1">
+                        <h4 className="font-bold text-sm">
+                          {interview.candidate}
+                        </h4>
+                        <p className="text-xs text-muted-foreground">
+                          {interview.date}
+                        </p>
+                      </div>
+                      <Badge
+                        className={`brutal-border text-xs ${getStatusColor(
+                          interview.status
+                        )}`}
+                      >
+                        {interview.status}
+                      </Badge>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline-brutal"
+                    className="w-full text-sm"
+                    size="sm"
+                  >
+                    View All Invites
+                  </Button>
                 </CardContent>
               </Card>
-            ))}
+
+              {/* Quick Actions */}
+              <Card className="brutal-border brutal-shadow bg-yellow-300">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl font-bold">
+                    Quick Actions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button
+                    variant="outline"
+                    className="w-full bg-white hover:bg-gray-50 brutal-border border-black text-sm py-4"
+                    size="sm"
+                  >
+                    Generate Interview Link
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full bg-white hover:bg-gray-50 brutal-border border-black text-sm py-4"
+                    size="sm"
+                  >
+                    Export Candidates
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-
-          {/* Analytics Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Skill Demand Chart */}
-            <Card className="brutal-border brutal-shadow">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5" />
-                  Trending Skills
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={mockData.skillDemand}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
-                    <XAxis dataKey="skill" />
-                    <YAxis />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '3px solid hsl(var(--border))',
-                        borderRadius: '0.75rem',
-                      }}
-                    />
-                    <Bar
-                      dataKey="demand"
-                      fill="hsl(var(--primary))"
-                      stroke="hsl(var(--border))"
-                      strokeWidth={2}
-                      radius={[8, 8, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            {/* Activity Chart */}
-            <Card className="brutal-border brutal-shadow">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  Active Learners
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={mockData.weeklyActivity}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
-                    <XAxis dataKey="week" />
-                    <YAxis />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '3px solid hsl(var(--border))',
-                        borderRadius: '0.75rem',
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="learners"
-                      stroke="hsl(var(--accent))"
-                      strokeWidth={3}
-                      dot={{ fill: 'hsl(var(--accent))', r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Interview Management */}
-          <Card className="brutal-border brutal-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  Interview Management
-                </div>
-                <Button variant="hero" size="sm" className="gap-2">
-                  <ExternalLink className="w-4 h-4" />
-                  Generate Link
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Candidate</TableHead>
-                    <TableHead>Skill</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mockData.interviews.map((interview) => (
-                    <TableRow key={interview.id}>
-                      <TableCell className="font-medium">
-                        {interview.candidate}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="brutal-border">
-                          {interview.skill}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{interview.date}</TableCell>
-                      <TableCell>
-                        <Badge
-                          className={`brutal-border ${getStatusColor(
-                            interview.status
-                          )}`}
-                        >
-                          {interview.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="outline-brutal" size="sm">
-                          View
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
         </main>
       </div>
-
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
     </div>
   );
 };

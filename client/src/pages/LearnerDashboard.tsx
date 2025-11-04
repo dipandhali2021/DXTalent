@@ -1,16 +1,5 @@
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import {
-  BookOpen,
-  Trophy,
-  User,
-  Settings,
-  LogOut,
-  Menu,
-  X,
-} from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { SkillChart } from '@/components/dashboard/SkillChart';
 import { StreakHeatmap } from '@/components/dashboard/StreakHeatmap';
@@ -18,11 +7,13 @@ import { ChallengeCard } from '@/components/dashboard/ChallengeCard';
 import { LeaderboardCard } from '@/components/dashboard/LeaderboardCard';
 import { AILessonSuggestions } from '@/components/dashboard/AILessonSuggestions';
 import { motion } from 'framer-motion';
+import DashboardHeader from '@/components/DashboardHeader';
+import { Card, CardContent } from '@/components/ui/card';
+import { Award, Calendar, Trophy, Zap } from 'lucide-react';
 
 const LearnerDashboard = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Mock data - Replace with real data from API
   const mockData = {
@@ -137,120 +128,13 @@ const LearnerDashboard = () => {
     },
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/');
-  };
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header Navigation */}
-      <header className="sticky top-0 z-50 bg-card brutal-border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            {/* Logo/Title */}
-            <div className="flex items-center gap-4">
-              <h2 className="text-2xl font-bold">DXTalent</h2>
-            </div>
-
-            {/* Navigation Menu */}
-            <nav className="hidden md:flex items-center gap-2">
-              <Link to="/lessons">
-                <Button variant="ghost" className="gap-2">
-                  <BookOpen className="w-4 h-4" />
-                  Lessons
-                </Button>
-              </Link>
-              <Link to="/leaderboard">
-                <Button variant="ghost" className="gap-2">
-                  <Trophy className="w-4 h-4" />
-                  Leaderboard
-                </Button>
-              </Link>
-              <Link to="/profile">
-                <Button variant="ghost" className="gap-2">
-                  <User className="w-4 h-4" />
-                  Profile
-                </Button>
-              </Link>
-              <Link to="/settings">
-                <Button variant="ghost" className="gap-2">
-                  <Settings className="w-4 h-4" />
-                  Settings
-                </Button>
-              </Link>
-              <Separator orientation="vertical" className="h-6 mx-2" />
-              <Button
-                variant="outline-brutal"
-                className="gap-2"
-                onClick={handleLogout}
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </Button>
-            </nav>
-
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
-              {sidebarOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </Button>
-          </div>
-
-          {/* Mobile Menu */}
-          {sidebarOpen && (
-            <motion.nav
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              className="md:hidden mt-4 space-y-2 pb-4"
-            >
-              <Link to="/lessons">
-                <Button variant="ghost" className="w-full justify-start gap-2">
-                  <BookOpen className="w-4 h-4" />
-                  Lessons
-                </Button>
-              </Link>
-              <Link to="/leaderboard">
-                <Button variant="ghost" className="w-full justify-start gap-2">
-                  <Trophy className="w-4 h-4" />
-                  Leaderboard
-                </Button>
-              </Link>
-              <Link to="/profile">
-                <Button variant="ghost" className="w-full justify-start gap-2">
-                  <User className="w-4 h-4" />
-                  Profile
-                </Button>
-              </Link>
-              <Link to="/settings">
-                <Button variant="ghost" className="w-full justify-start gap-2">
-                  <Settings className="w-4 h-4" />
-                  Settings
-                </Button>
-              </Link>
-              <Button
-                variant="outline-brutal"
-                className="w-full justify-start gap-2"
-                onClick={handleLogout}
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </Button>
-            </motion.nav>
-          )}
-        </div>
-      </header>
+      <DashboardHeader role="user" />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 space-y-8">
+      <main className="container mx-auto px-6 md:px-8 lg:px-12 py-8 space-y-8">
         {/* Welcome Section */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -265,59 +149,68 @@ const LearnerDashboard = () => {
           </p>
         </motion.div>
 
-        {/* Stats Cards Grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-        >
-          {/* XP Card */}
-          <div className="p-6 bg-white brutal-border brutal-shadow rounded-xl text-center space-y-2">
-            <div className="flex justify-center">
-              <div className="w-16 h-16 rounded-full bg-blue-500 brutal-border flex items-center justify-center">
-                <span className="text-2xl">⚡</span>
-              </div>
-            </div>
-            <div className="text-3xl font-bold">{mockData.overview.xp}</div>
-            <div className="text-sm text-muted-foreground">Total XP</div>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="rotate-[-1deg]">
+            <Card className="brutal-border brutal-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 bg-primary border-[3px] border-border rounded-full mx-auto mb-3 flex items-center justify-center">
+                  <Zap className="w-6 h-6 text-primary-foreground" />
+                </div>
+                <p className="font-handwritten text-3xl font-bold">
+                  {mockData.overview.xp}
+                </p>
+                <p className="font-handwritten text-muted-foreground">
+                  Total XP
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* League Card */}
-          <div className="p-6 bg-white brutal-border brutal-shadow rounded-xl text-center space-y-2">
-            <div className="flex justify-center">
-              <div className="w-16 h-16 rounded-full bg-yellow-400 brutal-border flex items-center justify-center">
-                <span className="text-2xl">🏆</span>
-              </div>
-            </div>
-            <div className="text-3xl font-bold italic">
-              {mockData.overview.league}
-            </div>
-            <div className="text-sm text-muted-foreground">League</div>
+          <div className="rotate-[1deg]">
+            <Card className="brutal-border brutal-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 bg-accent border-[3px] border-border rounded-full mx-auto mb-3 flex items-center justify-center">
+                  <Trophy className="w-6 h-6 text-accent-foreground" />
+                </div>
+                <p className="font-handwritten text-3xl font-bold">
+                  {mockData.overview.league}
+                </p>
+                <p className="font-handwritten text-muted-foreground">League</p>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Streak Card */}
-          <div className="p-6 bg-white brutal-border brutal-shadow rounded-xl text-center space-y-2">
-            <div className="flex justify-center">
-              <div className="w-16 h-16 rounded-full bg-yellow-400 brutal-border flex items-center justify-center">
-                <span className="text-2xl">📅</span>
-              </div>
-            </div>
-            <div className="text-3xl font-bold">{mockData.overview.streak}</div>
-            <div className="text-sm text-muted-foreground">Day Streak</div>
+          <div className="rotate-[-1deg]">
+            <Card className="brutal-border brutal-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 bg-secondary border-[3px] border-border rounded-full mx-auto mb-3 flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-secondary-foreground" />
+                </div>
+                <p className="font-handwritten text-3xl font-bold">
+                  {mockData.overview.streak}
+                </p>
+                <p className="font-handwritten text-muted-foreground">
+                  Day Streak
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Badges Card */}
-          <div className="p-6 bg-white brutal-border brutal-shadow rounded-xl text-center space-y-2">
-            <div className="flex justify-center">
-              <div className="w-16 h-16 rounded-full bg-yellow-400 brutal-border flex items-center justify-center">
-                <span className="text-2xl">🏅</span>
-              </div>
-            </div>
-            <div className="text-3xl font-bold">{mockData.overview.badges}</div>
-            <div className="text-sm text-muted-foreground">Badges</div>
+          <div className="rotate-[1deg]">
+            <Card className="brutal-border brutal-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 bg-accent border-[3px] border-border rounded-full mx-auto mb-3 flex items-center justify-center">
+                  <Award className="w-6 h-6 text-accent-foreground" />
+                </div>
+                <p className="font-handwritten text-3xl font-bold">
+                  {mockData.overview.badges}
+                </p>
+                <p className="font-handwritten text-muted-foreground">Badges</p>
+              </CardContent>
+            </Card>
           </div>
-        </motion.div>
+        </div>
 
         {/* Continue Journey and AI Suggestions */}
         <motion.div
