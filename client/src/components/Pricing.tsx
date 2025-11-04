@@ -1,53 +1,66 @@
-import { Button } from "@/components/ui/button";
-import { Check, Pencil, Star, Sparkles } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { Check, Pencil, Star, Sparkles } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const pricingTiers = [
   {
-    name: "Learner",
+    name: 'Learner',
     icon: <Pencil className="w-6 h-6" />,
     price: 0,
-    description: "Perfect for skill seekers",
+    description: 'Perfect for skill seekers',
     features: [
-      "Access to 20+ Challenges",
-      "Basic Leaderboard Access",
-      "Earn Digital Badges",
-      "Community Forum",
+      'Access to 20+ Challenges',
+      'Basic Leaderboard Access',
+      'Earn Digital Badges',
+      'Community Forum',
     ],
-    color: "amber",
-    cta: "Start Free",
+    color: 'amber',
+    cta: 'Start Free',
   },
   {
-    name: "Recruiter",
+    name: 'Recruiter',
     icon: <Star className="w-6 h-6" />,
     price: 99,
-    description: "For serious talent hunters",
+    description: 'For serious talent hunters',
     features: [
-      "Full Talent Database Access",
-      "Advanced Filtering",
-      "Direct Candidate Contact",
-      "Performance Analytics",
+      'Full Talent Database Access',
+      'Advanced Filtering',
+      'Direct Candidate Contact',
+      'Performance Analytics',
     ],
     popular: true,
-    color: "blue",
-    cta: "Start Hiring",
+    color: 'blue',
+    cta: 'Start Hiring',
   },
   {
-    name: "Enterprise",
+    name: 'Enterprise',
     icon: <Sparkles className="w-6 h-6" />,
     price: 299,
-    description: "For teams & organizations",
+    description: 'For teams & organizations',
     features: [
-      "Custom Skill Challenges",
-      "White-label Platform",
-      "Dedicated Support",
-      "API Integration",
+      'Custom Skill Challenges',
+      'White-label Platform',
+      'Dedicated Support',
+      'API Integration',
     ],
-    color: "primary",
-    cta: "Contact Sales",
+    color: 'primary',
+    cta: 'Contact Sales',
   },
 ];
 
 export default function Pricing() {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  const handlePricingClick = (tierName: string) => {
+    if (isAuthenticated) {
+      navigate('/profile');
+    } else {
+      navigate('/auth');
+    }
+  };
+
   return (
     <section className="py-20 px-4 bg-background">
       <div className="max-w-6xl mx-auto">
@@ -59,8 +72,12 @@ export default function Pricing() {
           <div className="relative">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground rotate-playful-2">
               Choose Your Path
-              <div className="absolute -right-12 top-0 text-4xl rotate-12">✨</div>
-              <div className="absolute -left-8 bottom-0 text-4xl -rotate-12">⭐</div>
+              <div className="absolute -right-12 top-0 text-4xl rotate-12">
+                ✨
+              </div>
+              <div className="absolute -left-8 bottom-0 text-4xl -rotate-12">
+                ⭐
+              </div>
             </h2>
             <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-44 h-3 bg-primary opacity-20 rotate-playful-1 rounded-full blur-sm" />
           </div>
@@ -75,7 +92,11 @@ export default function Pricing() {
             <div
               key={tier.name}
               className={`relative group ${
-                index === 0 ? "rotate-playful-1" : index === 1 ? "rotate-playful-2" : "rotate-playful-3"
+                index === 0
+                  ? 'rotate-playful-1'
+                  : index === 1
+                  ? 'rotate-playful-2'
+                  : 'rotate-playful-3'
               }`}
             >
               <div className="absolute inset-0 bg-card border-[3px] border-border rounded-xl brutal-shadow group-hover:brutal-shadow-lg transition-all group-hover:-translate-x-1 group-hover:-translate-y-1" />
@@ -93,7 +114,9 @@ export default function Pricing() {
                 </div>
 
                 {/* Tier Info */}
-                <h3 className="text-2xl font-bold text-foreground mb-2">{tier.name}</h3>
+                <h3 className="text-2xl font-bold text-foreground mb-2">
+                  {tier.name}
+                </h3>
                 <p className="text-muted-foreground mb-6">{tier.description}</p>
 
                 {/* Price */}
@@ -118,8 +141,9 @@ export default function Pricing() {
 
                 {/* CTA Button */}
                 <Button
-                  variant={tier.popular ? "hero" : "outline-brutal"}
+                  variant={tier.popular ? 'hero' : 'outline-brutal'}
                   className="w-full"
+                  onClick={() => handlePricingClick(tier.name)}
                 >
                   {tier.cta}
                 </Button>
