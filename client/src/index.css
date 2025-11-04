@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Neo-brutalist playful theme */
+    --background: 45 20% 96%;
+    --foreground: 240 10% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+
+    /* Bright blue primary */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Amber/Yellow accent */
+    --secondary: 48 96% 65%;
+    --secondary-foreground: 240 10% 10%;
+
+    --muted: 45 20% 90%;
+    --muted-foreground: 240 5% 45%;
+
+    --accent: 48 96% 65%;
+    --accent-foreground: 240 10% 10%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Neo-brutalist borders - always black */
+    --border: 240 10% 10%;
+    --input: 240 10% 10%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.75rem;
+
+    /* Gamification colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 240 10% 10%;
+    
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    /* Custom shadows for neo-brutalist style */
+    --shadow-brutal: 4px 4px 0px hsl(240 10% 10%);
+    --shadow-brutal-lg: 8px 8px 0px hsl(240 10% 10%);
+    --shadow-brutal-hover: 6px 6px 0px hsl(240 10% 10%);
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 240 10% 10%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 8% 15%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 8% 15%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 48 96% 65%;
+    --secondary-foreground: 240 10% 10%;
+
+    --muted: 240 8% 20%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 48 96% 65%;
+    --accent-foreground: 240 10% 10%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 98%;
+    --input: 0 0% 98%;
+    --ring: 217 91% 60%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 240 10% 10%;
+    
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    --shadow-brutal: 4px 4px 0px hsl(0 0% 98%);
+    --shadow-brutal-lg: 8px 8px 0px hsl(0 0% 98%);
+    --shadow-brutal-hover: 6px 6px 0px hsl(0 0% 98%);
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-handwritten;
+  }
+
+  /* Handwritten font stack */
+  .font-handwritten {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', cursive, sans-serif;
+  }
+
+  /* Neo-brutalist utilities */
+  .brutal-border {
+    @apply border-[3px] border-border;
+  }
+
+  .brutal-shadow {
+    box-shadow: var(--shadow-brutal);
+  }
+
+  .brutal-shadow-lg {
+    box-shadow: var(--shadow-brutal-lg);
+  }
+
+  .brutal-shadow-hover {
+    box-shadow: var(--shadow-brutal-hover);
+  }
+
+  /* Playful rotations */
+  .rotate-playful-1 {
+    transform: rotate(-1deg);
+  }
+
+  .rotate-playful-2 {
+    transform: rotate(1deg);
+  }
+
+  .rotate-playful-3 {
+    transform: rotate(-2deg);
+  }
+}
+
+/* ---break---
+*/
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
