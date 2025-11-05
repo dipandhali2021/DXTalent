@@ -579,9 +579,11 @@ export const getAllPayments = async (req, res) => {
   try {
     const {
       page = 1,
-      limit = 20,
+      limit = 5,
       status,
       paymentType,
+      plan,
+      search,
       startDate,
       endDate,
       userId,
@@ -592,6 +594,7 @@ export const getAllPayments = async (req, res) => {
 
     if (status) query.status = status;
     if (paymentType) query.paymentType = paymentType;
+    if (plan) query.plan = plan;
     if (userId) query.user = userId;
 
     if (startDate || endDate) {
@@ -602,14 +605,78 @@ export const getAllPayments = async (req, res) => {
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    const [payments, total] = await Promise.all([
-      Payment.find(query)
-        .populate('user', 'username email role')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(parseInt(limit)),
+    // First, get all payments with populated user data
+    let paymentsQuery = Payment.find(query)
+      .populate('user', 'username email role')
+      .sort({ createdAt: -1 });
+
+    // If search is provided, we need to filter after population
+    let payments;
+    if (search) {
+      // Get all matching payments first
+      const allPayments = await paymentsQuery;
+
+      // Filter by username or email
+      const searchLower = search.toLowerCase();
+      payments = allPayments.filter(
+        (payment) =>
+          payment.user &&
+          (payment.user.username?.toLowerCase().includes(searchLower) ||
+            payment.user.email?.toLowerCase().includes(searchLower))
+      );
+
+      // Apply pagination to filtered results
+      const total = payments.length;
+      payments = payments.slice(skip, skip + parseInt(limit));
+
+      // Calculate stats for filtered results
+      const filteredIds = payments.map((p) => p._id);
+      const revenueStats = await Payment.aggregate([
+        { $match: { _id: { $in: filteredIds } } },
+        {
+          $group: {
+            _id: null,
+            totalRevenue: { $sum: '$amount' },
+            totalRefunds: { $sum: '$refundAmount' },
+            count: { $sum: 1 },
+          },
+        },
+      ]);
+
+      const stats =
+        revenueStats.length > 0
+          ? revenueStats[0]
+          : {
+              totalRevenue: 0,
+              totalRefunds: 0,
+              count: 0,
+            };
+
+      return res.json({
+        success: true,
+        payments,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(total / parseInt(limit)),
+          totalPayments: total,
+          limit: parseInt(limit),
+        },
+        stats: {
+          totalRevenue: stats.totalRevenue,
+          totalRefunds: stats.totalRefunds,
+          netRevenue: stats.totalRevenue - stats.totalRefunds,
+          transactionCount: stats.count,
+        },
+      });
+    }
+
+    // No search - use normal pagination
+    const [paymentsData, total] = await Promise.all([
+      paymentsQuery.skip(skip).limit(parseInt(limit)),
       Payment.countDocuments(query),
     ]);
+
+    payments = paymentsData;
 
     // Calculate total revenue from filtered results
     const revenueStats = await Payment.aggregate([

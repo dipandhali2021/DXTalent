@@ -71,7 +71,7 @@ const AdminPayments = () => {
     currentPage: 1,
     totalPages: 1,
     totalPayments: 0,
-    limit: 20,
+    limit: 5,
   });
 
   // Filters
@@ -86,6 +86,24 @@ const AdminPayments = () => {
   });
 
   const [tempFilters, setTempFilters] = useState(filters);
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (
+        tempFilters.search !== filters.search &&
+        tempFilters.search.length > 0
+      ) {
+        setFilters({ ...filters, search: tempFilters.search });
+        setPagination({ ...pagination, currentPage: 1 });
+      } else if (tempFilters.search === '' && filters.search !== '') {
+        setFilters({ ...filters, search: '' });
+        setPagination({ ...pagination, currentPage: 1 });
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [tempFilters.search]);
 
   useEffect(() => {
     fetchPayments();
@@ -105,13 +123,17 @@ const AdminPayments = () => {
 
       const response = await adminAPI.getAllPayments({
         page: pagination.currentPage,
-        limit: 20,
+        limit: 5,
         ...apiFilters,
       });
 
       if (response.success) {
         setPayments(response.payments);
-        setPagination(response.pagination);
+        setPagination({
+          ...pagination,
+          totalPages: response.pagination.totalPages,
+          totalPayments: response.pagination.totalPayments,
+        });
         setStats(response.stats);
       }
     } catch (error) {
@@ -157,11 +179,100 @@ const AdminPayments = () => {
   };
 
   const handleExport = () => {
-    // TODO: Implement CSV export
-    toast({
-      title: 'Export Started',
-      description: 'Your payment data is being exported...',
-    });
+    try {
+      // Convert payments data to CSV format
+      const headers = [
+        'Date',
+        'Username',
+        'Email',
+        'Amount',
+        'Currency',
+        'Type',
+        'Plan',
+        'Status',
+        'Method',
+        'Transaction ID',
+        'Description',
+        'Refund Amount',
+      ];
+
+      const csvData = payments.map((payment) => [
+        new Date(payment.createdAt).toLocaleDateString(),
+        payment.user.username,
+        payment.user.email,
+        payment.amount,
+        payment.currency,
+        payment.paymentType.replace('_', ' '),
+        payment.plan,
+        payment.status,
+        payment.paymentMethod,
+        payment.transactionId,
+        payment.description || '',
+        payment.refundAmount || 0,
+      ]);
+
+      // Create CSV content
+      const csvContent = [
+        headers.join(','),
+        ...csvData.map((row) =>
+          row
+            .map((cell) => {
+              // Escape commas and quotes in cell content
+              const cellStr = String(cell);
+              if (
+                cellStr.includes(',') ||
+                cellStr.includes('"') ||
+                cellStr.includes('\n')
+              ) {
+                return `"${cellStr.replace(/"/g, '""')}"`;
+              }
+              return cellStr;
+            })
+            .join(',')
+        ),
+      ].join('\n');
+
+      // Add summary statistics at the end
+      const summary = [
+        '',
+        'Summary Statistics',
+        `Total Payments: ${pagination.totalPayments}`,
+        `Total Revenue: $${stats.totalRevenue}`,
+        `Total Refunds: $${stats.totalRefunds}`,
+        `Net Revenue: $${stats.netRevenue}`,
+        `Transaction Count: ${stats.transactionCount}`,
+      ].join('\n');
+
+      const fullCsv = csvContent + '\n' + summary;
+
+      // Create blob and download
+      const blob = new Blob([fullCsv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+
+      link.setAttribute('href', url);
+      link.setAttribute(
+        'download',
+        `payments_export_${new Date().toISOString().split('T')[0]}.csv`
+      );
+      link.style.visibility = 'hidden';
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: 'Export Successful',
+        description: `Exported ${payments.length} payments to CSV file`,
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: 'Export Failed',
+        description: 'Failed to export payment data',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
