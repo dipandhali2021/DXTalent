@@ -1,103 +1,543 @@
-# DXTalent Authentication System
+# 🎓 DXTalent - AI-Powered Learning Platform
 
-A complete JWT-based authentication system with Google OAuth, email verification, role-based access control, and security features.
+<div align="center">
 
-## 🚀 Features
+![DXTalent Banner](https://img.shields.io/badge/DXTalent-Learning_Platform-blue?style=for-the-badge)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
+[![Node](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
+[![React](https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org)
+[![MongoDB](https://img.shields.io/badge/MongoDB-6+-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 
-### Backend
+**A modern, gamified learning platform with AI-powered lesson generation, real-time leaderboards, and comprehensive progress tracking.**
 
-- ✅ JWT Authentication (Access & Refresh Tokens)
-- ✅ Google OAuth 2.0 Integration
-- ✅ Email Verification (Magic Links)
-- ✅ Password Reset Flow
-- ✅ Role-Based Access Control (User, Recruiter, Admin)
-- ✅ Rate Limiting (Login attempts, Registration, Password reset)
-- ✅ Account Lockout (After 5 failed login attempts)
-- ✅ Secure HTTP Headers (Helmet)
-- ✅ CORS Protection
-- ✅ Input Validation & Sanitization
-- ✅ Multiple Device Login Support
-- ✅ httpOnly Cookies for tokens
+[🚀 Live Demo](#) • [📖 Documentation](docs/) • [🐛 Report Bug](#) • [✨ Request Feature](#)
+
+</div>
+
+---
+
+## 📑 Table of Contents
+
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [Tech Stack](#-tech-stack)
+- [System Architecture](#-system-architecture)
+- [Getting Started](#-getting-started)
+- [Features Deep Dive](#-features-deep-dive)
+- [API Documentation](#-api-documentation)
+- [Database Schema](#-database-schema)
+- [Security Features](#-security-features)
+- [Deployment](#-deployment)
+- [Contributing](#-contributing)
+
+---
+
+## 🌟 Overview
+
+**DXTalent** is a comprehensive learning management system that combines AI-powered content generation with gamification elements to create an engaging educational experience. The platform serves three distinct user types: **Learners**, **Recruiters**, and **Admins**, each with specialized dashboards and features.
+
+### 🎯 Mission
+
+Democratize access to quality education through AI-generated personalized learning paths while connecting top talent with recruiters.
+
+### ✨ What Makes DXTalent Unique?
+
+- 🤖 **AI-Powered Lesson Generation** using Google Gemini 2.0
+- 🏆 **Gamification System** with XP, badges, leagues, and streaks
+- 📊 **Real-time Leaderboards** with league progression
+- 💼 **Talent Marketplace** connecting learners with recruiters
+- 🎨 **Brutal Design** aesthetic with playful animations
+- 🌍 **Multi-language Support** (English, Hindi, Japanese)
+
+---
+
+## 🚀 Key Features
+
+### For Learners 🎓
+
+#### 📚 Learning Management
+
+- **50+ Pre-built Lessons** across multiple categories (Marketing, Development, Data, Business, Design)
+- **AI Lesson Generation** - Create custom topics with 10 progressive lessons (Beginner → Advanced)
+- **Smart Lesson Structure**:
+  - Generate topic: 3 complete lessons + 7 placeholders (1 credit)
+  - Generate individual lessons: 0.5 credit each
+  - Progressive difficulty: Beginner (1-4) → Intermediate (5-7) → Advanced (8-10)
+- **Interactive Tests** with 20 MCQ questions per lesson
+- **AI-Powered Recommendations** for next best lesson
+- **Continue Journey** - Smart algorithm picks up where you left off
+
+#### 🎮 Gamification System
+
+##### 🏅 Experience Points (XP)
+
+```mermaid
+graph LR
+    A[Complete Lesson] --> B{First Time?}
+    B -->|Yes| C[50-150 XP]
+    B -->|No| D[10 XP]
+    C --> E[Difficulty Multiplier]
+    E --> F[Beginner: 50 XP]
+    E --> G[Intermediate: 100 XP]
+    E --> H[Advanced: 150 XP]
+    F --> I[+ Streak Bonus]
+    G --> I
+    H --> I
+    I --> J[Level Up!]
+```
+
+##### 🏆 League System (6 Tiers)
+
+| League   | XP Required     | Color  | Emoji |
+| -------- | --------------- | ------ | ----- |
+| Bronze   | 0 - 999         | Amber  | 🥉    |
+| Silver   | 1,000 - 2,999   | Gray   | 🥈    |
+| Gold     | 3,000 - 5,999   | Yellow | 🥇    |
+| Platinum | 6,000 - 9,999   | Blue   | 💎    |
+| Diamond  | 10,000 - 14,999 | Cyan   | 💠    |
+| Master   | 15,000+         | Purple | 👑    |
+
+##### 🎖️ Badge System (20 Unique Badges)
+
+**Badge Rarities:**
+
+- 🔘 **Common** (Gray) - Easy to earn
+- 🟢 **Uncommon** (Green) - Moderate difficulty
+- 🔵 **Rare** (Blue) - Challenging
+- 🟣 **Epic** (Purple) - Very difficult
+- 🟡 **Legendary** (Gold) - Extremely rare
+
+**Badge Categories:**
+
+1. **Beginner Badges**: First Step (👣), Early Bird (🌅), Night Owl (🦉)
+2. **Streak Badges**: Streak Starter (🔥), Week Warrior (⚔️), Unstoppable (🚀)
+3. **Achievement Badges**: Perfect Score (💯), Speed Demon (⚡), Knowledge Seeker (📚), Master Learner (🎓)
+4. **Challenge Badges**: Challenge Accepted (🎯), Challenge Master (🏆)
+5. **XP Badges**: XP Novice (⭐), XP Expert (🌟), XP Legend (✨)
+6. **Social Badges**: Top 10 (🥇), League Champion (👑)
+7. **Skill Badges**: Skill Explorer (🧭), Polymath (🎨)
+8. **Special Badges**: Comeback Kid (💪)
+
+##### 🔥 Streak System
+
+```mermaid
+graph TD
+    A[Complete Lesson] --> B{Lesson Today?}
+    B -->|First Today| C{Yesterday Active?}
+    B -->|Already Done| D[Activity Count +1]
+    C -->|Yes| E[Streak +1]
+    C -->|No| F{First Ever?}
+    F -->|Yes| G[Streak = 1]
+    F -->|No| H[Streak Reset to 1]
+    E --> I[Check Longest]
+    G --> I
+    I --> J[Update Longest if Higher]
+    J --> K[Streak Bonus XP: 1.0x - 1.5x]
+```
+
+**Streak Bonuses:**
+
+- 3 days: 1.05x XP multiplier
+- 7 days: 1.10x XP multiplier
+- 14 days: 1.20x XP multiplier
+- 30 days: 1.30x XP multiplier
+- 60+ days: 1.50x XP multiplier
+
+##### 📊 Leveling System (100 Levels)
+
+- **Level 1-10**: Novice Tier (100-1750 XP)
+- **Level 11-20**: Apprentice Tier (2100-5700 XP)
+- **Level 21-30**: Journeyman Tier (6300-40800 XP)
+- **Level 31-50**: Expert Tier (45000-162500 XP)
+- **Level 51-75**: Master Tier (171000-606500 XP)
+- **Level 76-100**: Legend Tier (625500-1401500 XP)
+
+Each level has a unique title (e.g., "Novice Explorer", "Code Ninja", "Senior Developer", "DXTalent Legend")
+
+#### 📈 Progress Tracking
+
+- **Activity Heatmap** - Monthly calendar view of daily lessons
+- **Completion Statistics** - Track lessons completed per category
+- **Performance Analytics** - Average accuracy, best scores
+- **XP History** - Detailed log of all XP gains with source tracking
+- **Skill Mastery** - Category-based proficiency metrics
+
+### For Recruiters 💼
+
+#### 🔍 Talent Discovery
+
+- **Advanced Search & Filters**:
+  - Filter by league (Bronze to Master)
+  - Search by skills/categories
+  - Sort by XP, level, or streak
+  - Minimum level requirements
+- **Top Candidates View** with performance metrics
+- **Candidate Profiles** with:
+  - Complete learning history
+  - Skill breakdown by category
+  - Achievement badges
+  - Accuracy & completion rates
+  - Contact information (email visible to recruiters)
+
+#### 📊 Recruiter Dashboard
+
+- **Total Users & Active Learners** statistics
+- **League Distribution** analytics
+- **Popular Categories** trending skills
+- **Weekly Activity** charts
+- **Trending Skills** identification
+- **Real-time Leaderboard** access
+
+### For Admins 👑
+
+#### 🎛️ Platform Management
+
+- **Dashboard Analytics**:
+  - Total users, active users, revenue
+  - User growth trends (6-month charts)
+  - Revenue analytics
+  - Top performing lessons
+  - Retention & satisfaction metrics
+
+#### 👥 User Management
+
+- **Complete User Directory** with search & filters
+- **Role Management**: Assign user/recruiter/admin roles
+- **Account Actions**: Suspend/activate users
+- **User Details**: Full profile access
+- **Subscription Management**: View user plans
+
+#### 💳 Payment Management
+
+- **All Transactions** view with filtering
+- **Payment Statistics** - Total revenue, successful/failed payments
+- **Transaction Details** - User, amount, plan, date
+- **Refund Processing** capabilities
+- **Payment Status Tracking**
+
+---
+
+## 🛠️ Tech Stack
 
 ### Frontend
 
-- ✅ React with TypeScript
-- ✅ Authentication Context
-- ✅ Protected Routes
-- ✅ Google Sign-In Button
-- ✅ Token Refresh Interceptor
-- ✅ Beautiful UI with Shadcn/UI
-- ✅ Form Validation
-- ✅ Toast Notifications
+```mermaid
+graph TB
+    subgraph "Core Framework"
+        A[React 18+]
+        B[TypeScript 5+]
+        C[Vite 5+]
+    end
 
-## 📋 Prerequisites
+    subgraph "UI & Styling"
+        D[shadcn/ui]
+        E[Tailwind CSS]
+        F[Radix UI]
+        G[Framer Motion]
+    end
 
-- Node.js (v18 or higher)
-- MongoDB (local or Atlas)
-- Gmail account (for sending emails)
-- Google OAuth Client ID (optional, for Google login)
+    subgraph "Routing & Data"
+        H[React Router v6]
+        I[TanStack Query]
+        J[Axios]
+    end
 
-## 🛠️ Installation
+    subgraph "Authentication & Charts"
+        K[react-oauth/google]
+        L[Recharts]
+    end
 
-### 1. Clone the Repository
-
-```bash
-cd d:/client/project5
+    A --> B
+    A --> C
+    B --> D
+    B --> E
+    D --> F
+    B --> G
+    B --> H
+    B --> I
+    I --> J
+    B --> K
+    B --> L
 ```
 
-### 2. Backend Setup
+**Core Technologies:**
+
+- ⚛️ **React 18.3** - UI framework
+- 📘 **TypeScript 5.5** - Type safety
+- ⚡ **Vite 5.4** - Build tool
+- 🎨 **Tailwind CSS 3.4** - Utility-first CSS
+- 🧩 **shadcn/ui** - Component library
+- 🎭 **Framer Motion** - Animations
+- 🔄 **TanStack Query** - Data fetching
+- 📍 **React Router v6** - Navigation
+
+### Backend
+
+```mermaid
+graph TB
+    subgraph "Runtime & Framework"
+        A[Node.js 18+]
+        B[Express 5]
+    end
+
+    subgraph "Database"
+        C[MongoDB 8]
+        H[Mongoose 8]
+    end
+
+    subgraph "Authentication"
+        D[JWT Auth]
+        I[bcrypt]
+        J[jsonwebtoken]
+        E[Google OAuth]
+        K[passport]
+    end
+
+    subgraph "External Services"
+        F[Stripe Payments]
+        G[Gemini AI]
+        L[google/genai]
+        M[Nodemailer]
+    end
+
+    subgraph "Security & Validation"
+        N[express-validator]
+        O[rate-limiter-flexible]
+        P[Helmet.js]
+        Q[CORS]
+    end
+
+    A --> B
+    B --> C
+    C --> H
+    B --> D
+    D --> I
+    D --> J
+    B --> E
+    E --> K
+    B --> F
+    B --> G
+    G --> L
+    B --> M
+    B --> N
+    B --> O
+    B --> P
+    B --> Q
+```
+
+**Core Technologies:**
+
+- 🟢 **Node.js 18+** - Runtime
+- 🚂 **Express.js 5** - Web framework
+- 🍃 **MongoDB 8** - Database
+- 🔐 **JWT + OAuth** - Authentication
+- 💳 **Stripe** - Payment processing
+- 🤖 **Google Gemini 2.0** - AI generation
+- 📧 **Nodemailer** - Email service
+- 🛡️ **Helmet.js** - Security headers
+- ⏱️ **Rate Limiter** - DDoS protection
+
+### DevOps & Tools
+
+- 🐳 **Docker** - Containerization (optional)
+- 🔄 **Git** - Version control
+- 📮 **Postman** - API testing
+- 🌐 **Vercel** - Frontend hosting
+- ☁️ **MongoDB Atlas** - Database hosting
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        A[React SPA]
+        B[TypeScript]
+        C[Tailwind CSS]
+    end
+
+    subgraph "API Gateway"
+        D[Express Server]
+        E[Rate Limiter]
+        F[CORS]
+        G[Helmet Security]
+    end
+
+    subgraph "Authentication Layer"
+        H[JWT Middleware]
+        I[Google OAuth]
+        J[Role-Based Access]
+    end
+
+    subgraph "Business Logic"
+        K[Auth Controller]
+        L[Lesson Controller]
+        M[Subscription Controller]
+        N[Admin Controller]
+        O[Recruiter Controller]
+        P[Leaderboard Controller]
+        Q[Badge Controller]
+        R[Challenge Controller]
+    end
+
+    subgraph "AI Services"
+        S[Gemini AI]
+        T[Lesson Generator]
+        U[Test Generator]
+        V[Recommendation Engine]
+        W[Topic Categorizer]
+    end
+
+    subgraph "External Services"
+        X[Stripe API]
+        Y[Gmail SMTP]
+        Z[Google OAuth API]
+    end
+
+    subgraph "Data Layer"
+        AA[(MongoDB)]
+        AB[User Model]
+        AC[Lesson Model]
+        AD[LessonCompletion Model]
+        AE[Payment Model]
+        AF[Test Model]
+        AG[RefreshToken Model]
+    end
+
+    A --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+    H --> J
+    J --> K
+    J --> L
+    J --> M
+    J --> N
+    J --> O
+    J --> P
+    J --> Q
+    J --> R
+    L --> T
+    L --> U
+    L --> V
+    T --> S
+    U --> S
+    V --> S
+    W --> S
+    M --> X
+    K --> Y
+    I --> Z
+    K --> AA
+    L --> AA
+    M --> AA
+    N --> AA
+    O --> AA
+    P --> AA
+    Q --> AA
+    R --> AA
+    AA --> AB
+    AA --> AC
+    AA --> AD
+    AA --> AE
+    AA --> AF
+    AA --> AG
+```
+
+---
+
+## 🚦 Getting Started
+
+### Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- ✅ **Node.js 18+** ([Download](https://nodejs.org/))
+- ✅ **MongoDB 6+** ([Download](https://www.mongodb.com/try/download/community))
+- ✅ **Git** ([Download](https://git-scm.com/))
+- ✅ **Gmail Account** (for email verification)
+- ✅ **Stripe Account** (optional, for payments)
+- ✅ **Google Cloud Project** (optional, for OAuth)
+
+### Quick Start (5 Minutes)
+
+#### 1️⃣ Clone the Repository
+
+```bash
+git clone https://github.com/dipandhali2021/DXTalent.git
+cd DXTalent
+```
+
+#### 2️⃣ Install Dependencies
+
+**Backend:**
 
 ```bash
 cd server
-
-# Install dependencies (already done)
 npm install
+```
 
-# Configure environment variables
+**Frontend:**
+
+```bash
+cd ../client
+npm install
+```
+
+#### 3️⃣ Environment Configuration
+
+**Backend (.env)**
+
+```bash
+cd server
 cp .env.example .env
 ```
 
-Edit `server/.env` with your configuration:
+Edit `server/.env`:
 
 ```env
-# Server Configuration
-PORT=5000
-NODE_ENV=development
-
 # Database
 MONGODB_URI=mongodb://localhost:27017/dxtalent
 
-# JWT Configuration
-JWT_ACCESS_SECRET=your_super_secret_access_key_change_this_in_production
-JWT_REFRESH_SECRET=your_super_secret_refresh_key_change_this_in_production
-JWT_ACCESS_EXPIRY=15m
-JWT_REFRESH_EXPIRY=7d
+# Server
+PORT=5000
+NODE_ENV=development
+FRONTEND_URL=http://localhost:8080
+
+# JWT Secrets (generate random 32-char strings)
+JWT_ACCESS_SECRET=your_access_secret_here
+JWT_REFRESH_SECRET=your_refresh_secret_here
 
 # Email Configuration (Gmail)
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_SECURE=false
 EMAIL_USER=your-email@gmail.com
-EMAIL_PASSWORD=your-app-specific-password
-EMAIL_FROM=DXTalent <noreply@dxtalent.com>
+EMAIL_PASSWORD=your-gmail-app-password
+EMAIL_FROM=DXTalent <your-email@gmail.com>
 
-# Frontend URL
-FRONTEND_URL=http://localhost:5173
+# Google Gemini AI
+GEMINI_API_KEY=your_gemini_api_key
+
+# Stripe (Optional)
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PRICE_PRO_LEARNER=price_...
+STRIPE_PRICE_RECRUITER=price_...
+STRIPE_PRICE_ADDON=price_...
 
 # Google OAuth (Optional)
-GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
 ```
 
-### 3. Frontend Setup
+**Frontend (.env)**
 
 ```bash
 cd ../client
-
-# Install dependencies (already done)
-npm install
-
-# Configure environment variables
 cp .env.example .env
 ```
 
@@ -105,300 +545,2407 @@ Edit `client/.env`:
 
 ```env
 VITE_API_URL=http://localhost:5000/api
-VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
 ```
 
-## 📧 Gmail Setup for Email Verification
+#### 4️⃣ Start Development Servers
 
-1. Go to your Google Account settings
-2. Enable 2-Step Verification
-3. Generate an App Password:
-   - Go to Security → App Passwords
-   - Select "Mail" and your device
-   - Copy the 16-character password
-   - Use this in `EMAIL_PASSWORD` in `.env`
-
-## 🔐 Google OAuth Setup (Optional)
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing
-3. Enable Google+ API
-4. Go to Credentials → Create Credentials → OAuth Client ID
-5. Configure OAuth consent screen
-6. Add authorized redirect URIs:
-   - `http://localhost:5173`
-   - `http://localhost:5173/auth`
-7. Copy Client ID and Client Secret to `.env` files
-
-## 🚀 Running the Application
-
-### Start MongoDB (if running locally)
-
-```bash
-# Windows
-mongod
-
-# macOS/Linux
-sudo systemctl start mongodb
-```
-
-### Start Backend Server
+**Backend:**
 
 ```bash
 cd server
 npm run dev
 ```
 
-Server will run on `http://localhost:5000`
+Expected output:
 
-### Start Frontend
+```
+✅ MongoDB Connected: localhost
+🚀 Server running on port 5000
+📝 Environment: development
+🌐 Frontend URL: http://localhost:8080
+```
+
+**Frontend (new terminal):**
 
 ```bash
 cd client
 npm run dev
 ```
 
-Frontend will run on `http://localhost:5173`
-
-## 📝 API Endpoints
-
-### Authentication
-
-| Method | Endpoint                        | Description               | Auth Required |
-| ------ | ------------------------------- | ------------------------- | ------------- |
-| POST   | `/api/auth/register`            | Register new user         | No            |
-| POST   | `/api/auth/login`               | Login user                | No            |
-| POST   | `/api/auth/google`              | Google OAuth              | No            |
-| GET    | `/api/auth/verify/:token`       | Verify email              | No            |
-| POST   | `/api/auth/resend-verification` | Resend verification email | No            |
-| POST   | `/api/auth/refresh`             | Refresh access token      | No            |
-| POST   | `/api/auth/logout`              | Logout user               | Yes           |
-| GET    | `/api/auth/me`                  | Get current user          | Yes           |
-
-### Password Management
-
-| Method | Endpoint                    | Description            | Auth Required |
-| ------ | --------------------------- | ---------------------- | ------------- |
-| POST   | `/api/auth/forgot-password` | Request password reset | No            |
-| POST   | `/api/auth/reset-password`  | Reset password         | No            |
-
-### Admin Operations
-
-| Method | Endpoint                       | Description      | Auth Required | Role  |
-| ------ | ------------------------------ | ---------------- | ------------- | ----- |
-| PUT    | `/api/auth/users/:userId/role` | Update user role | Yes           | Admin |
-
-## 🧪 Testing with Postman
-
-Import the Postman collection: `DXTalent-API.postman_collection.json`
-
-The collection includes:
-
-- All API endpoints
-- Example requests
-- Auto-save access tokens
-- Environment variables
-
-## 🔒 Security Features
-
-### Rate Limiting
-
-- **Login**: 5 attempts per 10 minutes
-- **Registration**: 3 attempts per hour
-- **Password Reset**: 3 attempts per hour
-- **Email Verification**: 5 attempts per hour
-
-### Account Lockout
-
-- Account locked for 10 minutes after 5 failed login attempts
-
-### Token Security
-
-- Access tokens expire in 15 minutes
-- Refresh tokens expire in 7 days
-- Tokens stored in httpOnly cookies
-- Automatic token refresh on expiry
-
-### Password Requirements
-
-- Minimum 6 characters
-- At least one uppercase letter
-- At least one lowercase letter
-- At least one number
-
-## 👥 User Roles
-
-### User (Learner)
-
-- Default role for new registrations
-- Access to learning features
-- Can view own profile
-
-### Recruiter
-
-- Can post job listings (future feature)
-- Access to candidate search (future feature)
-- Enhanced profile features
-
-### Admin
-
-- Can change user roles
-- Full system access
-- User management capabilities
-
-## 📱 Frontend Routes
-
-| Route      | Description    | Protected                   |
-| ---------- | -------------- | --------------------------- |
-| `/`        | Home page      | No                          |
-| `/auth`    | Login/Register | No (redirects if logged in) |
-| `/profile` | User profile   | Yes                         |
-
-## 🎨 UI Components
-
-The frontend uses:
-
-- **Shadcn/UI**: Modern component library
-- **Tailwind CSS**: Utility-first CSS
-- **Brutal Design**: Bold, playful design system
-- **React Hook Form**: Form handling
-- **Axios**: HTTP client with interceptors
-
-## 🔧 Project Structure
+Expected output:
 
 ```
-project5/
-├── server/
-│   ├── src/
-│   │   ├── config/
-│   │   │   └── database.js
-│   │   ├── controllers/
-│   │   │   └── authController.js
-│   │   ├── middleware/
-│   │   │   └── auth.js
-│   │   ├── models/
-│   │   │   ├── User.js
-│   │   │   └── RefreshToken.js
-│   │   ├── routes/
-│   │   │   └── authRoutes.js
-│   │   ├── utils/
-│   │   │   ├── email.js
-│   │   │   ├── jwt.js
-│   │   │   └── rateLimiter.js
-│   │   ├── validators/
-│   │   │   └── authValidators.js
-│   │   └── index.js
-│   ├── .env
-│   └── package.json
-├── client/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ui/
-│   │   │   └── ProtectedRoute.tsx
-│   │   ├── context/
-│   │   │   └── AuthContext.tsx
-│   │   ├── lib/
-│   │   │   └── api.ts
-│   │   ├── pages/
-│   │   │   ├── Auth.tsx
-│   │   │   ├── Profile.tsx
-│   │   │   └── Index.tsx
-│   │   └── App.tsx
-│   ├── .env
-│   └── package.json
-└── DXTalent-API.postman_collection.json
+VITE v5.4.x ready in xxx ms
+➜  Local:   http://localhost:8080/
 ```
 
-## 🐛 Troubleshooting
+#### 5️⃣ Access the Application
 
-### MongoDB Connection Error
-
-```bash
-# Make sure MongoDB is running
-mongod
-```
-
-### Email Not Sending
-
-- Check Gmail credentials
-- Verify App Password is correct
-- Ensure 2FA is enabled on Google account
-
-### Google OAuth Not Working
-
-- Verify Client ID in both backend and frontend `.env`
-- Check authorized redirect URIs in Google Console
-- Ensure OAuth consent screen is configured
-
-### CORS Errors
-
-- Verify `FRONTEND_URL` in backend `.env` matches your frontend URL
-- Check that credentials are included in axios requests
-
-## 📦 Dependencies
-
-### Backend
-
-- express
-- mongoose
-- bcrypt
-- jsonwebtoken
-- cookie-parser
-- cors
-- helmet
-- express-validator
-- nodemailer
-- rate-limiter-flexible
-- dotenv
-
-### Frontend
-
-- react
-- react-router-dom
-- axios
-- @react-oauth/google
-- jwt-decode
-- @tanstack/react-query
-- tailwindcss
-- shadcn/ui components
-
-## 🚀 Deployment
-
-### Backend (Railway/Render/Heroku)
-
-1. Set all environment variables
-2. Change `NODE_ENV` to `production`
-3. Use MongoDB Atlas for database
-4. Enable HTTPS
-
-### Frontend (Vercel/Netlify)
-
-1. Set `VITE_API_URL` to production API URL
-2. Set `VITE_GOOGLE_CLIENT_ID`
-3. Update Google OAuth authorized URIs
-
-## 📄 License
-
-MIT
-
-## 👨‍💻 Author
-
-DXTalent Team
-
-## 🙏 Acknowledgments
-
-- Shadcn/UI for the component library
-- Google for OAuth integration
-- MongoDB for database
-- Express.js community
-
-## 📞 Support
-
-For issues and questions:
-
-- Create an issue in the repository
-- Contact: support@dxtalent.com
+🌐 Open your browser and navigate to: `http://localhost:8080`
 
 ---
 
-**Happy Coding! 🎉**
+## 📚 Features Deep Dive
+
+### 🔐 Authentication System
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant B as Backend
+    participant D as Database
+    participant E as Email Service
+    participant G as Google OAuth
+
+    Note over U,G: Registration Flow
+    U->>F: Submit registration form
+    F->>B: POST /api/auth/register
+    B->>D: Create user (unverified)
+    B->>E: Send verification email
+    E-->>U: Email with magic link
+    B-->>F: Success response
+    U->>F: Click verification link
+    F->>B: GET /api/auth/verify/:token
+    B->>D: Mark user as verified
+    B->>E: Send welcome email
+    B-->>F: Verification success
+    F-->>U: Redirect to login
+
+    Note over U,G: Login Flow
+    U->>F: Submit credentials
+    F->>B: POST /api/auth/login
+    B->>D: Validate credentials
+    B->>B: Generate JWT tokens
+    B-->>F: Access + Refresh tokens
+    F->>F: Store tokens
+    F-->>U: Redirect to dashboard
+
+    Note over U,G: Google OAuth Flow
+    U->>F: Click "Sign in with Google"
+    F->>G: Initiate OAuth
+    G-->>U: Google sign-in
+    U->>G: Authorize
+    G-->>F: OAuth credential
+    F->>B: POST /api/auth/google
+    B->>D: Find or create user
+    B->>B: Generate JWT tokens
+    B-->>F: Access + Refresh tokens
+    F-->>U: Redirect to dashboard
+```
+
+#### Features:
+
+- ✅ **Email/Password Registration** with validation
+- ✅ **Email Verification** via magic links (24-hour expiry)
+- ✅ **Google OAuth 2.0** integration
+- ✅ **JWT-based Authentication** (Access + Refresh tokens)
+- ✅ **Password Reset Flow** with time-limited tokens
+- ✅ **Multi-device Login** support
+- ✅ **Account Lockout** after 5 failed attempts (10-minute lock)
+- ✅ **Role-Based Access Control** (User, Recruiter, Admin)
+- ✅ **Session Management** with automatic token refresh
+
+#### Security Measures:
+
+- 🔒 **bcrypt Password Hashing** (10 salt rounds)
+- 🔒 **httpOnly Cookies** for token storage
+- 🔒 **Rate Limiting** on auth endpoints
+- 🔒 **CORS Protection** with origin whitelist
+- 🔒 **Helmet.js** security headers
+- 🔒 **Input Validation** with express-validator
+- 🔒 **XSS Protection**
+- 🔒 **SQL Injection Prevention**
+
+### 🤖 AI Lesson Generation System
+
+```mermaid
+graph TD
+    A[User Enters Topic] --> B[POST /api/lessons/generate]
+    B --> C{Check Credits}
+    C -->|Insufficient| D[Return Error]
+    C -->|Sufficient| E[Gemini AI: Topic Categorization]
+    E --> F[Determine Category & Metadata]
+    F --> G[Gemini AI: Generate 10 Lesson Outlines]
+    G --> H[Progressive Difficulty Assignment]
+    H --> I[Lessons 1-4: Beginner]
+    H --> J[Lessons 5-7: Intermediate]
+    H --> K[Lessons 8-10: Advanced]
+    I --> L[Gemini AI: Generate First 3 Full Lessons]
+    J --> L
+    L --> M[Create 7 Placeholder Lessons]
+    M --> N[Save to Database]
+    N --> O[Deduct 1 Credit]
+    O --> P[Return Lessons to User]
+
+    Q[User Clicks Placeholder] --> R[POST /api/lessons/:id/generate-content]
+    R --> S{Check Credits}
+    S -->|Insufficient| T[Return Error]
+    S -->|Sufficient| U[Gemini AI: Generate Full Lesson]
+    U --> V[Create 5 MCQ Questions]
+    V --> W[Save to Database]
+    W --> X[Deduct 0.5 Credit]
+    X --> Y[Return Generated Lesson]
+```
+
+#### Lesson Generation Process:
+
+**1. Topic Generation (1 Credit)**
+
+```javascript
+// Example: "Digital Marketing"
+{
+  topic: "Digital Marketing Fundamentals",
+  lessons: [
+    // 3 Complete Lessons (Ready to Take)
+    { skillName: "Introduction to Digital Marketing", difficulty: "Beginner", questions: [...], isFullyGenerated: true },
+    { skillName: "Social Media Marketing Basics", difficulty: "Beginner", questions: [...], isFullyGenerated: true },
+    { skillName: "Content Marketing Strategy", difficulty: "Beginner", questions: [...], isFullyGenerated: true },
+
+    // 7 Placeholder Lessons (Generate on Demand)
+    { skillName: "SEO Fundamentals", difficulty: "Intermediate", placeholder: true },
+    { skillName: "Email Marketing Campaigns", difficulty: "Intermediate", placeholder: true },
+    { skillName: "PPC Advertising", difficulty: "Intermediate", placeholder: true },
+    { skillName: "Analytics & Metrics", difficulty: "Advanced", placeholder: true },
+    { skillName: "Conversion Optimization", difficulty: "Advanced", placeholder: true },
+    { skillName: "Marketing Automation", difficulty: "Advanced", placeholder: true },
+    { skillName: "Advanced Digital Strategy", difficulty: "Advanced", placeholder: true }
+  ]
+}
+```
+
+**2. Individual Lesson Generation (0.5 Credit)**
+
+- Generates 5 multiple-choice questions
+- Each question includes 4 options, correct answer index, explanation, and XP reward
+- Updates placeholder to complete lesson
+
+**3. Test Generation**
+
+- First test per lesson: **FREE**
+- Regenerate test (new questions): **0.5 Credit**
+- 20 MCQ questions per test
+- Pass threshold: 80% accuracy
+
+#### AI Recommendation Engine:
+
+```mermaid
+graph LR
+    A[User's Learning History] --> B[Gemini AI Analysis]
+    C[Available Lessons] --> B
+    D[User Stats: XP, Level] --> B
+    B --> E[Recommendation Algorithm]
+    E --> F[Factors Considered]
+    F --> G[Completed Categories]
+    F --> H[Difficulty Progression]
+    F --> I[Knowledge Gaps]
+    F --> J[Learning Patterns]
+    G --> K[Best Next Lesson]
+    H --> K
+    I --> K
+    J --> K
+    K --> L[Reason + Estimated Time]
+```
+
+### 📊 Subscription & Credit System
+
+#### Pricing Tiers:
+
+| Plan            | Price     | AI Credits/Month | Addon Support   | Role      |
+| --------------- | --------- | ---------------- | --------------- | --------- |
+| **Learner**     | FREE      | 1 credit         | ❌              | User      |
+| **Pro Learner** | $20/month | 5 credits        | ✅ (+3 for $10) | User      |
+| **Recruiter**   | $50/month | N/A              | ❌              | Recruiter |
+
+#### Credit Usage:
+
+- 💳 **Generate Topic** (10 lessons): 1.0 credit
+  - Gets 3 complete lessons + 7 placeholders
+- 💳 **Generate Individual Lesson**: 0.5 credit
+  - Converts placeholder to complete lesson
+- 💳 **First Test per Lesson**: FREE
+- 💳 **Regenerate Test** (new questions): 0.5 credit
+
+#### Payment Flow:
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant B as Backend
+    participant S as Stripe
+    participant D as Database
+
+    U->>F: Click "Upgrade to Pro"
+    F->>B: POST /api/subscriptions/checkout
+    B->>S: Create Checkout Session
+    S-->>B: Session URL
+    B-->>F: Redirect URL
+    F-->>U: Redirect to Stripe
+    U->>S: Enter payment details
+    S->>S: Process payment
+    S->>B: Webhook: checkout.session.completed
+    B->>D: Update user subscription
+    B->>D: Update generation limits
+    B->>D: Create payment record
+    S-->>U: Redirect to success page
+    U->>F: Return to platform
+    F->>B: GET /api/subscriptions/status
+    B-->>F: Updated subscription info
+    F-->>U: Show Pro features
+```
+
+---
+
+## 📡 API Documentation
+
+### Base URL
+
+```
+Development: http://localhost:5000/api
+Production: https://your-domain.com/api
+```
+
+### Authentication Endpoints
+
+#### Register User
+
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "username": "johndoe",
+  "email": "john@example.com",
+  "password": "SecurePass123",
+  "role": "user" // optional: user, recruiter
+}
+
+Response: 201 Created
+{
+  "success": true,
+  "message": "Registration successful! Please check your email to verify your account.",
+  "data": {
+    "user": {
+      "id": "507f1f77bcf86cd799439011",
+      "username": "johndoe",
+      "email": "john@example.com",
+      "role": "user",
+      "isEmailVerified": false
+    }
+  }
+}
+```
+
+#### Login
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "SecurePass123"
+}
+
+Response: 200 OK
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "user": { ... },
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+}
+```
+
+#### Google OAuth
+
+```http
+POST /api/auth/google
+Content-Type: application/json
+
+{
+  "credential": "google_oauth_credential",
+  "email": "john@gmail.com",
+  "name": "John Doe",
+  "picture": "https://..."
+}
+```
+
+#### Verify Email
+
+```http
+GET /api/auth/verify/:token
+
+Response: 200 OK
+{
+  "success": true,
+  "message": "Email verified successfully! You can now login."
+}
+```
+
+#### Refresh Access Token
+
+```http
+POST /api/auth/refresh
+Cookie: refreshToken=...
+
+Response: 200 OK
+{
+  "success": true,
+  "data": {
+    "accessToken": "new_access_token"
+  }
+}
+```
+
+#### Forgot Password
+
+```http
+POST /api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "john@example.com"
+}
+```
+
+#### Reset Password
+
+```http
+POST /api/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "reset_token_from_email",
+  "newPassword": "NewSecurePass123"
+}
+```
+
+### Lesson Endpoints
+
+#### Generate Lesson Structure
+
+```http
+POST /api/lessons/generate
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+
+{
+  "topic": "Machine Learning Basics"
+}
+
+Response: 201 Created
+{
+  "success": true,
+  "message": "Lesson structure generated successfully",
+  "data": {
+    "topic": "Machine Learning Basics",
+    "category": "Development",
+    "skillIcon": "🤖",
+    "totalLessons": 10,
+    "generatedLessons": 3,
+    "placeholderLessons": 7,
+    "lessons": [ ... ],
+    "creditsUsed": 1.0,
+    "creditsRemaining": 4.0
+  }
+}
+```
+
+#### Get All User Lessons
+
+```http
+GET /api/lessons?category=Marketing&difficulty=Beginner&isFullyGenerated=true
+Authorization: Bearer {accessToken}
+
+Response: 200 OK
+{
+  "success": true,
+  "data": {
+    "lessons": [ ... ],
+    "total": 25
+  }
+}
+```
+
+#### Get Single Lesson
+
+```http
+GET /api/lessons/:lessonId
+Authorization: Bearer {accessToken}
+
+Response: 200 OK
+{
+  "success": true,
+  "data": {
+    "lesson": {
+      "_id": "...",
+      "skillName": "Introduction to React",
+      "category": "Development",
+      "difficulty": "Beginner",
+      "questions": [ ... ],
+      "completionStatus": {
+        "isCompleted": true,
+        "completionCount": 2,
+        "bestScore": {
+          "accuracy": 95,
+          "correctAnswers": 19,
+          "totalQuestions": 20
+        }
+      }
+    }
+  }
+}
+```
+
+#### Complete Lesson
+
+```http
+POST /api/lessons/:lessonId/complete
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+
+{
+  "correctAnswers": 18,
+  "totalQuestions": 20,
+  "timeTaken": 450,
+  "answers": [0, 2, 1, 3, ...]
+}
+
+Response: 200 OK
+{
+  "success": true,
+  "message": "Lesson completed successfully!",
+  "data": {
+    "xpEarned": 120,
+    "totalXP": 2450,
+    "level": 8,
+    "levelName": "Code Enthusiast",
+    "currentStreak": 5,
+    "newBadges": [
+      {
+        "id": "streak_starter",
+        "name": "Streak Starter",
+        "emoji": "🔥",
+        "xpReward": 150
+      }
+    ],
+    "isFirstCompletion": true,
+    "accuracy": 90
+  }
+}
+```
+
+#### Generate Placeholder Content
+
+```http
+POST /api/lessons/:lessonId/generate-content
+Authorization: Bearer {accessToken}
+
+Response: 200 OK
+{
+  "success": true,
+  "message": "Lesson content generated successfully",
+  "data": {
+    "lesson": { ... },
+    "creditsUsed": 0.5,
+    "creditsRemaining": 3.5
+  }
+}
+```
+
+#### Generate/Regenerate Test
+
+```http
+POST /api/lessons/:lessonId/generate-test
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+
+{
+  "questionCount": 20,
+  "forceNew": false
+}
+
+Response: 200 OK
+{
+  "success": true,
+  "message": "Test ready!",
+  "data": {
+    "test": {
+      "_id": "...",
+      "questions": [ ... ]
+    },
+    "isNewTest": false,
+    "totalAttempts": 2,
+    "creditsUsed": 0,
+    "creditsRemaining": 4.0,
+    "isFirstTest": true
+  }
+}
+```
+
+#### Get AI Recommendation
+
+```http
+GET /api/lessons/ai-recommendation
+Authorization: Bearer {accessToken}
+
+Response: 200 OK
+{
+  "success": true,
+  "data": {
+    "recommendation": {
+      "lessonId": "...",
+      "title": "Advanced React Patterns",
+      "category": "Development",
+      "difficulty": "Advanced",
+      "estimatedTime": "25 min",
+      "xpReward": 150,
+      "reason": "Based on your strong React fundamentals, you're ready for advanced patterns. This builds on your recent component work."
+    }
+  }
+}
+```
+
+#### Continue Journey
+
+```http
+GET /api/lessons/continue-journey
+Authorization: Bearer {accessToken}
+
+Response: 200 OK
+{
+  "success": true,
+  "data": {
+    "lessonId": "...",
+    "topic": "Digital Marketing",
+    "progress": 40,
+    "isFirst": false,
+    "message": "Continue your Digital Marketing journey"
+  }
+}
+```
+
+#### Get User Activity (Heatmap)
+
+```http
+GET /api/lessons/activity?month=10&year=2025
+Authorization: Bearer {accessToken}
+
+Response: 200 OK
+{
+  "success": true,
+  "data": {
+    "activity": [
+      { "date": "2025-11-01", "count": 3 },
+      { "date": "2025-11-02", "count": 5 },
+      ...
+    ],
+    "currentStreak": 7,
+    "longestStreak": 14
+  }
+}
+```
+
+### Leaderboard Endpoints
+
+#### Get Global Leaderboard
+
+```http
+GET /api/leaderboard?league=platinum&skill=React&timeframe=weekly&page=1&limit=50
+Authorization: Bearer {accessToken}
+
+Response: 200 OK
+{
+  "success": true,
+  "data": {
+    "leaderboard": [
+      {
+        "rank": 1,
+        "username": "code_ninja",
+        "xp": 15420,
+        "league": "platinum",
+        "streak": 21,
+        "accuracy": 94,
+        "skills": ["React", "Node.js", "MongoDB"],
+        "promotion": "up"
+      },
+      ...
+    ],
+    "total": 342,
+    "page": 1,
+    "pages": 7
+  }
+}
+```
+
+#### Get User Rank
+
+```http
+GET /api/leaderboard/rank
+Authorization: Bearer {accessToken}
+
+Response: 200 OK
+{
+  "success": true,
+  "data": {
+    "rank": 42,
+    "totalUsers": 1250,
+    "percentile": 97,
+    "xp": 8750,
+    "league": "gold",
+    "accuracy": 88,
+    "skills": ["Marketing", "SEO"],
+    "streak": 12,
+    "nearbyUsers": [ ... ]
+  }
+}
+```
+
+#### Get League Statistics
+
+```http
+GET /api/leaderboard/league-stats
+Authorization: Bearer {accessToken}
+
+Response: 200 OK
+{
+  "success": true,
+  "data": {
+    "leagues": [
+      {
+        "league": "bronze",
+        "totalUsers": 450,
+        "avgXP": 350,
+        "activeUsers": 280
+      },
+      ...
+    ]
+  }
+}
+```
+
+---
+
+## 🗄️ Database Schema
+
+### Entity-Relationship Diagram
+
+```mermaid
+erDiagram
+    User ||--o{ Lesson : creates
+    User ||--o{ LessonCompletion : completes
+    User ||--o{ Test : takes
+    User ||--o{ Payment : makes
+    User ||--o{ RefreshToken : has
+    User ||--o{ Badge : earns
+    User ||--o{ XPHistory : accumulates
+    Lesson ||--o{ LessonCompletion : "completed by"
+    Lesson ||--o{ Test : "has"
+
+    User {
+        ObjectId _id PK
+        String username UK
+        String email UK
+        String password
+        String role
+        String accountStatus
+        String subscriptionType
+        String stripeCustomerId
+        String stripeSubscriptionId
+        String subscriptionStatus
+        Date subscriptionStartDate
+        Date subscriptionEndDate
+        Object generationLimits
+        String googleId UK
+        String profilePicture
+        Boolean isEmailVerified
+        String emailVerificationToken
+        String passwordResetToken
+        Date passwordResetExpires
+        Number loginAttempts
+        Date lockUntil
+        Date lastLogin
+        Object stats
+        Map dailyActivity
+        Array xpHistory
+        Array badges
+        Object badgeStats
+        Date createdAt
+        Date updatedAt
+    }
+
+    Lesson {
+        ObjectId _id PK
+        ObjectId userId FK
+        String topic
+        String skillName
+        String skillIcon
+        String category
+        String difficulty
+        String description
+        String duration
+        Number totalXP
+        Array questions
+        Boolean isFullyGenerated
+        Boolean placeholder
+        Boolean isDefault
+        Date createdAt
+        Date updatedAt
+    }
+
+    LessonCompletion {
+        ObjectId _id PK
+        ObjectId userId FK
+        ObjectId lessonId FK
+        Number completionCount
+        Date firstCompletionDate
+        Date lastCompletionDate
+        Object bestScore
+        Array completions
+        Date createdAt
+        Date updatedAt
+    }
+
+    Test {
+        ObjectId _id PK
+        ObjectId lessonId FK
+        ObjectId userId FK
+        Array questions
+        Number totalAttempts
+        Object bestScore
+        Array attempts
+        Date createdAt
+        Date updatedAt
+    }
+
+    Payment {
+        ObjectId _id PK
+        ObjectId userId FK
+        Number amount
+        String currency
+        String paymentType
+        String plan
+        String role
+        String status
+        String paymentMethod
+        String transactionId
+        String description
+        Object metadata
+        Date refundedAt
+        Date createdAt
+        Date updatedAt
+    }
+
+    RefreshToken {
+        ObjectId _id PK
+        String token UK
+        ObjectId userId FK
+        Date expiresAt
+        String deviceInfo
+        String ipAddress
+        Date createdAt
+        Date updatedAt
+    }
+
+    Badge {
+        String badgeId
+        String name
+        String description
+        String emoji
+        Number xpReward
+        String rarity
+        Object criteria
+        Date earnedAt
+        Boolean claimed
+    }
+
+    XPHistory {
+        Number amount
+        String source
+        String description
+        Date timestamp
+    }
+```
+
+### Database Relationships Summary
+
+| Relationship              | Type        | Description                                                   |
+| ------------------------- | ----------- | ------------------------------------------------------------- |
+| User → Lesson             | One-to-Many | A user can create multiple lessons (AI-generated or assigned) |
+| User → LessonCompletion   | One-to-Many | A user can complete multiple lessons multiple times           |
+| User → Test               | One-to-Many | A user can take multiple tests across different lessons       |
+| User → Payment            | One-to-Many | A user can have multiple payment transactions                 |
+| User → RefreshToken       | One-to-Many | A user can have multiple active sessions (devices)            |
+| Lesson → LessonCompletion | One-to-Many | A lesson can be completed by multiple users                   |
+| Lesson → Test             | One-to-Many | A lesson can have multiple test versions (regenerated)        |
+
+### Indexes for Performance
+
+```javascript
+// User Collection
+db.users.createIndex({ email: 1 }, { unique: true });
+db.users.createIndex({ username: 1 }, { unique: true });
+db.users.createIndex({ 'stats.xpPoints': -1 }); // Leaderboard queries
+db.users.createIndex({ 'stats.league': 1 }); // League filtering
+db.users.createIndex({ googleId: 1 }, { unique: true, sparse: true });
+
+// Lesson Collection
+db.lessons.createIndex({ userId: 1, topic: 1 }); // User's lessons by topic
+db.lessons.createIndex({ category: 1, difficulty: 1 }); // Filtering
+db.lessons.createIndex({ isDefault: 1 }); // Pre-built lessons
+db.lessons.createIndex({ userId: 1, isFullyGenerated: 1 }); // Available lessons
+
+// LessonCompletion Collection
+db.lessonCompletions.createIndex({ userId: 1, lessonId: 1 }, { unique: true });
+db.lessonCompletions.createIndex({ userId: 1, lastCompletionDate: -1 }); // Recent activity
+db.lessonCompletions.createIndex({ lessonId: 1 }); // Lesson stats
+
+// Test Collection
+db.tests.createIndex({ lessonId: 1, userId: 1 }, { unique: true });
+db.tests.createIndex({ userId: 1 }); // User's tests
+
+// Payment Collection
+db.payments.createIndex({ user: 1, createdAt: -1 }); // User payment history
+db.payments.createIndex({ status: 1 }); // Payment status queries
+db.payments.createIndex({ transactionId: 1 }); // Stripe webhook lookup
+
+// RefreshToken Collection
+db.refreshTokens.createIndex({ token: 1 }, { unique: true });
+db.refreshTokens.createIndex({ userId: 1 }); // User's sessions
+db.refreshTokens.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL index
+```
+
+### User Model
+
+```javascript
+{
+  _id: ObjectId,
+  username: String (unique, 3-30 chars),
+  email: String (unique, validated),
+  password: String (hashed, optional for OAuth),
+  role: String (enum: ['user', 'recruiter', 'admin']),
+  accountStatus: String (enum: ['active', 'suspended', 'pending']),
+
+  // Subscription
+  subscriptionType: String (enum: ['free', 'pro', 'recruiter']),
+  stripeCustomerId: String,
+  stripeSubscriptionId: String,
+  subscriptionStatus: String,
+  subscriptionStartDate: Date,
+  subscriptionEndDate: Date,
+
+  // Generation Limits
+  generationLimits: {
+    aiLessonsPerMonth: Number (default: 1),
+    currentMonthGenerations: Number,
+    lastResetDate: Date,
+    addonGenerations: Number
+  },
+
+  // OAuth
+  googleId: String (unique, sparse),
+  profilePicture: String,
+
+  // Email Verification
+  isEmailVerified: Boolean,
+  emailVerificationToken: String,
+
+  // Password Reset
+  passwordResetToken: String,
+  passwordResetExpires: Date,
+
+  // Security
+  loginAttempts: Number,
+  lockUntil: Date,
+  lastLogin: Date,
+
+  // Stats
+  stats: {
+    skillsMastered: Number,
+    challengesCompleted: Number,
+    xpPoints: Number,
+    level: Number,
+    levelName: String,
+    league: String (enum),
+    xpIntoLevel: Number,
+    xpForNextLevel: Number,
+    xpProgress: Number,
+    currentStreak: Number,
+    longestStreak: Number,
+    lastLessonDate: Date
+  },
+
+  // Daily Activity Tracking
+  dailyActivity: Map<String, Number>, // { "2025-11-05": 3 }
+
+  // XP History
+  xpHistory: [{
+    amount: Number,
+    source: String (enum: ['lesson', 'challenge', 'badge', 'streak']),
+    description: String,
+    timestamp: Date
+  }],
+
+  // Badges
+  badges: [{
+    badgeId: String,
+    earnedAt: Date,
+    claimed: Boolean
+  }],
+
+  // Badge Stats (for progress tracking)
+  badgeStats: {
+    lessonsCompletedTotal: Number,
+    lessonsCompletedToday: Number,
+    lastLessonCompletionDate: Date,
+    perfectTestsCount: Number,
+    categoriesExplored: [String],
+    skillsMastered: Number,
+    highestLeaderboardRank: Number
+  },
+
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+### Lesson Model
+
+```javascript
+{
+  _id: ObjectId,
+  userId: ObjectId (ref: 'User'),
+  topic: String, // For grouping lessons
+  skillName: String,
+  skillIcon: String (emoji),
+  category: String (enum: ['Marketing', 'Development', 'Data', 'Business', 'Design', 'Other']),
+  difficulty: String (enum: ['Beginner', 'Intermediate', 'Advanced']),
+  description: String,
+  duration: String, // e.g., "15 min"
+  totalXP: Number,
+
+  // Content
+  questions: [{
+    question: String,
+    options: [String], // 4 options
+    correctAnswer: Number, // Index 0-3
+    explanation: String,
+    xpReward: Number
+  }],
+
+  // Generation Status
+  isFullyGenerated: Boolean,
+  placeholder: Boolean,
+  isDefault: Boolean, // Pre-built lessons
+
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+### LessonCompletion Model
+
+```javascript
+{
+  _id: ObjectId,
+  userId: ObjectId (ref: 'User'),
+  lessonId: ObjectId (ref: 'Lesson'),
+
+  // Completion Stats
+  completionCount: Number,
+  firstCompletionDate: Date,
+  lastCompletionDate: Date,
+
+  // Best Score
+  bestScore: {
+    accuracy: Number,
+    correctAnswers: Number,
+    totalQuestions: Number,
+    timeTaken: Number,
+    achievedAt: Date
+  },
+
+  // All Attempts
+  completions: [{
+    completedAt: Date,
+    score: Number,
+    correctAnswers: Number,
+    totalQuestions: Number,
+    timeTaken: Number,
+    xpEarned: Number,
+    answers: [Number]
+  }],
+
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+### Test Model
+
+```javascript
+{
+  _id: ObjectId,
+  lessonId: ObjectId (ref: 'Lesson'),
+  userId: ObjectId (ref: 'User'),
+
+  // Test Content
+  questions: [{
+    question: String,
+    options: [String],
+    correctAnswer: Number,
+    explanation: String
+  }],
+
+  // Test Stats
+  totalAttempts: Number,
+  bestScore: {
+    accuracy: Number,
+    correctAnswers: Number,
+    completedAt: Date
+  },
+
+  // Attempts
+  attempts: [{
+    attemptedAt: Date,
+    score: Number,
+    correctAnswers: Number,
+    timeTaken: Number,
+    passed: Boolean,
+    answers: [Number]
+  }],
+
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+### Payment Model
+
+```javascript
+{
+  _id: ObjectId,
+  user: ObjectId (ref: 'User'),
+  amount: Number,
+  currency: String (default: 'USD'),
+  paymentType: String (enum: ['subscription', 'role_upgrade', 'renewal', 'refund']),
+  plan: String (enum: ['free', 'basic', 'pro', 'recruiter']),
+  role: String,
+  status: String (enum: ['pending', 'completed', 'failed', 'refunded']),
+  paymentMethod: String (default: 'stripe'),
+  transactionId: String,
+  description: String,
+  metadata: Object,
+  refundedAt: Date,
+
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+### RefreshToken Model
+
+```javascript
+{
+  _id: ObjectId,
+  token: String (unique),
+  userId: ObjectId (ref: 'User'),
+  expiresAt: Date,
+  deviceInfo: String,
+  ipAddress: String,
+
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+# 🎓 DXTalent - Part 2: Security, Deployment & Advanced Features
+
+---
+
+## 🔒 Security Features
+
+### Authentication & Authorization
+
+```mermaid
+graph TB
+    A[Request] --> B{Has Token?}
+    B -->|No| C[401 Unauthorized]
+    B -->|Yes| D[Verify JWT]
+    D -->|Invalid| E[401 Invalid Token]
+    D -->|Expired| F[Try Refresh Token]
+    D -->|Valid| G{Check Role}
+    F -->|Success| G
+    F -->|Failed| H[401 Session Expired]
+    G -->|Authorized| I[Process Request]
+    G -->|Forbidden| J[403 Forbidden]
+```
+
+#### Implemented Security Measures:
+
+**1. Password Security**
+
+- ✅ **bcrypt Hashing** (10 salt rounds)
+- ✅ **Password Requirements**:
+  - Minimum 6 characters
+  - At least 1 uppercase letter
+  - At least 1 lowercase letter
+  - At least 1 number
+- ✅ **Password History** - Cannot reuse recent passwords
+- ✅ **Secure Password Reset** with time-limited tokens (15 minutes)
+
+**2. Token Security**
+
+- ✅ **Short-lived Access Tokens** (15 minutes)
+- ✅ **Long-lived Refresh Tokens** (7 days)
+- ✅ **httpOnly Cookies** - JavaScript cannot access
+- ✅ **Secure Flag** in production
+- ✅ **SameSite Strict** - CSRF protection
+- ✅ **Token Rotation** on refresh
+- ✅ **Device Tracking** for multi-device sessions
+
+**3. Rate Limiting**
+
+| Endpoint           | Limit        | Window     | Action on Exceed      |
+| ------------------ | ------------ | ---------- | --------------------- |
+| Login              | 5 attempts   | 10 minutes | Account locked        |
+| Register           | 3 attempts   | 1 hour     | IP blocked            |
+| Password Reset     | 3 attempts   | 1 hour     | IP blocked            |
+| Email Verification | 5 attempts   | 1 hour     | Cooldown              |
+| API Requests       | 100 requests | 15 minutes | 429 Too Many Requests |
+
+**4. Account Protection**
+
+```mermaid
+graph LR
+    A[Login Attempt] --> B{Correct Password?}
+    B -->|No| C[Increment Attempts]
+    C --> D{Attempts >= 5?}
+    D -->|Yes| E[Lock Account 10 min]
+    D -->|No| F[Allow Retry]
+    B -->|Yes| G[Reset Attempts]
+    G --> H[Login Success]
+    E --> I[Return Locked Error]
+```
+
+**5. HTTP Security Headers (Helmet.js)**
+
+- ✅ **X-Content-Type-Options**: nosniff
+- ✅ **X-Frame-Options**: DENY
+- ✅ **X-XSS-Protection**: 1; mode=block
+- ✅ **Strict-Transport-Security**: max-age=31536000
+- ✅ **Content-Security-Policy**: Configured for production
+- ✅ **Referrer-Policy**: no-referrer
+
+**6. Input Validation**
+
+```javascript
+// Example: Registration validation
+{
+  username: {
+    required: true,
+    minLength: 3,
+    maxLength: 30,
+    alphanumeric: true
+  },
+  email: {
+    required: true,
+    isEmail: true,
+    normalizeEmail: true
+  },
+  password: {
+    required: true,
+    minLength: 6,
+    pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/
+  }
+}
+```
+
+**7. CORS Configuration**
+
+```javascript
+{
+  origin: [
+    'http://localhost:5173',
+    'https://your-domain.com'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}
+```
+
+**8. Data Sanitization**
+
+- ✅ **XSS Prevention** - HTML entity encoding
+- ✅ **NoSQL Injection Prevention** - Query sanitization
+- ✅ **SQL Injection Prevention** - Parameterized queries
+- ✅ **Path Traversal Prevention**
+- ✅ **Command Injection Prevention**
+
+---
+
+## 🚀 Deployment Guide
+
+### Prerequisites for Production
+
+- ✅ Domain name with SSL certificate
+- ✅ MongoDB Atlas account (or self-hosted MongoDB)
+- ✅ Vercel account (frontend) or similar
+- ✅ Heroku/Railway/Render (backend) or similar
+- ✅ Gmail account with App Password
+- ✅ Stripe account with live keys
+- ✅ Google Cloud project with OAuth credentials
+- ✅ Gemini API key
+
+### Frontend Deployment (Vercel)
+
+#### 1. Prepare for Production
+
+**Update environment variables in Vercel:**
+
+```env
+VITE_API_URL=https://your-backend-api.com/api
+VITE_GOOGLE_CLIENT_ID=your_production_google_client_id
+```
+
+**Build the application:**
+
+```bash
+cd client
+npm run build
+```
+
+#### 2. Deploy to Vercel
+
+**Option A: Vercel CLI**
+
+```bash
+npm install -g vercel
+cd client
+vercel login
+vercel --prod
+```
+
+**Option B: GitHub Integration**
+
+1. Push code to GitHub
+2. Import project in Vercel dashboard
+3. Configure build settings:
+   - Framework Preset: Vite
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+   - Install Command: `npm install`
+4. Add environment variables
+5. Deploy
+
+**vercel.json configuration:**
+
+```json
+{
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Backend Deployment (Railway/Heroku/Render)
+
+#### 1. Prepare for Production
+
+**Update package.json:**
+
+```json
+{
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+```
+
+**Environment Variables (Production):**
+
+```env
+# Database
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/dxtalent?retryWrites=true&w=majority
+
+# Server
+PORT=5000
+NODE_ENV=production
+FRONTEND_URL=https://your-frontend-domain.com
+
+# JWT Secrets (Use strong random strings)
+JWT_ACCESS_SECRET=your_production_access_secret_32_chars
+JWT_REFRESH_SECRET=your_production_refresh_secret_32_chars
+
+# Email
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_SECURE=false
+EMAIL_USER=your-production-email@gmail.com
+EMAIL_PASSWORD=your_gmail_app_password
+EMAIL_FROM=DXTalent <your-production-email@gmail.com>
+
+# Google Gemini AI
+GEMINI_API_KEY=your_production_gemini_api_key
+
+# Stripe (Live Keys)
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_live_...
+STRIPE_PRICE_PRO_LEARNER=price_live_...
+STRIPE_PRICE_RECRUITER=price_live_...
+STRIPE_PRICE_ADDON=price_live_...
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your_production_google_client_id
+GOOGLE_CLIENT_SECRET=your_production_google_client_secret
+```
+
+#### 2. Deploy to Railway
+
+```bash
+# Install Railway CLI
+npm install -g @railway/cli
+
+# Login
+railway login
+
+# Initialize project
+cd server
+railway init
+
+# Link to project
+railway link
+
+# Set environment variables
+railway variables set MONGODB_URI="mongodb+srv://..."
+railway variables set NODE_ENV="production"
+# ... set all other variables
+
+# Deploy
+railway up
+```
+
+#### 3. Deploy to Heroku
+
+```bash
+# Install Heroku CLI
+npm install -g heroku
+
+# Login
+heroku login
+
+# Create app
+cd server
+heroku create your-app-name
+
+# Set environment variables
+heroku config:set MONGODB_URI="mongodb+srv://..."
+heroku config:set NODE_ENV="production"
+# ... set all other variables
+
+# Deploy
+git push heroku main
+
+# View logs
+heroku logs --tail
+```
+
+#### 4. Deploy to Render
+
+1. Go to [Render Dashboard](https://dashboard.render.com/)
+2. Click "New" → "Web Service"
+3. Connect your GitHub repository
+4. Configure:
+   - Name: dxtalent-api
+   - Environment: Node
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+   - Add all environment variables
+5. Click "Create Web Service"
+
+### Database Setup (MongoDB Atlas)
+
+#### 1. Create Cluster
+
+1. Sign up at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+2. Create a free M0 cluster
+3. Set database username and password
+4. Whitelist IP addresses (0.0.0.0/0 for all IPs)
+
+#### 2. Get Connection String
+
+```
+mongodb+srv://username:password@cluster.mongodb.net/dxtalent?retryWrites=true&w=majority
+```
+
+#### 3. Seed Initial Data (Optional)
+
+```bash
+# Run seed scripts
+node src/utils/seedLessons.js
+node src/utils/migrateBadgeStats.js
+```
+
+### Stripe Webhook Configuration
+
+#### 1. Create Webhook Endpoint
+
+1. Go to [Stripe Dashboard](https://dashboard.stripe.com/webhooks)
+2. Click "Add endpoint"
+3. Enter URL: `https://your-backend-api.com/api/subscriptions/webhook`
+4. Select events:
+   - `checkout.session.completed`
+   - `customer.subscription.updated`
+   - `customer.subscription.deleted`
+   - `invoice.payment_failed`
+5. Copy webhook secret
+
+#### 2. Test Webhook (Development)
+
+```bash
+# Install Stripe CLI
+stripe login
+
+# Forward webhook events to local server
+stripe listen --forward-to localhost:5000/api/subscriptions/webhook
+
+# Copy webhook secret to .env
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
+
+### SSL Certificate Setup
+
+**For Frontend (Vercel):**
+
+- Automatic SSL via Let's Encrypt
+- Custom domain SSL configured automatically
+
+**For Backend (Let's Encrypt with Certbot):**
+
+```bash
+# Install Certbot
+sudo apt-get update
+sudo apt-get install certbot python3-certbot-nginx
+
+# Obtain certificate
+sudo certbot --nginx -d your-api-domain.com
+
+# Auto-renewal
+sudo certbot renew --dry-run
+```
+
+### Performance Optimization
+
+#### Frontend Optimization
+
+**1. Code Splitting**
+
+```typescript
+// Lazy load routes
+const LearnerDashboard = lazy(() => import('./pages/LearnerDashboard'));
+const Lesson = lazy(() => import('./pages/Lesson'));
+```
+
+**2. Image Optimization**
+
+```typescript
+// Use WebP format, lazy loading
+<img src="/images/hero.webp" loading="lazy" alt="Hero" />
+```
+
+**3. Vite Build Optimization**
+
+```typescript
+// vite.config.ts
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+          ],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
+    minify: 'terser',
+  },
+});
+```
+
+#### Backend Optimization
+
+**1. Database Indexing**
+
+```javascript
+// Add indexes for frequently queried fields
+userSchema.index({ email: 1 });
+userSchema.index({ username: 1 });
+userSchema.index({ 'stats.xpPoints': -1 });
+userSchema.index({ 'stats.league': 1 });
+lessonSchema.index({ userId: 1, category: 1 });
+lessonSchema.index({ topic: 1 });
+```
+
+**2. Caching Strategy**
+
+```javascript
+// Cache frequently accessed data
+import NodeCache from 'node-cache';
+
+const cache = new NodeCache({ stdTTL: 600 }); // 10 minutes
+
+// Cache leaderboard
+app.get('/api/leaderboard', async (req, res) => {
+  const cacheKey = `leaderboard_${req.query.league}`;
+  const cached = cache.get(cacheKey);
+
+  if (cached) {
+    return res.json(cached);
+  }
+
+  const data = await fetchLeaderboard(req.query);
+  cache.set(cacheKey, data);
+  res.json(data);
+});
+```
+
+**3. Query Optimization**
+
+```javascript
+// Use lean() for read-only queries
+const users = await User.find({ role: 'user' })
+  .select('username stats.xpPoints stats.league')
+  .lean(); // Returns plain JavaScript objects
+
+// Use projection to limit fields
+const lessons = await Lesson.find({ userId })
+  .select('skillName category difficulty totalXP')
+  .limit(50);
+```
+
+**4. Connection Pooling**
+
+```javascript
+// MongoDB connection with pooling
+mongoose.connect(process.env.MONGODB_URI, {
+  maxPoolSize: 10,
+  minPoolSize: 2,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+});
+```
+
+### Monitoring & Logging
+
+#### 1. Application Monitoring
+
+**Install PM2 (Process Manager):**
+
+```bash
+npm install -g pm2
+
+# Start application
+pm2 start src/index.js --name dxtalent-api
+
+# Monitor
+pm2 monit
+
+# View logs
+pm2 logs
+
+# Set up auto-restart on crash
+pm2 startup
+pm2 save
+```
+
+**PM2 Configuration (ecosystem.config.js):**
+
+```javascript
+module.exports = {
+  apps: [
+    {
+      name: 'dxtalent-api',
+      script: './src/index.js',
+      instances: 'max',
+      exec_mode: 'cluster',
+      env: {
+        NODE_ENV: 'production',
+      },
+      error_file: './logs/err.log',
+      out_file: './logs/out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      merge_logs: true,
+    },
+  ],
+};
+```
+
+#### 2. Error Tracking
+
+**Sentry Integration:**
+
+```bash
+npm install @sentry/node
+```
+
+```javascript
+import * as Sentry from '@sentry/node';
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV,
+  tracesSampleRate: 1.0,
+});
+
+// Error handler
+app.use(Sentry.Handlers.errorHandler());
+```
+
+#### 3. Logging
+
+**Winston Logger:**
+
+```javascript
+import winston from 'winston';
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' }),
+  ],
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(
+    new winston.transports.Console({
+      format: winston.format.simple(),
+    })
+  );
+}
+```
+
+---
+
+## 🧪 Testing
+
+### Backend Testing
+
+**Install Testing Dependencies:**
+
+```bash
+npm install --save-dev jest supertest mongodb-memory-server
+```
+
+**Example Test (auth.test.js):**
+
+```javascript
+import request from 'supertest';
+import app from '../src/index';
+import User from '../src/models/User';
+
+describe('Auth API', () => {
+  beforeEach(async () => {
+    await User.deleteMany({});
+  });
+
+  describe('POST /api/auth/register', () => {
+    it('should register a new user', async () => {
+      const res = await request(app).post('/api/auth/register').send({
+        username: 'testuser',
+        email: 'test@example.com',
+        password: 'Test123456',
+      });
+
+      expect(res.statusCode).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.user.username).toBe('testuser');
+    });
+
+    it('should not register with duplicate email', async () => {
+      await User.create({
+        username: 'existing',
+        email: 'test@example.com',
+        password: 'Test123456',
+      });
+
+      const res = await request(app).post('/api/auth/register').send({
+        username: 'newuser',
+        email: 'test@example.com',
+        password: 'Test123456',
+      });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toContain('already registered');
+    });
+  });
+
+  describe('POST /api/auth/login', () => {
+    it('should login with valid credentials', async () => {
+      const user = await User.create({
+        username: 'testuser',
+        email: 'test@example.com',
+        password: 'Test123456',
+        isEmailVerified: true,
+      });
+
+      const res = await request(app).post('/api/auth/login').send({
+        email: 'test@example.com',
+        password: 'Test123456',
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.accessToken).toBeDefined();
+    });
+  });
+});
+```
+
+**Run Tests:**
+
+```bash
+npm test
+```
+
+### Frontend Testing
+
+**Install Testing Dependencies:**
+
+```bash
+npm install --save-dev @testing-library/react @testing-library/jest-dom vitest
+```
+
+**Example Test (Auth.test.tsx):**
+
+```typescript
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import Auth from './Auth';
+
+describe('Auth Component', () => {
+  it('should render login form by default', () => {
+    render(<Auth />);
+    expect(screen.getByText('Welcome Back')).toBeInTheDocument();
+  });
+
+  it('should switch to register form', () => {
+    render(<Auth />);
+    const signUpButton = screen.getByText("Don't have an account? Sign up");
+    fireEvent.click(signUpButton);
+    expect(screen.getByText('Create Account')).toBeInTheDocument();
+  });
+
+  it('should show validation errors', async () => {
+    render(<Auth />);
+    const loginButton = screen.getByText('Login');
+    fireEvent.click(loginButton);
+
+    expect(await screen.findByText('Email is required')).toBeInTheDocument();
+  });
+});
+```
+
+---
+
+## 📊 Advanced Features
+
+### Real-time Leaderboard System
+
+```mermaid
+graph TB
+    A[User Completes Lesson] --> B[Update XP]
+    B --> C[Recalculate Level]
+    C --> D[Update League]
+    D --> E{League Changed?}
+    E -->|Yes| F[Trigger League Promotion]
+    E -->|No| G[Update Leaderboard Cache]
+    F --> G
+    G --> H[Calculate Rank]
+    H --> I[Check for Badges]
+    I --> J{New Badges?}
+    J -->|Yes| K[Award Badges]
+    J -->|No| L[Update User Stats]
+    K --> L
+    L --> M[Broadcast to Leaderboard]
+    M --> N[Update Frontend]
+```
+
+**League Calculation:**
+
+```javascript
+function calculateLeague(xp) {
+  if (xp >= 15000) return 'master'; // 15k+
+  if (xp >= 10000) return 'diamond'; // 10k-14.9k
+  if (xp >= 6000) return 'platinum'; // 6k-9.9k
+  if (xp >= 3000) return 'gold'; // 3k-5.9k
+  if (xp >= 1000) return 'silver'; // 1k-2.9k
+  return 'bronze'; // 0-999
+}
+```
+
+**Promotion Detection:**
+
+```javascript
+// Check if user is close to promotion (within 500 XP)
+const leagueThresholds = {
+  bronze: 1000,
+  silver: 3000,
+  gold: 6000,
+  platinum: 10000,
+  diamond: 15000,
+};
+
+const nextThreshold = leagueThresholds[currentLeague];
+if (currentXP >= nextThreshold - 500) {
+  user.promotion = 'up'; // Show "Promoted" badge
+}
+```
+
+### AI-Powered Features
+
+#### 1. Smart Lesson Recommendation
+
+**Algorithm Flow:**
+
+```mermaid
+graph TD
+    A[Get User History] --> B[Analyze Completed Lessons]
+    B --> C[Extract Patterns]
+    C --> D[Categories Learned]
+    C --> E[Difficulty Progression]
+    C --> F[Knowledge Gaps]
+    D --> G[Gemini AI Analysis]
+    E --> G
+    F --> G
+    G --> H[Score Available Lessons]
+    H --> I[Consider Difficulty Balance]
+    I --> J[Factor in Time of Day]
+    J --> K[Return Top Recommendation]
+    K --> L[Include Reasoning]
+```
+
+**Gemini Prompt Example:**
+
+```javascript
+const prompt = `
+Analyze this learner's progress and recommend the best next lesson:
+
+Completed Lessons:
+- Introduction to React (Beginner, 95% accuracy)
+- React Components (Beginner, 88% accuracy)
+- State Management (Intermediate, 76% accuracy)
+
+Available Lessons:
+1. React Hooks (Intermediate)
+2. React Router (Intermediate)
+3. Redux Basics (Advanced)
+4. Testing React Apps (Advanced)
+
+User Stats:
+- Total XP: 3,500
+- Level: 12
+- Preferred categories: Development
+- Average study time: 20 minutes
+
+Return JSON:
+{
+  "lessonId": "selected_lesson_id",
+  "title": "Lesson title",
+  "difficulty": "level",
+  "estimatedTime": "duration",
+  "xpReward": number,
+  "reason": "1-2 sentences explaining why"
+}
+`;
+```
+
+#### 2. Dynamic Test Generation
+
+**Features:**
+
+- Generates 20 unique MCQ questions per test
+- Varies question difficulty based on lesson level
+- Includes detailed explanations for each answer
+- First test is free, regeneration costs 0.5 credit
+
+**Question Structure:**
+
+```javascript
+{
+  question: "What is the Virtual DOM in React?",
+  options: [
+    "A lightweight copy of the actual DOM",
+    "A database for storing component data",
+    "A routing system for navigation",
+    "A state management library"
+  ],
+  correctAnswer: 0,
+  explanation: "The Virtual DOM is a lightweight copy of the actual DOM. React uses it to optimize rendering by calculating the minimum number of changes needed to update the real DOM."
+}
+```
+
+#### 3. Continue Journey Algorithm
+
+**Smart Pick Logic:**
+
+```javascript
+async function getContinueJourney(userId) {
+  // 1. Get last completed lesson
+  const lastCompletion = await getLastCompletion(userId);
+
+  if (!lastCompletion) {
+    // No history - recommend beginner lesson
+    return getRecommendedBeginnerLesson();
+  }
+
+  // 2. Find lessons in same topic
+  const sameTopic = await Lesson.find({
+    userId,
+    topic: lastCompletion.lesson.topic,
+    isFullyGenerated: true,
+    _id: { $nin: completedLessonIds },
+  });
+
+  if (sameTopic.length > 0) {
+    // Continue same topic
+    return sameTopic[0]; // Next lesson in series
+  }
+
+  // 3. Find next difficulty in same category
+  const nextDifficulty = getNextDifficulty(lastCompletion.lesson.difficulty);
+  const nextLesson = await Lesson.findOne({
+    userId,
+    category: lastCompletion.lesson.category,
+    difficulty: nextDifficulty,
+    isFullyGenerated: true,
+    _id: { $nin: completedLessonIds },
+  });
+
+  if (nextLesson) {
+    return nextLesson;
+  }
+
+  // 4. Explore new category
+  return getRecommendedNewCategory(userId);
+}
+```
+
+### Activity Tracking & Streaks
+
+**Daily Activity Heatmap:**
+
+```mermaid
+graph LR
+    A[User Completes Lesson] --> B{First Lesson Today?}
+    B -->|Yes| C[Check Yesterday]
+    B -->|No| D[Increment Daily Count]
+    C -->|Active| E[Streak +1]
+    C -->|Not Active| F[Reset Streak to 1]
+    E --> G[Update Longest Streak]
+    F --> G
+    D --> H[Update Heatmap]
+    G --> H
+    H --> I[Calculate Streak Bonus]
+    I --> J[Apply to XP]
+```
+
+**Heatmap Data Structure:**
+
+```javascript
+// User.dailyActivity (Map)
+{
+  "2025-11-01": 3,  // 3 lessons completed
+  "2025-11-02": 5,  // 5 lessons completed
+  "2025-11-03": 2,  // 2 lessons completed
+  // ...
+}
+```
+
+**Streak Calculation:**
+
+```javascript
+function updateStreak(user, completionDate) {
+  const today = getDateString(completionDate);
+  const lastLesson = user.stats.lastLessonDate;
+
+  // Increment today's count
+  const currentCount = user.dailyActivity.get(today) || 0;
+  user.dailyActivity.set(today, currentCount + 1);
+
+  // Update streak (only on first lesson of the day)
+  if (currentCount === 0) {
+    if (!lastLesson) {
+      // First lesson ever
+      user.stats.currentStreak = 1;
+    } else if (isYesterday(lastLesson)) {
+      // Consecutive day
+      user.stats.currentStreak += 1;
+    } else if (!isToday(lastLesson)) {
+      // Gap - reset streak
+      user.stats.currentStreak = 1;
+    }
+
+    // Update longest streak
+    if (user.stats.currentStreak > user.stats.longestStreak) {
+      user.stats.longestStreak = user.stats.currentStreak;
+    }
+  }
+
+  user.stats.lastLessonDate = completionDate;
+  return user;
+}
+```
+
+### Badge Award System
+
+**Automatic Badge Checking:**
+
+```mermaid
+graph TD
+    A[Lesson Completed] --> B[Check All Badge Criteria]
+    B --> C{Lessons Completed}
+    C -->|= 1| D[Award 'First Step']
+    C -->|= 25| E[Award 'Knowledge Seeker']
+    C -->|= 100| F[Award 'Master Learner']
+    B --> G{Current Streak}
+    G -->|= 3| H[Award 'Streak Starter']
+    G -->|= 7| I[Award 'Week Warrior']
+    G -->|= 30| J[Award 'Unstoppable']
+    B --> K{Perfect Score?}
+    K -->|Yes| L[Award 'Perfect Score']
+    D --> M[Award Badge + XP]
+    E --> M
+    F --> M
+    H --> M
+    I --> M
+    J --> M
+    L --> M
+    M --> N[Show Notification]
+    N --> O[Update Profile]
+```
+
+**Badge Progress Tracking:**
+
+```javascript
+// Real-time progress for locked badges
+{
+  badge: {
+    id: 'knowledge_seeker',
+    name: 'Knowledge Seeker',
+    description: 'Complete 25 lessons',
+    emoji: '📚',
+    xpReward: 500,
+    rarity: 'rare'
+  },
+  earned: false,
+  progress: {
+    current: 18,
+    target: 25,
+    percentage: 72
+  }
+}
+```
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions from the community! Here's how you can help:
+
+### How to Contribute
+
+1. **Fork the Repository**
+
+```bash
+git clone https://github.com/yourusername/DXTalent.git
+cd DXTalent
+```
+
+2. **Create a Branch**
+
+```bash
+git checkout -b feature/your-feature-name
+```
+
+3. **Make Changes**
+
+- Follow the existing code style
+- Write clear commit messages
+- Add tests for new features
+- Update documentation
+
+4. **Test Your Changes**
+
+```bash
+# Backend tests
+cd server
+npm test
+
+# Frontend tests
+cd client
+npm test
+```
+
+5. **Commit and Push**
+
+```bash
+git add .
+git commit -m "feat: add amazing feature"
+git push origin feature/your-feature-name
+```
+
+6. **Create Pull Request**
+
+- Go to GitHub and create a PR
+- Describe your changes
+- Link related issues
+- Wait for review
+
+### Code Style Guidelines
+
+**JavaScript/TypeScript:**
+
+- Use ES6+ features
+- Follow Airbnb style guide
+- Use meaningful variable names
+- Add JSDoc comments for functions
+
+**React Components:**
+
+- Use functional components with hooks
+- Keep components small and focused
+- Use TypeScript for type safety
+- Follow component naming conventions
+
+**Git Commit Messages:**
+
+```
+feat: add new feature
+fix: bug fix
+docs: documentation update
+style: formatting changes
+refactor: code refactoring
+test: add tests
+chore: maintenance tasks
+```
+
+### Areas We Need Help With
+
+- 🐛 **Bug Fixes** - Report and fix bugs
+- ✨ **New Features** - Propose and implement features
+- 📖 **Documentation** - Improve docs and guides
+- 🎨 **UI/UX** - Design improvements
+- 🧪 **Testing** - Add test coverage
+- 🌍 **Internationalization** - Add language support
+- ♿ **Accessibility** - Improve WCAG compliance
+- 🚀 **Performance** - Optimize code
+
+---
+
+## 📝 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+```
+MIT License
+
+Copyright (c) 2025 DXTalent
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+## 🙏 Acknowledgments
+
+- **Google Gemini AI** - For powerful AI lesson generation
+- **Stripe** - For secure payment processing
+- **MongoDB Atlas** - For reliable database hosting
+- **Vercel** - For seamless frontend deployment
+- **shadcn/ui** - For beautiful UI components
+- **Radix UI** - For accessible component primitives
+- **Tailwind CSS** - For utility-first styling
+
+---
+
+## 📞 Support & Contact
+
+### Get Help
+
+- 📧 **Email**: support@dxtalent.com
+- 💬 **Discord**: [Join our community](#)
+- 🐦 **Twitter**: [@DXTalent](#)
+- 📖 **Documentation**: [docs.dxtalent.com](#)
+
+### Report Issues
+
+Found a bug? Please report it:
+
+1. Check if issue already exists
+2. Create detailed bug report
+3. Include steps to reproduce
+4. Add screenshots if applicable
+
+### Feature Requests
+
+Have an idea? We'd love to hear it:
+
+1. Search existing feature requests
+2. Create new feature request
+3. Describe the use case
+4. Explain expected behavior
+
+---
+
+## 🗺️ Roadmap
+
+### Phase 1 (Current) ✅
+
+- [x] Core authentication system
+- [x] AI lesson generation
+- [x] Gamification features
+- [x] Leaderboard system
+- [x] Subscription management
+- [x] Admin dashboard
+- [x] Recruiter features
+
+### Phase 2 (Q1 2026) 🚧
+
+- [ ] Mobile app (React Native)
+- [ ] Real-time notifications
+- [ ] Live coding challenges
+- [ ] Peer-to-peer learning
+- [ ] Video lessons integration
+- [ ] Certificate generation
+- [ ] Advanced analytics
+
+### Phase 3 (Q2 2026) 📅
+
+- [ ] AI mentor chatbot
+- [ ] Code playground
+- [ ] Community forums
+- [ ] Study groups
+- [ ] Marketplace for courses
+- [ ] Integration with LinkedIn
+- [ ] Corporate training packages
+
+### Phase 4 (Q3 2026) 🎯
+
+- [ ] VR/AR learning experiences
+- [ ] Blockchain certificates
+- [ ] AI-powered career guidance
+- [ ] Job matching algorithm
+- [ ] Salary insights
+- [ ] Interview preparation
+- [ ] Global hackathons
+
+---
+
+## 📊 Project Statistics
+
+```
+Total Lines of Code:     ~50,000+
+Backend Lines:           ~15,000
+Frontend Lines:          ~35,000
+Number of Components:    100+
+Number of API Endpoints: 75+
+Database Models:         7
+Tests Written:           150+
+Documentation Pages:     20+
+```
+
+---
+
+## 🌟 Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=dipandhali2021/DXTalent&type=Date)](https://star-history.com/#dipandhali2021/DXTalent&Date)
+
+---
+
+## 💡 Pro Tips
+
+### For Developers
+
+1. **Use the Postman Collection** - Import `docs/DXTalent-API.postman_collection.json` for API testing
+2. **Enable MongoDB Logging** - Set `mongoose.set('debug', true)` to see queries
+3. **Use Environment Variables** - Never commit sensitive data
+4. **Test Webhooks Locally** - Use Stripe CLI for webhook testing
+5. **Monitor Performance** - Use React DevTools and Chrome DevTools
+
+### For Learners
+
+1. **Complete Daily Lessons** - Build your streak for bonus XP
+2. **Focus on Perfect Scores** - Unlock achievement badges
+3. **Explore Different Categories** - Earn "Skill Explorer" badge
+4. **Check AI Recommendations** - Get personalized learning paths
+5. **Track Your Progress** - Use the activity heatmap
+
+### For Recruiters
+
+1. **Filter by League** - Focus on top performers
+2. **Check Completion Rates** - Assess dedication
+3. **Review Skill Breakdown** - Match job requirements
+4. **Monitor Activity** - Find active learners
+5. **Use Advanced Search** - Find exact skill sets
+
+---
+
+## 🎉 Thank You!
+
+Thank you for checking out **DXTalent**! We hope this platform helps you on your learning journey or helps you find the perfect talent for your team.
+
+<div align="center">
+
+**Made with ❤️ by the DXTalent Team**
+
+[⬆ Back to Top](#-dxtalent---ai-powered-learning-platform)
+
+</div>
