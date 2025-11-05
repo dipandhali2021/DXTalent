@@ -75,6 +75,11 @@ const lessonSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isDefault: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
     generatedAt: {
       type: Date,
       default: Date.now,

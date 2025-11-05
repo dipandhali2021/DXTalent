@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import connectDB from './config/database.js';
 import authRoutes from './routes/authRoutes.js';
 import lessonRoutes from './routes/lessonRoutes.js';
+import seedRoutes from './routes/seedRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -43,6 +44,7 @@ app.use(cookieParser());
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/lessons', lessonRoutes);
+app.use('/api/seed', seedRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {

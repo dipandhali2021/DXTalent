@@ -196,4 +196,19 @@ export const lessonAPI = {
     }
 };
 
+// Seed API functions
+export const seedAPI = {
+    // Seed default lessons if user has none
+    seedDefaultLessons: async () => {
+        const response = await api.post('/seed/default-lessons');
+        return response.data;
+    },
+
+    // Reset and reseed all lessons
+    resetAndSeedLessons: async () => {
+        const response = await api.post('/seed/reset-lessons');
+        return response.data;
+    }
+};
+
 export default api;

@@ -23,7 +23,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import DashboardHeader from '@/components/DashboardHeader';
 import GenerateLessonDialog from '@/components/GenerateLessonDialog';
-import { lessonAPI } from '@/lib/api';
+import { lessonAPI, seedAPI } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
 interface Lesson {
@@ -38,6 +38,7 @@ interface Lesson {
   totalXP: number;
   isFullyGenerated: boolean;
   placeholder: boolean;
+  isDefault?: boolean;
 }
 
 interface TopicCategory {
@@ -69,6 +70,7 @@ const LessonsLibrary = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
+  const [showDefaultLessons, setShowDefaultLessons] = useState(true);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [topicCategories, setTopicCategories] = useState<TopicCategory[]>([]);
   const [selectedTopic, setSelectedTopic] = useState<TopicCategory | null>(
@@ -126,9 +128,34 @@ const LessonsLibrary = () => {
     try {
       const response = await lessonAPI.getUserLessons();
       if (response.success) {
-        setLessons(response.data);
-        const grouped = groupLessonsByTopic(response.data);
-        setTopicCategories(grouped);
+        // If no lessons, seed default lessons
+        if (response.data.length === 0) {
+          try {
+            const seedResponse = await seedAPI.seedDefaultLessons();
+            if (seedResponse.success) {
+              toast({
+                title: 'Welcome! 🎉',
+                description: `We've loaded ${seedResponse.data.count} sample lessons across 5 categories to get you started!`,
+              });
+              // Fetch lessons again after seeding
+              const newResponse = await lessonAPI.getUserLessons();
+              if (newResponse.success) {
+                setLessons(newResponse.data);
+                const grouped = groupLessonsByTopic(newResponse.data);
+                setTopicCategories(grouped);
+              }
+            }
+          } catch (seedError) {
+            console.error('Error seeding lessons:', seedError);
+            // Continue anyway, just show empty state
+            setLessons([]);
+            setTopicCategories([]);
+          }
+        } else {
+          setLessons(response.data);
+          const grouped = groupLessonsByTopic(response.data);
+          setTopicCategories(grouped);
+        }
       }
     } catch (error: any) {
       console.error('Error fetching lessons:', error);
@@ -208,7 +235,17 @@ const LessonsLibrary = () => {
     const matchesDifficulty =
       selectedDifficulty === 'All' || topic.difficulty === selectedDifficulty;
 
-    return matchesSearch && matchesCategory && matchesDifficulty;
+    // Filter by default lessons toggle
+    const matchesDefaultFilter = showDefaultLessons
+      ? true
+      : topic.lessons.some((lesson) => !lesson.isDefault);
+
+    return (
+      matchesSearch &&
+      matchesCategory &&
+      matchesDifficulty &&
+      matchesDefaultFilter
+    );
   });
 
   const getDifficultyColor = (difficulty: string) => {
@@ -317,6 +354,21 @@ const LessonsLibrary = () => {
                 </Badge>
               ))}
             </div>
+
+            {/* Default Lessons Toggle */}
+            <div className="flex justify-center">
+              <Button
+                onClick={() => setShowDefaultLessons(!showDefaultLessons)}
+                variant={showDefaultLessons ? 'default' : 'outline'}
+                size="sm"
+                className="font-handwritten brutal-border px-6 py-2"
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                {showDefaultLessons
+                  ? 'Showing All Lessons'
+                  : 'Showing My Lessons'}
+              </Button>
+            </div>
           </div>
         )}
 
@@ -352,102 +404,104 @@ const LessonsLibrary = () => {
           // Individual Lessons View
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {selectedTopic.lessons.map((lesson, index) => (
-                <Card
-                  key={lesson._id}
-                  className={`brutal-border brutal-shadow hover:shadow-brutal-hover hover:-translate-y-1 transition-all cursor-pointer ${
-                    index % 3 === 0
-                      ? 'rotate-playful-1'
-                      : index % 3 === 1
-                      ? 'rotate-playful-2'
-                      : 'rotate-playful-3'
-                  }`}
-                  onClick={() => handleLessonClick(lesson)}
-                >
-                  <CardHeader>
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="text-5xl">{lesson.skillIcon}</div>
-                      <div className="flex flex-col gap-1">
-                        <Badge
-                          className={`brutal-border ${getDifficultyColor(
-                            lesson.difficulty
-                          )}`}
-                        >
-                          {lesson.difficulty}
-                        </Badge>
-                        {lesson.placeholder && !lesson.isFullyGenerated && (
+              {selectedTopic.lessons
+                .filter((lesson) => showDefaultLessons || !lesson.isDefault)
+                .map((lesson, index) => (
+                  <Card
+                    key={lesson._id}
+                    className={`brutal-border brutal-shadow hover:shadow-brutal-hover hover:-translate-y-1 transition-all cursor-pointer ${
+                      index % 3 === 0
+                        ? 'rotate-playful-1'
+                        : index % 3 === 1
+                        ? 'rotate-playful-2'
+                        : 'rotate-playful-3'
+                    }`}
+                    onClick={() => handleLessonClick(lesson)}
+                  >
+                    <CardHeader>
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="text-5xl">{lesson.skillIcon}</div>
+                        <div className="flex flex-col gap-1">
                           <Badge
-                            variant="outline"
-                            className="brutal-border text-xs"
+                            className={`brutal-border ${getDifficultyColor(
+                              lesson.difficulty
+                            )}`}
                           >
-                            Placeholder
+                            {lesson.difficulty}
                           </Badge>
-                        )}
-                        {lesson.isFullyGenerated && (
-                          <Badge className="brutal-border text-xs bg-green-100 text-green-700">
-                            <CheckCircle2 className="w-3 h-3 mr-1" />
-                            Ready
-                          </Badge>
-                        )}
+                          {lesson.placeholder && !lesson.isFullyGenerated && (
+                            <Badge
+                              variant="outline"
+                              className="brutal-border text-xs"
+                            >
+                              Placeholder
+                            </Badge>
+                          )}
+                          {lesson.isFullyGenerated && (
+                            <Badge className="brutal-border text-xs bg-green-100 text-green-700">
+                              <CheckCircle2 className="w-3 h-3 mr-1" />
+                              Ready
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <CardTitle className="font-handwritten text-xl">
-                      {lesson.skillName}
-                    </CardTitle>
-                    <CardDescription className="font-handwritten">
-                      {lesson.category}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                      {lesson.description}
-                    </p>
+                      <CardTitle className="font-handwritten text-xl">
+                        {lesson.skillName}
+                      </CardTitle>
+                      <CardDescription className="font-handwritten">
+                        {lesson.category}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                        {lesson.description}
+                      </p>
 
-                    <div className="grid grid-cols-2 gap-2 mb-4">
-                      <div className="bg-muted brutal-border px-2 py-2 text-center">
-                        <Clock className="w-4 h-4 mx-auto mb-1 text-muted-foreground" />
-                        <span className="text-xs font-handwritten font-bold">
-                          {lesson.duration}
-                        </span>
+                      <div className="grid grid-cols-2 gap-2 mb-4">
+                        <div className="bg-muted brutal-border px-2 py-2 text-center">
+                          <Clock className="w-4 h-4 mx-auto mb-1 text-muted-foreground" />
+                          <span className="text-xs font-handwritten font-bold">
+                            {lesson.duration}
+                          </span>
+                        </div>
+                        <div className="bg-accent/10 brutal-border px-2 py-2 text-center">
+                          <Zap className="w-4 h-4 mx-auto mb-1 text-accent" />
+                          <span className="text-xs font-handwritten font-bold">
+                            {lesson.totalXP} XP
+                          </span>
+                        </div>
                       </div>
-                      <div className="bg-accent/10 brutal-border px-2 py-2 text-center">
-                        <Zap className="w-4 h-4 mx-auto mb-1 text-accent" />
-                        <span className="text-xs font-handwritten font-bold">
-                          {lesson.totalXP} XP
-                        </span>
-                      </div>
-                    </div>
 
-                    {lesson.placeholder && !lesson.isFullyGenerated ? (
-                      <Button
-                        className="w-full"
-                        size="sm"
-                        variant="outline"
-                        onClick={(e) =>
-                          handleGeneratePlaceholder(lesson._id, e)
-                        }
-                        disabled={isGenerating === lesson._id}
-                      >
-                        {isGenerating === lesson._id ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Generating...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="mr-2 h-4 w-4" />
-                            Generate Lesson
-                          </>
-                        )}
-                      </Button>
-                    ) : (
-                      <Button className="w-full" size="sm">
-                        Start Learning
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
+                      {lesson.placeholder && !lesson.isFullyGenerated ? (
+                        <Button
+                          className="w-full"
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) =>
+                            handleGeneratePlaceholder(lesson._id, e)
+                          }
+                          disabled={isGenerating === lesson._id}
+                        >
+                          {isGenerating === lesson._id ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Generating...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="mr-2 h-4 w-4" />
+                              Generate Lesson
+                            </>
+                          )}
+                        </Button>
+                      ) : (
+                        <Button className="w-full" size="sm">
+                          Start Learning
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
             </div>
           </>
         ) : (
@@ -559,6 +613,7 @@ const LessonsLibrary = () => {
                       setSearchQuery('');
                       setSelectedCategory('All');
                       setSelectedDifficulty('All');
+                      setShowDefaultLessons(true);
                     }}
                   >
                     Clear Filters
