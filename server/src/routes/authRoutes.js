@@ -14,7 +14,11 @@ import {
   updateProfile,
   getUserById,
 } from '../controllers/authController.js';
-import { authMiddleware, roleMiddleware } from '../middleware/auth.js';
+import {
+  authMiddleware,
+  roleMiddleware,
+  optionalAuthMiddleware,
+} from '../middleware/auth.js';
 import {
   registerValidation,
   loginValidation,
@@ -74,8 +78,8 @@ router.post('/logout', authMiddleware, logout);
 
 router.get('/me', authMiddleware, getCurrentUser);
 
-// Public route to get a user's public profile
-router.get('/users/:userId', getUserById);
+// Public route to get a user's public profile (with optional auth to show email for recruiters/admins)
+router.get('/users/:userId', optionalAuthMiddleware, getUserById);
 
 router.put('/profile', authMiddleware, updateProfile);
 

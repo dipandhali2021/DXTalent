@@ -10,6 +10,7 @@ import seedRoutes from './routes/seedRoutes.js';
 import leaderboardRoutes from './routes/leaderboardRoutes.js';
 import challengeRoutes from './routes/challengeRoutes.js';
 import badgeRoutes from './routes/badgeRoutes.js';
+import recruiterRoutes from './routes/recruiterRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -51,6 +52,7 @@ app.use('/api/seed', seedRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/challenges', challengeRoutes);
 app.use('/api/badges', badgeRoutes);
+app.use('/api/recruiter', recruiterRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {

@@ -74,17 +74,17 @@ const App = () => (
               <Route
                 path="/recruiter/dashboard"
                 element={
-                  // <ProtectedRoute requireAuth={true}>
+                  <ProtectedRoute requireAuth={true}>
                   <RecruiterDashboard />
-                  // </ProtectedRoute>
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/admin/dashboard"
                 element={
-                  // <ProtectedRoute requireAuth={true}>
+                  <ProtectedRoute requireAuth={true}>
                   <AdminDashboard />
-                  // </ProtectedRoute>
+                  </ProtectedRoute>
                 }
               />
               <Route path="/lesson/:lessonId" element={<Lesson />} />

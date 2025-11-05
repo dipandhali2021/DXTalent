@@ -81,7 +81,8 @@ const Profile = () => {
             setPublicUser(pu);
             setIsOwnProfile(false);
             setUsername(pu.username || '');
-            setEmail('');
+            // Set email if it's provided (for recruiters/admins viewing profiles)
+            setEmail(pu.email || '');
             setProfilePicture(pu.profilePicture || '');
           }
         } catch (err) {
@@ -421,20 +422,27 @@ const Profile = () => {
                   />
                 </div>
 
-                {/* Email */}
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="font-handwritten text-lg">
-                    Email
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="border-[3px] border-border font-handwritten"
-                    disabled={!isEditing}
-                  />
-                </div>
+                {/* Email - Only show for own profile or if provided (recruiter/admin viewing) */}
+                {(isOwnProfile || email) && (
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="font-handwritten text-lg">
+                      Email
+                      {!isOwnProfile && (
+                        <span className="text-xs text-muted-foreground ml-2">
+                          (Visible to recruiters)
+                        </span>
+                      )}
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="border-[3px] border-border font-handwritten"
+                      disabled={!isEditing}
+                    />
+                  </div>
+                )}
 
                 {/* Role */}
                 <div className="space-y-2">

@@ -94,8 +94,10 @@ export const getLeaderboard = async (req, res) => {
       limit = 50,
     } = req.query;
 
-    // Build user filter
-    const userFilter = {};
+    // Build user filter - exclude recruiters and admins
+    const userFilter = {
+      role: { $nin: ['recruiter', 'admin'] },
+    };
     if (league !== 'all') {
       userFilter['stats.league'] = league;
     }
@@ -233,6 +235,7 @@ export const getLeaderboard = async (req, res) => {
           id: user._id.toString(),
           rank,
           username: user.username,
+          email: user.email,
           avatar: user.profilePicture || '👤',
           xp: timeframe !== 'all-time' ? user.timeframeXP || 0 : currentXP,
           streak: user.stats.currentStreak || 0,

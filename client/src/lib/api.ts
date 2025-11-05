@@ -335,4 +335,51 @@ export const badgeAPI = {
     }
 };
 
+// Recruiter API functions
+export const recruiterAPI = {
+    // Get trending skills
+    getTrendingSkills: async (options?: { limit?: number; days?: number }) => {
+        const params = new URLSearchParams();
+        if (options?.limit) params.append('limit', String(options.limit));
+        if (options?.days) params.append('days', String(options.days));
+
+        const response = await api.get(`/recruiter/trending-skills${params.toString() ? '?' + params.toString() : ''}`);
+        return response.data;
+    },
+
+    // Get active learners statistics
+    getActiveLearners: async (options?: { weeks?: number }) => {
+        const params = new URLSearchParams();
+        if (options?.weeks) params.append('weeks', String(options.weeks));
+
+        const response = await api.get(`/recruiter/active-learners${params.toString() ? '?' + params.toString() : ''}`);
+        return response.data;
+    },
+
+    // Get top candidates
+    getTopCandidates: async (options?: {
+        limit?: number;
+        minLevel?: number;
+        league?: string;
+        skill?: string;
+        sortBy?: 'xp' | 'level' | 'streak';
+    }) => {
+        const params = new URLSearchParams();
+        if (options?.limit) params.append('limit', String(options.limit));
+        if (options?.minLevel) params.append('minLevel', String(options.minLevel));
+        if (options?.league) params.append('league', options.league);
+        if (options?.skill) params.append('skill', options.skill);
+        if (options?.sortBy) params.append('sortBy', options.sortBy);
+
+        const response = await api.get(`/recruiter/top-candidates${params.toString() ? '?' + params.toString() : ''}`);
+        return response.data;
+    },
+
+    // Get recruiter dashboard overview
+    getOverview: async () => {
+        const response = await api.get('/recruiter/overview');
+        return response.data;
+    }
+};
+
 export default api;
