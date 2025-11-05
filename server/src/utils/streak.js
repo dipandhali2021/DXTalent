@@ -121,21 +121,45 @@ export function updateStreak(user, completionDate = new Date()) {
  * Get activity data for a date range (for heatmap)
  * @param {Map} dailyActivity - User's daily activity map
  * @param {number} days - Number of days to retrieve (default 365)
+ * @param {number} month - Optional month (0-11) for monthly view
+ * @param {number} year - Optional year for monthly view
  * @returns {Array} Array of {date, count} objects
  */
-export function getActivityData(dailyActivity, days = 365) {
+export function getActivityData(
+  dailyActivity,
+  days = 365,
+  month = null,
+  year = null
+) {
   const result = [];
-  const today = new Date();
 
-  for (let i = days - 1; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
-    const dateStr = getDateString(date);
+  // If month and year are provided, get data for that specific month
+  if (month !== null && year !== null) {
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    result.push({
-      date: dateStr,
-      count: dailyActivity?.get(dateStr) || 0,
-    });
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      const dateStr = getDateString(date);
+
+      result.push({
+        date: dateStr,
+        count: dailyActivity?.get(dateStr) || 0,
+      });
+    }
+  } else {
+    // Default behavior: last N days
+    const today = new Date();
+
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateStr = getDateString(date);
+
+      result.push({
+        date: dateStr,
+        count: dailyActivity?.get(dateStr) || 0,
+      });
+    }
   }
 
   return result;

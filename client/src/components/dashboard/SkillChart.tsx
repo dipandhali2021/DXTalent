@@ -21,14 +21,15 @@ interface SkillData {
   proficiency: number;
 }
 
-interface WeeklyXP {
-  week: string;
+interface DailyXP {
+  day: string;
   xp: number;
+  date?: string;
 }
 
 interface SkillChartProps {
   skillData: SkillData[];
-  weeklyXP: WeeklyXP[];
+  weeklyXP: DailyXP[];
 }
 
 export const SkillChart = ({ skillData, weeklyXP }: SkillChartProps) => {
@@ -73,7 +74,7 @@ export const SkillChart = ({ skillData, weeklyXP }: SkillChartProps) => {
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={weeklyXP}>
               <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
-              <XAxis dataKey="week" />
+              <XAxis dataKey="day" />
               <YAxis />
               <Tooltip
                 contentStyle={{

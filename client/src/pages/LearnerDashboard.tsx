@@ -22,12 +22,30 @@ const LearnerDashboard = () => {
   const [currentStreak, setCurrentStreak] = useState(0);
   const [longestStreak, setLongestStreak] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [weeklyXP, setWeeklyXP] = useState<{ day: string; xp: number }[]>([]);
+  const [skillData, setSkillData] = useState<
+    { skill: string; proficiency: number }[]
+  >([]);
+  const [leaderboardData, setLeaderboardData] = useState<
+    Array<{
+      id: string;
+      username: string;
+      xp: number;
+      league: string;
+      rank: number;
+    }>
+  >([]);
 
-  // Fetch user activity data
+  // Fetch user activity data for selected month
   useEffect(() => {
     const fetchActivityData = async () => {
       try {
-        const response = await api.get('/lessons/activity?days=84'); // Last 12 weeks
+        setLoading(true);
+        const response = await api.get(
+          `/lessons/activity?month=${selectedMonth}&year=${selectedYear}`
+        );
         if (response.data.success) {
           setActivityData(response.data.data.activity);
           setCurrentStreak(response.data.data.currentStreak);
@@ -43,13 +61,72 @@ const LearnerDashboard = () => {
     };
 
     fetchActivityData();
+  }, [selectedMonth, selectedYear]);
+
+  // Fetch user statistics (weekly XP and skill proficiency)
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      try {
+        const response = await api.get('/lessons/user-stats');
+        if (response.data.success) {
+          setWeeklyXP(response.data.data.weeklyXP);
+          setSkillData(response.data.data.skillData);
+        }
+      } catch (error) {
+        console.error('Error fetching user stats:', error);
+        // Set default data on error
+        setWeeklyXP([
+          { day: 'Sun', xp: 0 },
+          { day: 'Mon', xp: 0 },
+          { day: 'Tue', xp: 0 },
+          { day: 'Wed', xp: 0 },
+          { day: 'Thu', xp: 0 },
+          { day: 'Fri', xp: 0 },
+          { day: 'Sat', xp: 0 },
+        ]);
+        setSkillData([
+          { skill: 'Business', proficiency: 0 },
+          { skill: 'Marketing', proficiency: 0 },
+          { skill: 'Development', proficiency: 0 },
+          { skill: 'Design', proficiency: 0 },
+          { skill: 'Data', proficiency: 0 },
+        ]);
+      }
+    };
+
+    fetchUserStats();
+  }, []);
+
+  // Fetch leaderboard data (top 5 users)
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const response = await api.get('/leaderboard?limit=5');
+        if (response.data.success) {
+          const topUsers = response.data.data.leaderboard.map((user: any) => ({
+            id: user.id,
+            username: user.username,
+            xp: user.xp,
+            league: user.league,
+            rank: user.rank,
+          }));
+          setLeaderboardData(topUsers);
+        }
+      } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+        // Set empty leaderboard on error
+        setLeaderboardData([]);
+      }
+    };
+
+    fetchLeaderboard();
   }, []);
 
   // Mock data - Replace with real data from API
   const mockData = {
     overview: {
       xp: (user as any)?.stats?.xpPoints || 0,
-      league: 'Gold',
+      league: (user as any)?.stats?.league || 'bronze',
       streak: currentStreak,
       badges: 8,
     },
@@ -162,7 +239,7 @@ const LearnerDashboard = () => {
           className="space-y-2"
         >
           <h1 className="text-4xl md:text-5xl font-bold">
-            Welcome back, Learner! 🎓
+            Welcome back, {user?.username || 'Learner'}! 🎓
           </h1>
           <p className="text-lg text-muted-foreground">
             Keep crushing those goals!
@@ -207,7 +284,7 @@ const LearnerDashboard = () => {
                 <div className="w-12 h-12 bg-accent border-[3px] border-border rounded-full mx-auto mb-3 flex items-center justify-center">
                   <Trophy className="w-6 h-6 text-accent-foreground" />
                 </div>
-                <p className="font-handwritten text-3xl font-bold">
+                <p className="font-handwritten text-3xl font-bold capitalize">
                   {mockData.overview.league}
                 </p>
                 <p className="font-handwritten text-muted-foreground">League</p>
@@ -306,10 +383,7 @@ const LearnerDashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <SkillChart
-            skillData={mockData.skillData}
-            weeklyXP={mockData.weeklyXP}
-          />
+          <SkillChart skillData={skillData} weeklyXP={weeklyXP} />
         </motion.div>
 
         {/* Streak Heatmap */}
@@ -325,7 +399,15 @@ const LearnerDashboard = () => {
               </CardContent>
             </Card>
           ) : (
-            <StreakHeatmap activityData={activityData} />
+            <StreakHeatmap
+              activityData={activityData}
+              initialMonth={selectedMonth}
+              initialYear={selectedYear}
+              onMonthChange={(month, year) => {
+                setSelectedMonth(month);
+                setSelectedYear(year);
+              }}
+            />
           )}
         </motion.div>
 
@@ -338,7 +420,11 @@ const LearnerDashboard = () => {
         >
           <ChallengeCard challenges={mockData.challenges} />
           <LeaderboardCard
-            users={mockData.leaderboard}
+            users={
+              leaderboardData.length > 0
+                ? leaderboardData
+                : mockData.leaderboard
+            }
             currentUserId={user?.id}
             onViewFull={() => navigate('/leaderboard')}
           />

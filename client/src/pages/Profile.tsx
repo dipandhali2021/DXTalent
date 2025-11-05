@@ -279,7 +279,13 @@ const Profile = () => {
                 <CardDescription className="font-handwritten text-lg">
                   Level{' '}
                   {isOwnProfile ? user?.stats.level : publicUser?.stats?.level}{' '}
-                  {roleBadge.label}
+                  •{' '}
+                  <span className="capitalize">
+                    {isOwnProfile
+                      ? user?.stats.league
+                      : publicUser?.stats?.league}
+                  </span>{' '}
+                  League {roleBadge.label}
                   {!isOwnProfile && publicUser?.isEmailVerified === false ? (
                     <span className="block text-yellow-600 mt-1">
                       ⚠️ Email not verified

@@ -601,12 +601,12 @@ const getLessonCompletionStatus = async (req, res) => {
 
 /**
  * Get user's daily activity for heatmap
- * GET /api/lessons/activity
+ * GET /api/lessons/activity?days=365 or ?month=0&year=2024
  */
 const getUserActivity = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { days = 365 } = req.query;
+    const { days = 365, month, year } = req.query;
 
     const User = (await import('../models/User.js')).default;
     const user = await User.findById(userId);
@@ -618,8 +618,18 @@ const getUserActivity = async (req, res) => {
       });
     }
 
-    // Get activity data for the specified number of days
-    const activityData = getActivityData(user.dailyActivity, parseInt(days));
+    // Get activity data - either for specific month/year or last N days
+    let activityData;
+    if (month !== undefined && year !== undefined) {
+      activityData = getActivityData(
+        user.dailyActivity,
+        parseInt(days),
+        parseInt(month),
+        parseInt(year)
+      );
+    } else {
+      activityData = getActivityData(user.dailyActivity, parseInt(days));
+    }
 
     res.status(200).json({
       success: true,
@@ -640,6 +650,157 @@ const getUserActivity = async (req, res) => {
   }
 };
 
+/**
+ * Get user statistics including weekly XP and skill proficiency
+ * GET /api/lessons/user-stats
+ */
+const getUserStats = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const User = (await import('../models/User.js')).default;
+    const LessonCompletion = (await import('../models/LessonCompletion.js'))
+      .default;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Calculate daily XP for the current week (Sun - Sat)
+    const dailyXP = [];
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 6 = Saturday
+
+    // Calculate the start of the current week (Sunday)
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - dayOfWeek);
+    weekStart.setHours(0, 0, 0, 0);
+
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    for (let i = 0; i < 7; i++) {
+      const dayDate = new Date(weekStart);
+      dayDate.setDate(weekStart.getDate() + i);
+      const dayEnd = new Date(dayDate);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      // Get all completions for this specific day
+      const completions = await LessonCompletion.find({
+        userId,
+        lastCompletionDate: { $gte: dayDate, $lte: dayEnd },
+      });
+
+      let dayXP = 0;
+      completions.forEach((completion) => {
+        completion.completions.forEach((comp) => {
+          const compDate = new Date(comp.completedAt);
+          // Check if completion falls on this specific day
+          if (
+            compDate.getFullYear() === dayDate.getFullYear() &&
+            compDate.getMonth() === dayDate.getMonth() &&
+            compDate.getDate() === dayDate.getDate()
+          ) {
+            dayXP += comp.xpEarned || 0;
+            console.log(
+              `Found completion on ${dayNames[i]}: ${comp.xpEarned} XP`
+            );
+          }
+        });
+      });
+
+      console.log(
+        `Total XP for ${dayNames[i]} (${
+          dayDate.toISOString().split('T')[0]
+        }): ${dayXP}`
+      );
+
+      dailyXP.push({
+        day: dayNames[i],
+        xp: dayXP,
+        date: dayDate.toISOString().split('T')[0],
+      });
+    }
+
+    console.log('Final dailyXP array:', dailyXP);
+
+    // Calculate skill proficiency based on completed lessons by category
+    const completions = await LessonCompletion.find({ userId })
+      .populate('lessonId')
+      .lean();
+
+    const categoryStats = new Map();
+
+    for (const completion of completions) {
+      if (completion.lessonId && completion.lessonId.category) {
+        const category = completion.lessonId.category;
+
+        if (!categoryStats.has(category)) {
+          categoryStats.set(category, {
+            count: 0,
+            totalAccuracy: 0,
+          });
+        }
+
+        const stats = categoryStats.get(category);
+        stats.count += 1;
+        stats.totalAccuracy += completion.bestScore.accuracy || 0;
+      }
+    }
+
+    // Convert to skill proficiency (0-100 scale)
+    const skillData = [];
+    const mainCategories = [
+      'Business',
+      'Marketing',
+      'Development',
+      'Design',
+      'Data',
+    ];
+
+    mainCategories.forEach((category) => {
+      const stats = categoryStats.get(category);
+      let proficiency = 0;
+
+      if (stats) {
+        // Proficiency based on: (average accuracy * 0.7) + (lesson count * 3)
+        // Max proficiency is 100
+        const avgAccuracy = stats.totalAccuracy / stats.count;
+        proficiency = Math.min(
+          100,
+          Math.round(avgAccuracy * 0.7 + stats.count * 3)
+        );
+      }
+
+      skillData.push({
+        skill: category,
+        proficiency,
+      });
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        weeklyXP: dailyXP,
+        skillData,
+        totalXP: user.stats.xpPoints || 0,
+        completedLessons: completions.length,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching user stats:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch user statistics',
+      error: error.message,
+    });
+  }
+};
+
 export {
   generateLessonStructure,
   generatePlaceholderContent,
@@ -650,4 +811,5 @@ export {
   completeLesson,
   getLessonCompletionStatus,
   getUserActivity,
+  getUserStats,
 };

@@ -78,7 +78,7 @@ export const LeaderboardCard = ({
             <div className="flex-1 min-w-0">
               <div className="font-bold truncate">{user.username}</div>
               <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-xs capitalize">
                   {user.league}
                 </Badge>
               </div>

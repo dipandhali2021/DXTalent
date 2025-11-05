@@ -10,6 +10,7 @@ import {
   completeLesson,
   getLessonCompletionStatus,
   getUserActivity,
+  getUserStats,
 } from '../controllers/lessonController.js';
 import {
   validateGenerateLessonStructure,
@@ -43,6 +44,9 @@ router.post(
 
 // GET /api/lessons/stats - Get lesson statistics for user
 router.get('/stats', authenticate, getLessonStats);
+
+// GET /api/lessons/user-stats - Get user statistics (weekly XP, skill proficiency)
+router.get('/user-stats', authenticate, getUserStats);
 
 // GET /api/lessons/activity - Get user's daily activity for heatmap
 router.get('/activity', authenticate, getUserActivity);
