@@ -50,11 +50,10 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
         ];
       default:
         return [
+          { to: '/dashboard', icon: Trophy, label: 'Dashboard' },
           { to: '/lessons', icon: BookOpen, label: 'Lessons' },
           { to: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
           { to: '/profile', icon: User, label: 'Profile' },
-          { to: '/#', icon: Settings, label: 'Settings' },
-          { to: '/dashboard', icon: Trophy, label: 'Dashboard' },
         ];
     }
   };

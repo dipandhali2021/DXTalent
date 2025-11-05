@@ -393,12 +393,6 @@ const LearnerDashboard = () => {
                 Browse Lessons
               </Button>
             </Link>
-            <Link to="/test">
-              <Button variant="outline-brutal" size="lg" className="gap-2">
-                <Trophy className="w-5 h-5" />
-                Take a Test
-              </Button>
-            </Link>
           </div>
         </motion.div>
 
@@ -691,20 +685,6 @@ const LearnerDashboard = () => {
             onViewFull={() => navigate('/leaderboard')}
           />
         </motion.div>
-
-        {/* Additional AI Lesson Suggestions - Show only if we have the mock data or hide it */}
-        {mockData.aiSuggestions.length > 0 && !aiRecommendation && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <AILessonSuggestions
-              suggestions={mockData.aiSuggestions}
-              onStartLesson={(id) => navigate(`/lesson/${id}`)}
-            />
-          </motion.div>
-        )}
       </main>
     </div>
   );
