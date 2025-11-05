@@ -3,15 +3,15 @@
 <div align="center">
 
 ![DXTalent Banner](https://img.shields.io/badge/DXTalent-Learning_Platform-blue?style=for-the-badge)
-[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 [![Node](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
 [![React](https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org)
 [![MongoDB](https://img.shields.io/badge/MongoDB-6+-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Run in Postman](https://run.pstmn.io/button.svg)](docs/DXTalent_Complete_API_Collection.postman_collection.json)
 
 **A modern, gamified learning platform with AI-powered lesson generation, real-time leaderboards, and comprehensive progress tracking.**
 
-[🚀 Live Demo](#) • [📖 Documentation](docs/) • [🐛 Report Bug](#) • [✨ Request Feature](#)
+[🚀 Live Demo](#) • [� Postman Collection](docs/DXTalent_Complete_API_Collection.postman_collection.json)
 
 </div>
 

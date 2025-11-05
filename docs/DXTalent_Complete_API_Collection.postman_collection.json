@@ -1,0 +1,1844 @@
+{
+  "info": {
+    "_postman_id": "dxtalent-api-2024",
+    "name": "DXTalent Complete API Collection",
+    "description": "Complete API collection for DXTalent platform with all routes including Auth, Lessons, Leaderboard, Challenges, Badges, Recruiter, Subscriptions, and Admin endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "dxtalent-2024"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Check if the server is running"
+          },
+          "response": []
+        },
+        {
+          "name": "Root Endpoint",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"]
+            },
+            "description": "Get API server information and available endpoints"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.user) {",
+                  "        pm.environment.set('userId', jsonData.data.user.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"Test@123456\",\n  \"role\": \"user\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a new user account"
+          },
+          "response": []
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.accessToken) {",
+                  "        pm.environment.set('accessToken', jsonData.data.accessToken);",
+                  "    }",
+                  "    if (jsonData.data && jsonData.data.refreshToken) {",
+                  "        pm.environment.set('refreshToken', jsonData.data.refreshToken);",
+                  "    }",
+                  "    if (jsonData.data && jsonData.data.user) {",
+                  "        pm.environment.set('userId', jsonData.data.user.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"Test@123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login with email/username and password"
+          },
+          "response": []
+        },
+        {
+          "name": "Google Authentication",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tokenId\": \"google_token_here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/google",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "google"]
+            },
+            "description": "Authenticate using Google OAuth"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify/:token",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verify", ":token"],
+              "variable": [
+                {
+                  "key": "token",
+                  "value": "verification_token_here"
+                }
+              ]
+            },
+            "description": "Verify user email with verification token"
+          },
+          "response": []
+        },
+        {
+          "name": "Resend Verification Email",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/resend-verification",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "resend-verification"]
+            },
+            "description": "Resend email verification"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Access Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.accessToken) {",
+                  "        pm.environment.set('accessToken', jsonData.data.accessToken);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "refresh"]
+            },
+            "description": "Get new access token using refresh token"
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "forgot-password"]
+            },
+            "description": "Request password reset email"
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset_token_here\",\n  \"password\": \"NewPassword@123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "reset-password"]
+            },
+            "description": "Reset password with token from email"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Get authenticated user's profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User By ID",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/users/:userId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "users", ":userId"],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            },
+            "description": "Get user's public profile (optional auth for email visibility)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"newusername\",\n  \"bio\": \"Updated bio\",\n  \"avatar\": \"https://example.com/avatar.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "profile"]
+            },
+            "description": "Update user profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Role (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"recruiter\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/users/:userId/role",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "users", ":userId", "role"],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            },
+            "description": "Update user role (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Logout user and invalidate tokens"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Lessons",
+      "item": [
+        {
+          "name": "Generate Lesson Structure",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.lessons && jsonData.data.lessons.length > 0) {",
+                  "        pm.environment.set('lessonId', jsonData.data.lessons[0]._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topic\": \"JavaScript Fundamentals\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", "generate"]
+            },
+            "description": "Generate initial lesson structure with 3 full lessons and 7 placeholders"
+          },
+          "response": []
+        },
+        {
+          "name": "Test Generate (No Auth)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topic\": \"Python Basics\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/test-generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", "test-generate"]
+            },
+            "description": "Test lesson generation endpoint without authentication"
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Placeholder Content",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/:lessonId/generate-content",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", ":lessonId", "generate-content"],
+              "variable": [
+                {
+                  "key": "lessonId",
+                  "value": "{{lessonId}}"
+                }
+              ]
+            },
+            "description": "Generate content for a placeholder lesson"
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Lesson Test",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.test) {",
+                  "        pm.environment.set('testId', jsonData.data.test._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/:lessonId/generate-test",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", ":lessonId", "generate-test"],
+              "variable": [
+                {
+                  "key": "lessonId",
+                  "value": "{{lessonId}}"
+                }
+              ]
+            },
+            "description": "Generate a test for a specific lesson"
+          },
+          "response": []
+        },
+        {
+          "name": "Submit Test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": [\n    {\n      \"questionIndex\": 0,\n      \"selectedOption\": \"A\"\n    },\n    {\n      \"questionIndex\": 1,\n      \"selectedOption\": \"B\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/tests/:testId/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", "tests", ":testId", "submit"],
+              "variable": [
+                {
+                  "key": "testId",
+                  "value": "{{testId}}"
+                }
+              ]
+            },
+            "description": "Submit test answers and get results"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Test Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/:lessonId/test-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", ":lessonId", "test-status"],
+              "variable": [
+                {
+                  "key": "lessonId",
+                  "value": "{{lessonId}}"
+                }
+              ]
+            },
+            "description": "Get test status for a lesson"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All User Lessons",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons?topic=JavaScript&difficulty=Beginner&status=completed&limit=10&page=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons"],
+              "query": [
+                {
+                  "key": "topic",
+                  "value": "JavaScript",
+                  "description": "Filter by topic"
+                },
+                {
+                  "key": "difficulty",
+                  "value": "Beginner",
+                  "description": "Filter by difficulty level"
+                },
+                {
+                  "key": "status",
+                  "value": "completed",
+                  "description": "Filter by status"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of results per page"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                }
+              ]
+            },
+            "description": "Get all lessons for authenticated user with optional filters"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Lesson By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/:lessonId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", ":lessonId"],
+              "variable": [
+                {
+                  "key": "lessonId",
+                  "value": "{{lessonId}}"
+                }
+              ]
+            },
+            "description": "Get a single lesson with full content"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Lesson Completion Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/:lessonId/completion-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", ":lessonId", "completion-status"],
+              "variable": [
+                {
+                  "key": "lessonId",
+                  "value": "{{lessonId}}"
+                }
+              ]
+            },
+            "description": "Check if lesson was completed before"
+          },
+          "response": []
+        },
+        {
+          "name": "Complete Lesson",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"timeSpent\": 1800,\n  \"practiceCompleted\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/:lessonId/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", ":lessonId", "complete"],
+              "variable": [
+                {
+                  "key": "lessonId",
+                  "value": "{{lessonId}}"
+                }
+              ]
+            },
+            "description": "Mark lesson as complete and update user XP"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Lesson",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/:lessonId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", ":lessonId"],
+              "variable": [
+                {
+                  "key": "lessonId",
+                  "value": "{{lessonId}}"
+                }
+              ]
+            },
+            "description": "Delete a lesson"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Lesson Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", "stats"]
+            },
+            "description": "Get lesson statistics for user"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/user-stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", "user-stats"]
+            },
+            "description": "Get user statistics (weekly XP, skill proficiency)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get AI Recommendation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/ai-recommendation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", "ai-recommendation"]
+            },
+            "description": "Get AI-powered lesson recommendation for today"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Continue Journey",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/continue-journey",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", "continue-journey"]
+            },
+            "description": "Get next lesson to continue based on last completed"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Activity",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/activity",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", "activity"]
+            },
+            "description": "Get user's daily activity for heatmap"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Leaderboard",
+      "item": [
+        {
+          "name": "Get Global Leaderboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/leaderboard?timeframe=monthly&league=gold&limit=50&page=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaderboard"],
+              "query": [
+                {
+                  "key": "timeframe",
+                  "value": "monthly",
+                  "description": "weekly, monthly, or all-time"
+                },
+                {
+                  "key": "league",
+                  "value": "gold",
+                  "description": "Filter by league (bronze, silver, gold, platinum, diamond)"
+                },
+                {
+                  "key": "limit",
+                  "value": "50",
+                  "description": "Number of results per page"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                }
+              ]
+            },
+            "description": "Get global leaderboard with filters"
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Rank",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/leaderboard/my-rank",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaderboard", "my-rank"]
+            },
+            "description": "Get current user's rank and nearby users"
+          },
+          "response": []
+        },
+        {
+          "name": "Get League Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/leaderboard/league-stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaderboard", "league-stats"]
+            },
+            "description": "Get statistics for all leagues"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Leaderboard Insights",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/leaderboard/insights",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaderboard", "insights"]
+            },
+            "description": "Get AI-powered insights for current user"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Skill Leaderboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/leaderboard/skills/:skill",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaderboard", "skills", ":skill"],
+              "variable": [
+                {
+                  "key": "skill",
+                  "value": "JavaScript",
+                  "description": "Skill name"
+                }
+              ]
+            },
+            "description": "Get skill-specific leaderboard"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Challenges",
+      "item": [
+        {
+          "name": "Get Daily Challenges",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/challenges/daily",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "challenges", "daily"]
+            },
+            "description": "Get daily challenges for user"
+          },
+          "response": []
+        },
+        {
+          "name": "Claim Challenge Reward",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/challenges/:challengeId/claim",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "challenges", ":challengeId", "claim"],
+              "variable": [
+                {
+                  "key": "challengeId",
+                  "value": "challenge_id_here"
+                }
+              ]
+            },
+            "description": "Claim challenge reward"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Badges",
+      "item": [
+        {
+          "name": "Get All Badges",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/badges",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "badges"]
+            },
+            "description": "Get all badges with progress for authenticated user"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Unclaimed Badges",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/badges/unclaimed",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "badges", "unclaimed"]
+            },
+            "description": "Get unclaimed badges for user"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Badge Configuration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/badges/config",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "badges", "config"]
+            },
+            "description": "Get badge configuration and definitions"
+          },
+          "response": []
+        },
+        {
+          "name": "Claim Badge",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/badges/:badgeId/claim",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "badges", ":badgeId", "claim"],
+              "variable": [
+                {
+                  "key": "badgeId",
+                  "value": "first_lesson"
+                }
+              ]
+            },
+            "description": "Claim a specific badge"
+          },
+          "response": []
+        },
+        {
+          "name": "Check for New Badges",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/badges/check",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "badges", "check"]
+            },
+            "description": "Check for newly earned badges"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Recruiter",
+      "item": [
+        {
+          "name": "Get Recruiter Overview",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/recruiter/overview",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "recruiter", "overview"]
+            },
+            "description": "Get recruiter dashboard overview (Recruiter/Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Trending Skills",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/recruiter/trending-skills?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "recruiter", "trending-skills"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of skills to return"
+                }
+              ]
+            },
+            "description": "Get trending skills being learned (Recruiter/Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Active Learners",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/recruiter/active-learners?period=7",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "recruiter", "active-learners"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "7",
+                  "description": "Number of days to look back"
+                }
+              ]
+            },
+            "description": "Get active learners statistics (Recruiter/Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Top Candidates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/recruiter/top-candidates?skill=JavaScript&minXP=1000&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "recruiter", "top-candidates"],
+              "query": [
+                {
+                  "key": "skill",
+                  "value": "JavaScript",
+                  "description": "Filter by skill"
+                },
+                {
+                  "key": "minXP",
+                  "value": "1000",
+                  "description": "Minimum XP required"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of candidates"
+                }
+              ]
+            },
+            "description": "Get top candidates based on criteria (Recruiter/Admin only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Subscriptions",
+      "item": [
+        {
+          "name": "Create Checkout Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.sessionId) {",
+                  "        pm.environment.set('sessionId', jsonData.data.sessionId);",
+                  "    }",
+                  "    if (jsonData.data && jsonData.data.url) {",
+                  "        console.log('Checkout URL:', jsonData.data.url);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"priceId\": \"price_1234567890\",\n  \"planType\": \"pro\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/subscription/checkout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscription", "checkout"]
+            },
+            "description": "Create Stripe checkout session for subscription"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/subscription/verify-session",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscription", "verify-session"]
+            },
+            "description": "Verify checkout session after payment"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Subscription Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscription/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscription", "status"]
+            },
+            "description": "Get current subscription status"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/subscription/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscription", "cancel"]
+            },
+            "description": "Cancel active subscription"
+          },
+          "response": []
+        },
+        {
+          "name": "Stripe Webhook",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "stripe-signature",
+                "value": "webhook_signature_here"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/subscription/webhook",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscription", "webhook"]
+            },
+            "description": "Stripe webhook endpoint (for Stripe events only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Seed",
+      "item": [
+        {
+          "name": "Seed Default Lessons",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/seed/default-lessons",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "seed", "default-lessons"]
+            },
+            "description": "Seed default lessons if user has none"
+          },
+          "response": []
+        },
+        {
+          "name": "Reset and Reseed Lessons",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/seed/reset-lessons",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "seed", "reset-lessons"]
+            },
+            "description": "Reset and reseed all lessons (use with caution)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Dashboard",
+          "item": [
+            {
+              "name": "Get Dashboard Stats",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/dashboard/stats",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "dashboard", "stats"]
+                },
+                "description": "Get overall dashboard statistics (Admin only)"
+              },
+              "response": []
+            },
+            {
+              "name": "Get User Growth",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/dashboard/user-growth?period=30",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "dashboard", "user-growth"],
+                  "query": [
+                    {
+                      "key": "period",
+                      "value": "30",
+                      "description": "Number of days"
+                    }
+                  ]
+                },
+                "description": "Get user growth data (Admin only)"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Revenue Data",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/dashboard/revenue?period=30",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "dashboard", "revenue"],
+                  "query": [
+                    {
+                      "key": "period",
+                      "value": "30",
+                      "description": "Number of days"
+                    }
+                  ]
+                },
+                "description": "Get revenue data (Admin only)"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Recent Users",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/dashboard/recent-users?limit=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "dashboard", "recent-users"],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "10",
+                      "description": "Number of users"
+                    }
+                  ]
+                },
+                "description": "Get recently registered users (Admin only)"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Top Lessons",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/dashboard/top-lessons?limit=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "dashboard", "top-lessons"],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "10",
+                      "description": "Number of lessons"
+                    }
+                  ]
+                },
+                "description": "Get most popular lessons (Admin only)"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "User Management",
+          "item": [
+            {
+              "name": "Get All Users",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/users?page=1&limit=20&role=user&status=active&search=username",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "users"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1",
+                      "description": "Page number"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20",
+                      "description": "Results per page"
+                    },
+                    {
+                      "key": "role",
+                      "value": "user",
+                      "description": "Filter by role"
+                    },
+                    {
+                      "key": "status",
+                      "value": "active",
+                      "description": "Filter by account status"
+                    },
+                    {
+                      "key": "search",
+                      "value": "username",
+                      "description": "Search by username or email"
+                    }
+                  ]
+                },
+                "description": "Get all users with filters and pagination (Admin only)"
+              },
+              "response": []
+            },
+            {
+              "name": "Get User Details",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/users/:userId",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "users", ":userId"],
+                  "variable": [
+                    {
+                      "key": "userId",
+                      "value": "{{userId}}"
+                    }
+                  ]
+                },
+                "description": "Get detailed user information (Admin only)"
+              },
+              "response": []
+            },
+            {
+              "name": "Update User",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"newusername\",\n  \"email\": \"newemail@example.com\",\n  \"xp\": 5000,\n  \"level\": 10\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/users/:userId",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "users", ":userId"],
+                  "variable": [
+                    {
+                      "key": "userId",
+                      "value": "{{userId}}"
+                    }
+                  ]
+                },
+                "description": "Update user information (Admin only)"
+              },
+              "response": []
+            },
+            {
+              "name": "Update User Role",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role\": \"recruiter\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/users/:userId/role",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "users", ":userId", "role"],
+                  "variable": [
+                    {
+                      "key": "userId",
+                      "value": "{{userId}}"
+                    }
+                  ]
+                },
+                "description": "Update user role (Admin only)"
+              },
+              "response": []
+            },
+            {
+              "name": "Suspend User",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"Violation of terms\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/users/:userId/suspend",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "users", ":userId", "suspend"],
+                  "variable": [
+                    {
+                      "key": "userId",
+                      "value": "{{userId}}"
+                    }
+                  ]
+                },
+                "description": "Suspend user account (Admin only)"
+              },
+              "response": []
+            },
+            {
+              "name": "Activate User",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/users/:userId/activate",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "users", ":userId", "activate"],
+                  "variable": [
+                    {
+                      "key": "userId",
+                      "value": "{{userId}}"
+                    }
+                  ]
+                },
+                "description": "Activate suspended user account (Admin only)"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete User",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/users/:userId",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "users", ":userId"],
+                  "variable": [
+                    {
+                      "key": "userId",
+                      "value": "{{userId}}"
+                    }
+                  ]
+                },
+                "description": "Delete user account permanently (Admin only)"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Analytics",
+          "item": [
+            {
+              "name": "Get Analytics",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/analytics?startDate=2024-01-01&endDate=2024-12-31",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "analytics"],
+                  "query": [
+                    {
+                      "key": "startDate",
+                      "value": "2024-01-01",
+                      "description": "Start date (YYYY-MM-DD)"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "2024-12-31",
+                      "description": "End date (YYYY-MM-DD)"
+                    }
+                  ]
+                },
+                "description": "Get comprehensive analytics (Admin only)"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Payment Management",
+          "item": [
+            {
+              "name": "Get All Payments",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/payments?page=1&limit=20&status=succeeded&startDate=2024-01-01&endDate=2024-12-31",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "payments"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1",
+                      "description": "Page number"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20",
+                      "description": "Results per page"
+                    },
+                    {
+                      "key": "status",
+                      "value": "succeeded",
+                      "description": "Filter by payment status"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "2024-01-01",
+                      "description": "Start date filter"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "2024-12-31",
+                      "description": "End date filter"
+                    }
+                  ]
+                },
+                "description": "Get all payments with filters (Admin only)"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Payment Stats",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/payments/stats",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "payments", "stats"]
+                },
+                "description": "Get payment statistics (Admin only)"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Payment Details",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/payments/:paymentId",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "payments", ":paymentId"],
+                  "variable": [
+                    {
+                      "key": "paymentId",
+                      "value": "payment_id_here"
+                    }
+                  ]
+                },
+                "description": "Get detailed payment information (Admin only)"
+              },
+              "response": []
+            },
+            {
+              "name": "Process Refund",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": 2999,\n  \"reason\": \"Customer request\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/payments/:paymentId/refund",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "payments", ":paymentId", "refund"],
+                  "variable": [
+                    {
+                      "key": "paymentId",
+                      "value": "payment_id_here"
+                    }
+                  ]
+                },
+                "description": "Process payment refund (Admin only)"
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "lessonId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
