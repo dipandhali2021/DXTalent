@@ -190,32 +190,36 @@ const getUserLessons = async (req, res) => {
       .select('-questions'); // Exclude questions for list view
 
     // Get completion status for all lessons
-    const LessonCompletion = (await import('../models/LessonCompletion.js')).default;
-    const lessonIds = lessons.map(lesson => lesson._id);
-    
+    const LessonCompletion = (await import('../models/LessonCompletion.js'))
+      .default;
+    const lessonIds = lessons.map((lesson) => lesson._id);
+
     const completions = await LessonCompletion.find({
       userId,
-      lessonId: { $in: lessonIds }
+      lessonId: { $in: lessonIds },
     });
 
     // Create a map of lesson completions
     const completionMap = new Map();
-    completions.forEach(completion => {
+    completions.forEach((completion) => {
       completionMap.set(completion.lessonId.toString(), {
         isCompleted: true,
         completionCount: completion.completionCount,
         bestScore: completion.bestScore,
-        lastCompletionDate: completion.lastCompletionDate
+        lastCompletionDate: completion.lastCompletionDate,
       });
     });
 
     // Add completion status to each lesson
-    const lessonsWithCompletion = lessons.map(lesson => {
+    const lessonsWithCompletion = lessons.map((lesson) => {
       const lessonObj = lesson.toObject();
       const completion = completionMap.get(lesson._id.toString());
       return {
         ...lessonObj,
-        completionStatus: completion || { isCompleted: false, completionCount: 0 }
+        completionStatus: completion || {
+          isCompleted: false,
+          completionCount: 0,
+        },
       };
     });
 
