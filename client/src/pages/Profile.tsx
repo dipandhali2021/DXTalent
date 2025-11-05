@@ -56,7 +56,9 @@ const Profile = () => {
   const [loadingBadges, setLoadingBadges] = useState(true);
   const [selectedBadge, setSelectedBadge] = useState<any>(null);
   const [badgeDialogOpen, setBadgeDialogOpen] = useState(false);
-  const [badgeFilter, setBadgeFilter] = useState<'all' | 'earned' | 'locked'>('all');
+  const [badgeFilter, setBadgeFilter] = useState<'all' | 'earned' | 'locked'>(
+    'all'
+  );
   const [checkingBadges, setCheckingBadges] = useState(false);
 
   useEffect(() => {
@@ -136,8 +138,12 @@ const Profile = () => {
       const response = await badgeAPI.checkBadges();
       if (response.success && response.data.newBadges.length > 0) {
         toast({
-          title: `🎉 ${response.data.newBadges.length} New Badge${response.data.newBadges.length > 1 ? 's' : ''} Earned!`,
-          description: response.data.newBadges.map((b: any) => `${b.badge.emoji} ${b.badge.name}`).join(', '),
+          title: `🎉 ${response.data.newBadges.length} New Badge${
+            response.data.newBadges.length > 1 ? 's' : ''
+          } Earned!`,
+          description: response.data.newBadges
+            .map((b: any) => `${b.badge.emoji} ${b.badge.name}`)
+            .join(', '),
         });
         // Refresh badges
         const badgesResponse = await badgeAPI.getAllBadges();
@@ -644,7 +650,9 @@ const Profile = () => {
                       onClick={handleCheckBadges}
                       disabled={checkingBadges}
                     >
-                      {checkingBadges ? '🔄 Checking...' : '🔍 Check for New Badges'}
+                      {checkingBadges
+                        ? '🔄 Checking...'
+                        : '🔍 Check for New Badges'}
                     </Button>
                   </div>
 

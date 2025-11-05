@@ -107,13 +107,17 @@ const checkBadgeCriteria = (user, badge) => {
     case 'early_completion':
       // Check if last lesson was completed before 9 AM
       if (!user.badgeStats.lastLessonCompletionDate) return false;
-      const hour = new Date(user.badgeStats.lastLessonCompletionDate).getHours();
+      const hour = new Date(
+        user.badgeStats.lastLessonCompletionDate
+      ).getHours();
       return hour < 9;
 
     case 'late_completion':
       // Check if last lesson was completed after 10 PM
       if (!user.badgeStats.lastLessonCompletionDate) return false;
-      const lateHour = new Date(user.badgeStats.lastLessonCompletionDate).getHours();
+      const lateHour = new Date(
+        user.badgeStats.lastLessonCompletionDate
+      ).getHours();
       return lateHour >= 22;
 
     case 'categories_explored':
@@ -132,7 +136,14 @@ const checkBadgeCriteria = (user, badge) => {
       );
 
     case 'league':
-      const leagues = ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'master'];
+      const leagues = [
+        'bronze',
+        'silver',
+        'gold',
+        'platinum',
+        'diamond',
+        'master',
+      ];
       const currentIndex = leagues.indexOf(user.stats.league);
       const requiredIndex = leagues.indexOf(value);
       return currentIndex >= requiredIndex;
@@ -153,7 +164,7 @@ const getUserBadgesWithProgress = async (userId) => {
     const badgesWithProgress = Object.values(BADGES).map((badge) => {
       const earned = hasBadge(user, badge.id);
       const earnedBadge = user.badges.find((b) => b.badgeId === badge.id);
-      
+
       let progress = 0;
       let current = 0;
       const target = badge.criteria.value;
@@ -193,19 +204,31 @@ const getUserBadgesWithProgress = async (userId) => {
             } else {
               // Calculate inverse progress (closer to target = higher progress)
               // e.g., if target is 10 and user is rank 50, show progress
-              current = Math.max(0, 100 - user.badgeStats.highestLeaderboardRank);
+              current = Math.max(
+                0,
+                100 - user.badgeStats.highestLeaderboardRank
+              );
             }
           }
           break;
         case 'league':
           // For league badges, show current league index vs target
-          const leagues = ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'master'];
+          const leagues = [
+            'bronze',
+            'silver',
+            'gold',
+            'platinum',
+            'diamond',
+            'master',
+          ];
           const currentLeagueIndex = leagues.indexOf(user.stats.league);
           const targetLeagueIndex = leagues.indexOf(target);
           current = currentLeagueIndex >= 0 ? currentLeagueIndex + 1 : 0;
           // target becomes the required league index + 1
           const leagueTarget = targetLeagueIndex + 1;
-          progress = earned ? 100 : Math.min((current / leagueTarget) * 100, 100);
+          progress = earned
+            ? 100
+            : Math.min((current / leagueTarget) * 100, 100);
           return {
             ...badge,
             earned,
@@ -297,7 +320,9 @@ const getUnclaimedBadges = async (userId) => {
     const unclaimed = user.badges
       .filter((b) => !b.claimed)
       .map((b) => {
-        const badgeConfig = Object.values(BADGES).find((badge) => badge.id === b.badgeId);
+        const badgeConfig = Object.values(BADGES).find(
+          (badge) => badge.id === b.badgeId
+        );
         return {
           ...badgeConfig,
           earnedAt: b.earnedAt,

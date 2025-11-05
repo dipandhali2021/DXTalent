@@ -256,7 +256,7 @@ const LearnerDashboard = () => {
     };
 
     fetchBadges();
-    
+
     // Check for new badge notifications
     checkForNewBadges();
   }, []);
@@ -851,7 +851,9 @@ const LearnerDashboard = () => {
                         </div>
                       </div>
                       <p className="font-handwritten text-sm text-yellow-700 italic">
-                        💡 Keep going! You're {selectedBadge.target - selectedBadge.current} away from earning this badge!
+                        💡 Keep going! You're{' '}
+                        {selectedBadge.target - selectedBadge.current} away from
+                        earning this badge!
                       </p>
                     </div>
                   )}

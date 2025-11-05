@@ -14,10 +14,7 @@ const migrateBadgeStats = async () => {
 
     console.log('🔄 Finding users without badge stats...');
     const users = await User.find({
-      $or: [
-        { badges: { $exists: false } },
-        { badgeStats: { $exists: false } },
-      ],
+      $or: [{ badges: { $exists: false } }, { badgeStats: { $exists: false } }],
     });
 
     console.log(`📊 Found ${users.length} users to migrate`);
@@ -68,13 +65,18 @@ const migrateBadgeStats = async () => {
         const lastCompletion = completions.sort(
           (a, b) => b.lastCompletionDate - a.lastCompletionDate
         )[0];
-        user.badgeStats.lastLessonCompletionDate = lastCompletion.lastCompletionDate;
+        user.badgeStats.lastLessonCompletionDate =
+          lastCompletion.lastCompletionDate;
       }
 
       await user.save();
       console.log(`✅ Migrated user: ${user.username}`);
-      console.log(`   - Lessons completed: ${user.badgeStats.lessonsCompletedTotal}`);
-      console.log(`   - Categories explored: ${user.badgeStats.categoriesExplored.length}`);
+      console.log(
+        `   - Lessons completed: ${user.badgeStats.lessonsCompletedTotal}`
+      );
+      console.log(
+        `   - Categories explored: ${user.badgeStats.categoriesExplored.length}`
+      );
       console.log(`   - Perfect tests: ${user.badgeStats.perfectTestsCount}`);
     }
 

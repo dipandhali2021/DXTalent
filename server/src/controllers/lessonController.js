@@ -497,28 +497,33 @@ const completeLesson = async (req, res) => {
     if (isFirstCompletion) {
       user.badgeStats.lessonsCompletedTotal += 1;
     }
-    
+
     // Track lessons completed today
     const today = new Date().toISOString().split('T')[0];
     const lastDate = user.badgeStats.lastLessonCompletionDate
-      ? new Date(user.badgeStats.lastLessonCompletionDate).toISOString().split('T')[0]
+      ? new Date(user.badgeStats.lastLessonCompletionDate)
+          .toISOString()
+          .split('T')[0]
       : null;
-    
+
     if (lastDate === today) {
       user.badgeStats.lessonsCompletedToday += 1;
     } else {
       user.badgeStats.lessonsCompletedToday = 1;
     }
-    
+
     user.badgeStats.lastLessonCompletionDate = new Date();
-    
+
     // Track perfect test scores
     if (accuracy === 100) {
       user.badgeStats.perfectTestsCount += 1;
     }
-    
+
     // Track categories explored
-    if (lesson.category && !user.badgeStats.categoriesExplored.includes(lesson.category)) {
+    if (
+      lesson.category &&
+      !user.badgeStats.categoriesExplored.includes(lesson.category)
+    ) {
       user.badgeStats.categoriesExplored.push(lesson.category);
     }
 

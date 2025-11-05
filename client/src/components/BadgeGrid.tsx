@@ -19,7 +19,11 @@ interface BadgeGridProps {
   compact?: boolean;
 }
 
-const BadgeGrid = ({ badges, onBadgeClick, compact = false }: BadgeGridProps) => {
+const BadgeGrid = ({
+  badges,
+  onBadgeClick,
+  compact = false,
+}: BadgeGridProps) => {
   const container = {
     hidden: { opacity: 0 },
     show: {

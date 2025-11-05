@@ -18,14 +18,20 @@ const awardAllEligibleBadges = async () => {
 
     for (const user of users) {
       console.log(`\n🔄 Checking badges for user: ${user.username}`);
-      console.log(`   Stats: ${user.badgeStats.lessonsCompletedTotal} lessons, ${user.stats.currentStreak} streak, ${user.stats.challengesCompleted} challenges`);
-      
+      console.log(
+        `   Stats: ${user.badgeStats.lessonsCompletedTotal} lessons, ${user.stats.currentStreak} streak, ${user.stats.challengesCompleted} challenges`
+      );
+
       const newBadges = await checkAndAwardBadges(user._id);
-      
+
       if (newBadges.length > 0) {
-        console.log(`✅ Awarded ${newBadges.length} new badges to ${user.username}:`);
+        console.log(
+          `✅ Awarded ${newBadges.length} new badges to ${user.username}:`
+        );
         newBadges.forEach((b) => {
-          console.log(`   - ${b.badge.emoji} ${b.badge.name} (+${b.badge.xpReward} XP)`);
+          console.log(
+            `   - ${b.badge.emoji} ${b.badge.name} (+${b.badge.xpReward} XP)`
+          );
         });
       } else {
         console.log(`   No new badges earned yet`);

@@ -11,7 +11,7 @@ const initializeLeaderboardRanks = async () => {
     console.log('✅ Connected to database');
 
     console.log('🔄 Calculating leaderboard ranks...');
-    
+
     // Get all users sorted by XP
     const users = await User.find({})
       .select('username stats badgeStats')
@@ -24,10 +24,15 @@ const initializeLeaderboardRanks = async () => {
       const rank = i + 1;
 
       // Set highest leaderboard rank
-      if (!user.badgeStats.highestLeaderboardRank || rank < user.badgeStats.highestLeaderboardRank) {
+      if (
+        !user.badgeStats.highestLeaderboardRank ||
+        rank < user.badgeStats.highestLeaderboardRank
+      ) {
         user.badgeStats.highestLeaderboardRank = rank;
         await user.save();
-        console.log(`✅ Set rank ${rank} for ${user.username} (${user.stats.xpPoints} XP)`);
+        console.log(
+          `✅ Set rank ${rank} for ${user.username} (${user.stats.xpPoints} XP)`
+        );
       }
     }
 

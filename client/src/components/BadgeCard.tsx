@@ -66,7 +66,9 @@ const BadgeCard = ({ badge, onClick, compact = false }: BadgeCardProps) => {
         whileTap={{ scale: 0.95 }}
         className={cn(
           'relative w-20 h-20 rounded-xl border-[3px] flex items-center justify-center text-4xl cursor-pointer transition-all',
-          isLocked ? 'bg-muted border-border opacity-50 grayscale' : `${rarityStyle.bg} ${rarityStyle.border}`,
+          isLocked
+            ? 'bg-muted border-border opacity-50 grayscale'
+            : `${rarityStyle.bg} ${rarityStyle.border}`,
           badge.earned && 'hover:shadow-lg shadow-md'
         )}
         onClick={onClick}
@@ -126,13 +128,17 @@ const BadgeCard = ({ badge, onClick, compact = false }: BadgeCardProps) => {
               ) : (
                 <motion.span
                   animate={badge.earned ? { rotate: [0, -10, 10, -10, 0] } : {}}
-                  transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 3 }}
+                  transition={{
+                    duration: 0.5,
+                    repeat: Infinity,
+                    repeatDelay: 3,
+                  }}
                 >
                   {badge.emoji}
                 </motion.span>
               )}
             </div>
-            
+
             {/* Rarity Badge */}
             <Badge
               variant="outline"
