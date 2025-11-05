@@ -9,6 +9,7 @@ import lessonRoutes from './routes/lessonRoutes.js';
 import seedRoutes from './routes/seedRoutes.js';
 import leaderboardRoutes from './routes/leaderboardRoutes.js';
 import challengeRoutes from './routes/challengeRoutes.js';
+import badgeRoutes from './routes/badgeRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -49,6 +50,7 @@ app.use('/api/lessons', lessonRoutes);
 app.use('/api/seed', seedRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/challenges', challengeRoutes);
+app.use('/api/badges', badgeRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {

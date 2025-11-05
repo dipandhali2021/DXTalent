@@ -137,6 +137,54 @@ const userSchema = new mongoose.Schema(
         default: null,
       },
     },
+    // Badges tracking
+    badges: [
+      {
+        badgeId: {
+          type: String,
+          required: true,
+        },
+        earnedAt: {
+          type: Date,
+          default: Date.now,
+        },
+        claimed: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    ],
+    // Badge statistics for tracking progress
+    badgeStats: {
+      lessonsCompletedTotal: {
+        type: Number,
+        default: 0,
+      },
+      lessonsCompletedToday: {
+        type: Number,
+        default: 0,
+      },
+      lastLessonCompletionDate: {
+        type: Date,
+        default: null,
+      },
+      perfectTestsCount: {
+        type: Number,
+        default: 0,
+      },
+      categoriesExplored: {
+        type: [String],
+        default: [],
+      },
+      streakRestored: {
+        type: Boolean,
+        default: false,
+      },
+      highestLeaderboardRank: {
+        type: Number,
+        default: null,
+      },
+    },
   },
   {
     timestamps: true,
