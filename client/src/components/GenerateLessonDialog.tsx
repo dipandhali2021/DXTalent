@@ -42,9 +42,10 @@ const GenerateLessonDialog = ({
       const response = await lessonAPI.generateLessonStructure(topic);
 
       if (response.success) {
+        const creditsRemaining = response.data.creditsRemaining;
         toast({
           title: 'Lessons generated! 🎉',
-          description: `Created ${response.data.fullyGenerated.length} lessons with ${response.data.placeholders.length} more coming soon.`,
+          description: `Created ${response.data.fullyGenerated.length} lessons with ${response.data.placeholders.length} more available. Used 1 credit. ${creditsRemaining} credits remaining.`,
         });
 
         setOpen(false);
@@ -119,7 +120,7 @@ const GenerateLessonDialog = ({
               <br />
               • 3 complete lessons ready immediately
               <br />
-              • 7 additional lessons (generate on-demand)
+              • 7 additional lessons (generate on-demand for 0.5 credit each)
               <br />
               • Lessons 1-4: Beginner level
               <br />
@@ -127,6 +128,17 @@ const GenerateLessonDialog = ({
               <br />
               • Lessons 8-10: Advanced level
               <br />• Progress tracking and XP rewards
+            </p>
+          </div>
+
+          {/* Credit Cost Info */}
+          <div className="bg-primary/10 brutal-border p-3 rounded-none">
+            <p className="text-sm font-handwritten">
+              <strong className="text-primary">💳 Cost: 1 Credit</strong>
+              <br />
+              <span className="text-xs text-muted-foreground">
+                Individual lesson generations cost 0.5 credit each
+              </span>
             </p>
           </div>
         </div>

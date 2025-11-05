@@ -50,7 +50,8 @@ const pricingTiers = [
       'Access to 50+ Pre-built Lessons',
       'Basic Leaderboard Access',
       'Earn Digital Badges',
-      '1 AI Lesson Generation per month',
+      '1 AI Credit per month',
+      '1 Topic (10 lessons) OR 2 individual lessons',
       'Community Forum Access',
     ],
     color: 'amber',
@@ -64,11 +65,12 @@ const pricingTiers = [
     description: 'Unlock advanced features',
     features: [
       'Everything in Learner',
-      '5 AI Lesson Generations per month',
+      '5 AI Credits per month',
+      '5 Topics OR 10 individual lessons (or mix)',
       'Advanced Analytics Dashboard',
       'Priority Support',
       'Custom Learning Paths',
-      'Add-on: +3 generations for $10',
+      'Add-on: +3 credits for $10',
     ],
     popular: true,
     color: 'blue',
@@ -314,6 +316,45 @@ const Subscription = () => {
           </p>
         </div>
 
+        {/* Credit System Explanation */}
+        {subscriptionStatus?.role === 'user' && (
+          <Card className="brutal-border brutal-shadow mb-8 bg-blue-50 dark:bg-blue-950/20">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <Zap className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="font-bold text-lg mb-2">
+                    💳 How AI Credits Work
+                  </h3>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p>
+                      • <strong>Generate Topic (10 lessons):</strong> 1 credit -
+                      Creates 3 complete lessons + 7 placeholders
+                    </p>
+                    <p>
+                      • <strong>Generate Individual Lesson:</strong> 0.5 credit
+                      - Generates questions for one placeholder lesson
+                    </p>
+                    <p>
+                      • <strong>First Test Generation:</strong> FREE - First
+                      test for each lesson is included
+                    </p>
+                    <p>
+                      • <strong>Regenerate Test (new questions):</strong> 0.5
+                      credit - Get fresh questions for practice
+                    </p>
+                    <p>
+                      • <strong>Example:</strong> With 5 credits, you can
+                      generate 5 topics OR 10 individual lessons OR 10 test
+                      regenerations OR any mix!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Current Plan Card */}
         {subscriptionStatus && (
           <Card className="brutal-border brutal-shadow mb-12 rotate-playful-1">
@@ -369,8 +410,13 @@ const Subscription = () => {
                             Used this month
                           </span>
                           <span className="text-sm font-bold">
-                            {subscriptionStatus.generationLimits.used} /{' '}
-                            {subscriptionStatus.generationLimits.total}
+                            {subscriptionStatus.generationLimits.used.toFixed(
+                              1
+                            )}{' '}
+                            /{' '}
+                            {subscriptionStatus.generationLimits.total.toFixed(
+                              1
+                            )}
                           </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-3">
@@ -387,14 +433,19 @@ const Subscription = () => {
                         </div>
                       </div>
                       <div className="text-2xl font-bold text-primary">
-                        {subscriptionStatus.generationLimits.remaining} left
+                        {subscriptionStatus.generationLimits.remaining.toFixed(
+                          1
+                        )}{' '}
+                        left
                       </div>
                       {subscriptionStatus.generationLimits.addonGenerations >
                         0 && (
                         <div className="text-sm text-muted-foreground">
                           Includes{' '}
-                          {subscriptionStatus.generationLimits.addonGenerations}{' '}
-                          addon generations
+                          {subscriptionStatus.generationLimits.addonGenerations.toFixed(
+                            1
+                          )}{' '}
+                          addon credits
                         </div>
                       )}
                     </div>

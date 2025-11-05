@@ -75,6 +75,10 @@ const lessonSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    firstTestGenerated: {
+      type: Boolean,
+      default: false,
+    },
     isDefault: {
       type: Boolean,
       default: false,

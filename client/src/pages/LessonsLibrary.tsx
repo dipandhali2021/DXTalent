@@ -215,20 +215,40 @@ const LessonsLibrary = () => {
     try {
       const response = await lessonAPI.generatePlaceholderContent(lessonId);
       if (response.success) {
+        const creditsRemaining = response.creditsRemaining;
         toast({
           title: 'Lesson generated! 🎉',
-          description: 'Your lesson is now ready to take.',
+          description: `Your lesson is now ready to take. Used 0.5 credit. ${creditsRemaining} credits remaining.`,
         });
         // Refresh lessons
         fetchLessons();
       }
     } catch (error: any) {
       console.error('Error generating placeholder:', error);
-      toast({
-        title: 'Generation failed',
-        description: error.response?.data?.message || 'Please try again.',
-        variant: 'destructive',
-      });
+      const errorData = error.response?.data?.data;
+      const errorMessage = error.response?.data?.message;
+
+      if (
+        errorData &&
+        errorData.required &&
+        errorData.available !== undefined
+      ) {
+        toast({
+          title: 'Insufficient credits',
+          description: `Need ${
+            errorData.required
+          } credit but only ${errorData.available.toFixed(1)} available. ${
+            errorData.upgradeMessage
+          }`,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Generation failed',
+          description: errorMessage || 'Please try again.',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setIsGenerating(null);
     }
@@ -325,11 +345,22 @@ const LessonsLibrary = () => {
     try {
       const response = await lessonAPI.generateTest(lesson._id, 20, forceNew);
       if (response.success) {
-        const xpMessage = response.data.isNewTest
+        const creditsUsed = response.creditsUsed || 0;
+        const creditsRemaining = response.creditsRemaining;
+        const isFirstTest = response.isFirstTest;
+
+        let xpMessage = response.data.isNewTest
           ? 'New test generated! Pass for 100 XP!'
           : response.data.totalAttempts > 0 && response.data.bestScore
           ? 'Retaking test - earn 20 XP!'
           : 'Your test is ready. Good luck!';
+
+        // Add credit info to message
+        if (isFirstTest) {
+          xpMessage += ' First test is free!';
+        } else if (creditsUsed > 0) {
+          xpMessage += ` Used ${creditsUsed} credit. ${creditsRemaining} credits remaining.`;
+        }
 
         toast({
           title: 'Test generated! 📝',
@@ -346,11 +377,30 @@ const LessonsLibrary = () => {
       }
     } catch (error: any) {
       console.error('Error generating test:', error);
-      toast({
-        title: 'Test generation failed',
-        description: error.response?.data?.message || 'Please try again.',
-        variant: 'destructive',
-      });
+      const errorData = error.response?.data?.data;
+      const errorMessage = error.response?.data?.message;
+
+      if (
+        errorData &&
+        errorData.required &&
+        errorData.available !== undefined
+      ) {
+        toast({
+          title: 'Insufficient credits',
+          description: `Need ${
+            errorData.required
+          } credit but only ${errorData.available.toFixed(1)} available. ${
+            errorData.upgradeMessage
+          }`,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Test generation failed',
+          description: errorMessage || 'Please try again.',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setIsGeneratingTest(null);
     }
@@ -637,27 +687,32 @@ const LessonsLibrary = () => {
                         )}
 
                       {lesson.placeholder && !lesson.isFullyGenerated ? (
-                        <Button
-                          className="w-full"
-                          size="sm"
-                          variant="outline"
-                          onClick={(e) =>
-                            handleGeneratePlaceholder(lesson._id, e)
-                          }
-                          disabled={isGenerating === lesson._id}
-                        >
-                          {isGenerating === lesson._id ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Generating...
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles className="mr-2 h-4 w-4" />
-                              Generate Lesson
-                            </>
-                          )}
-                        </Button>
+                        <div className="space-y-2">
+                          <div className="text-xs text-center text-muted-foreground font-handwritten">
+                            💳 Cost: 0.5 credit
+                          </div>
+                          <Button
+                            className="w-full"
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) =>
+                              handleGeneratePlaceholder(lesson._id, e)
+                            }
+                            disabled={isGenerating === lesson._id}
+                          >
+                            {isGenerating === lesson._id ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Generating...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="mr-2 h-4 w-4" />
+                                Generate Lesson
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       ) : (
                         <Button
                           className="w-full"
@@ -936,6 +991,9 @@ const LessonsLibrary = () => {
                     <Badge className="brutal-border bg-primary text-primary-foreground">
                       <Award className="w-3 h-3 mr-1" />
                       100 XP
+                    </Badge>
+                    <Badge className="brutal-border bg-yellow-500 text-white">
+                      💳 0.5 credit
                     </Badge>
                     <span className="text-xs text-muted-foreground">
                       • 20 new questions

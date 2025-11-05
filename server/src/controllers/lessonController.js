@@ -31,6 +31,42 @@ const generateLessonStructure = async (req, res) => {
       });
     }
 
+    // Get user to check generation limits
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Check generation limits (Topic generation costs 1.0 credit)
+    if (user.role !== 'recruiter') {
+      const totalCredits =
+        user.generationLimits.aiLessonsPerMonth +
+        user.generationLimits.addonGenerations;
+      const usedCredits = user.generationLimits.currentMonthGenerations;
+      const availableCredits = totalCredits - usedCredits;
+
+      if (availableCredits < 1.0) {
+        return res.status(403).json({
+          success: false,
+          message: 'Insufficient AI credits for topic generation',
+          data: {
+            required: 1.0,
+            available: availableCredits,
+            total: totalCredits,
+            used: usedCredits,
+            subscriptionType: user.subscriptionType,
+            upgradeMessage:
+              user.subscriptionType === 'free'
+                ? 'Upgrade to Pro Learner for 5 credits per month'
+                : 'Purchase addon package for 3 more credits',
+          },
+        });
+      }
+    }
+
     // Get topic metadata
     const metadata = await categorizeTopic(topic);
 
@@ -100,6 +136,19 @@ const generateLessonStructure = async (req, res) => {
       placeholderLessons.push(placeholder);
     }
 
+    // Deduct 1.0 credit for topic generation (only for non-recruiters)
+    if (user.role !== 'recruiter') {
+      user.generationLimits.currentMonthGenerations += 1.0;
+      await user.save();
+    }
+
+    // Calculate remaining credits
+    const totalCredits =
+      user.generationLimits.aiLessonsPerMonth +
+      user.generationLimits.addonGenerations;
+    const usedCredits = user.generationLimits.currentMonthGenerations;
+    const remainingCredits = totalCredits - usedCredits;
+
     res.status(201).json({
       success: true,
       message: 'Lesson structure generated successfully',
@@ -108,6 +157,8 @@ const generateLessonStructure = async (req, res) => {
         metadata,
         fullyGenerated: generatedLessons,
         placeholders: placeholderLessons,
+        creditsUsed: 1.0,
+        creditsRemaining: remainingCredits,
       },
     });
   } catch (error) {
@@ -138,25 +189,28 @@ const generatePlaceholderContent = async (req, res) => {
       });
     }
 
-    // Check generation limits (only for regular users, not recruiters)
+    // Check generation limits (Individual lesson generation costs 0.5 credit)
     if (user.role !== 'recruiter') {
-      const totalAllowed =
+      const totalCredits =
         user.generationLimits.aiLessonsPerMonth +
         user.generationLimits.addonGenerations;
-      const used = user.generationLimits.currentMonthGenerations;
+      const usedCredits = user.generationLimits.currentMonthGenerations;
+      const availableCredits = totalCredits - usedCredits;
 
-      if (used >= totalAllowed) {
+      if (availableCredits < 0.5) {
         return res.status(403).json({
           success: false,
-          message: 'Monthly AI lesson generation limit reached',
+          message: 'Insufficient AI credits for lesson generation',
           data: {
-            limit: totalAllowed,
-            used: used,
+            required: 0.5,
+            available: availableCredits,
+            total: totalCredits,
+            used: usedCredits,
             subscriptionType: user.subscriptionType,
             upgradeMessage:
               user.subscriptionType === 'free'
-                ? 'Upgrade to Pro Learner for 5 generations per month'
-                : 'Purchase addon package for 3 more generations',
+                ? 'Upgrade to Pro Learner for 5 credits per month'
+                : 'Purchase addon package for 3 more credits',
           },
         });
       }
@@ -194,28 +248,26 @@ const generatePlaceholderContent = async (req, res) => {
 
     await lesson.save();
 
-    // Increment generation counter (only for non-recruiters)
+    // Deduct 0.5 credit for individual lesson generation (only for non-recruiters)
     if (user.role !== 'recruiter') {
-      user.generationLimits.currentMonthGenerations += 1;
-
-      // Use addon generations first if available
-      if (user.generationLimits.addonGenerations > 0) {
-        user.generationLimits.addonGenerations -= 1;
-      }
-
+      user.generationLimits.currentMonthGenerations += 0.5;
       await user.save();
     }
+
+    // Calculate remaining credits
+    const totalCredits =
+      user.generationLimits.aiLessonsPerMonth +
+      user.generationLimits.addonGenerations;
+    const usedCredits = user.generationLimits.currentMonthGenerations;
+    const remainingCredits = totalCredits - usedCredits;
 
     res.status(200).json({
       success: true,
       message: 'Lesson content generated successfully',
       data: lesson,
-      generationsRemaining:
-        user.role === 'recruiter'
-          ? 'unlimited'
-          : user.generationLimits.aiLessonsPerMonth +
-            user.generationLimits.addonGenerations -
-            user.generationLimits.currentMonthGenerations,
+      creditsUsed: 0.5,
+      creditsRemaining:
+        user.role === 'recruiter' ? 'unlimited' : remainingCredits,
     });
   } catch (error) {
     console.error('Error generating placeholder content:', error);
@@ -1165,6 +1217,15 @@ const generateLessonTest = async (req, res) => {
       });
     }
 
+    // Get user to check generation limits
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
     // Check if user has an existing active test for this lesson
     let existingTest = await Test.findOne({
       userId,
@@ -1190,6 +1251,36 @@ const generateLessonTest = async (req, res) => {
           bestScore: existingTest.bestScore,
         },
       });
+    }
+
+    // Check if this is a regeneration (forceNew=true or firstTestGenerated=true)
+    const isRegeneration = forceNew || lesson.firstTestGenerated;
+
+    // If regenerating test, check credits (costs 0.5 credit)
+    if (isRegeneration && user.role !== 'recruiter') {
+      const totalCredits =
+        user.generationLimits.aiLessonsPerMonth +
+        user.generationLimits.addonGenerations;
+      const usedCredits = user.generationLimits.currentMonthGenerations;
+      const availableCredits = totalCredits - usedCredits;
+
+      if (availableCredits < 0.5) {
+        return res.status(403).json({
+          success: false,
+          message: 'Insufficient AI credits for test regeneration',
+          data: {
+            required: 0.5,
+            available: availableCredits,
+            total: totalCredits,
+            used: usedCredits,
+            subscriptionType: user.subscriptionType,
+            upgradeMessage:
+              user.subscriptionType === 'free'
+                ? 'Upgrade to Pro Learner for 5 credits per month'
+                : 'Purchase addon package for 3 more credits',
+          },
+        });
+      }
     }
 
     // If forceNew is true and test exists, deactivate old test
@@ -1222,6 +1313,27 @@ const generateLessonTest = async (req, res) => {
 
     await newTest.save();
 
+    // Deduct 0.5 credit if this is a regeneration (only for non-recruiters)
+    let creditsUsed = 0;
+    if (isRegeneration && user.role !== 'recruiter') {
+      user.generationLimits.currentMonthGenerations += 0.5;
+      await user.save();
+      creditsUsed = 0.5;
+    }
+
+    // Mark lesson as having first test generated
+    if (!lesson.firstTestGenerated) {
+      lesson.firstTestGenerated = true;
+      await lesson.save();
+    }
+
+    // Calculate remaining credits
+    const totalCredits =
+      user.generationLimits.aiLessonsPerMonth +
+      user.generationLimits.addonGenerations;
+    const usedCredits = user.generationLimits.currentMonthGenerations;
+    const remainingCredits = totalCredits - usedCredits;
+
     return res.status(200).json({
       success: true,
       data: {
@@ -1237,6 +1349,10 @@ const generateLessonTest = async (req, res) => {
         totalAttempts: 0,
         bestScore: null,
       },
+      creditsUsed: creditsUsed,
+      creditsRemaining:
+        user.role === 'recruiter' ? 'unlimited' : remainingCredits,
+      isFirstTest: !isRegeneration,
     });
   } catch (error) {
     console.error('Error generating test:', error);
