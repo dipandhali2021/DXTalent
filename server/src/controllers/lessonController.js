@@ -3,6 +3,7 @@ import {
   generateLesson,
   generateLessonOutlines,
   categorizeTopic,
+  recommendTodaysLesson,
 } from '../utils/gemini.js';
 import { computeLevelFromXP, calculateLessonXP } from '../utils/level.js';
 import { updateStreak, getActivityData } from '../utils/streak.js';
@@ -801,6 +802,255 @@ const getUserStats = async (req, res) => {
   }
 };
 
+/**
+ * Get AI-powered lesson recommendation for today
+ * GET /api/lessons/ai-recommendation
+ */
+const getAIRecommendation = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const User = (await import('../models/User.js')).default;
+    const LessonCompletion = (await import('../models/LessonCompletion.js'))
+      .default;
+
+    // Get user stats
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Get user's completed lessons with details
+    const completions = await LessonCompletion.find({ userId })
+      .populate('lessonId')
+      .sort({ lastCompletionDate: -1 })
+      .limit(10);
+
+    const completedLessons = completions
+      .filter((c) => c.lessonId) // Filter out null references
+      .map((completion) => ({
+        skillName: completion.lessonId.skillName,
+        category: completion.lessonId.category,
+        difficulty: completion.lessonId.difficulty,
+        completionCount: completion.completionCount,
+        bestAccuracy: completion.bestScore.accuracy,
+      }));
+
+    // Get available lessons (not completed or completed but can be retaken)
+    const allLessons = await Lesson.find({
+      userId,
+      isFullyGenerated: true,
+    }).select('_id skillName category difficulty duration');
+
+    // Get completed lesson IDs
+    const completedLessonIds = completions.map((c) =>
+      c.lessonId?._id?.toString()
+    );
+
+    // Filter for incomplete lessons, or if all completed, use all lessons
+    let availableLessons = allLessons.filter(
+      (lesson) => !completedLessonIds.includes(lesson._id.toString())
+    );
+
+    // If all lessons completed, use all lessons for recommendation
+    if (availableLessons.length === 0) {
+      availableLessons = allLessons;
+    }
+
+    if (availableLessons.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          recommendation: null,
+          message:
+            'No lessons available yet. Generate some lessons to get started!',
+        },
+      });
+    }
+
+    // Get AI recommendation
+    const userStats = {
+      xp: user.stats.xpPoints,
+      level: user.stats.level,
+      league: user.stats.league,
+    };
+
+    const recommendation = await recommendTodaysLesson(
+      completedLessons,
+      availableLessons,
+      userStats
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        recommendation,
+      },
+    });
+  } catch (error) {
+    console.error('Error getting AI recommendation:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get AI recommendation',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Get the next lesson to continue based on last completed lesson
+ * GET /api/lessons/continue-journey
+ */
+const getContinueJourney = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const LessonCompletion = (await import('../models/LessonCompletion.js'))
+      .default;
+
+    // Get user's most recently completed lesson
+    const lastCompletion = await LessonCompletion.findOne({ userId })
+      .populate('lessonId')
+      .sort({ lastCompletionDate: -1 })
+      .limit(1);
+
+    if (!lastCompletion || !lastCompletion.lessonId) {
+      // No completed lessons, get the first available lesson
+      const firstLesson = await Lesson.findOne({
+        userId,
+        isFullyGenerated: true,
+      }).sort({ createdAt: 1 });
+
+      if (!firstLesson) {
+        return res.status(200).json({
+          success: true,
+          data: {
+            nextLesson: null,
+            message: 'No lessons available. Generate some lessons to start!',
+          },
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          nextLesson: {
+            lessonId: firstLesson._id,
+            title: firstLesson.skillName,
+            topic: firstLesson.topic,
+            category: firstLesson.category,
+            difficulty: firstLesson.difficulty,
+            progress: 0,
+            isFirst: true,
+          },
+        },
+      });
+    }
+
+    const lastLesson = lastCompletion.lessonId;
+
+    // Find the next lesson in the same topic
+    const nextLessonInTopic = await Lesson.findOne({
+      userId,
+      topic: lastLesson.topic,
+      isFullyGenerated: true,
+      createdAt: { $gt: lastLesson.createdAt }, // Get lessons created after the last one
+    }).sort({ createdAt: 1 });
+
+    // Get all lessons in this topic to calculate progress
+    const allTopicLessons = await Lesson.find({
+      userId,
+      topic: lastLesson.topic,
+    }).sort({ createdAt: 1 });
+
+    // Get completed lessons in this topic
+    const completedInTopic = await LessonCompletion.find({
+      userId,
+      lessonId: { $in: allTopicLessons.map((l) => l._id) },
+    });
+
+    const progress = Math.round(
+      (completedInTopic.length / allTopicLessons.length) * 100
+    );
+
+    if (nextLessonInTopic) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          nextLesson: {
+            lessonId: nextLessonInTopic._id,
+            title: nextLessonInTopic.skillName,
+            topic: nextLessonInTopic.topic,
+            category: nextLessonInTopic.category,
+            difficulty: nextLessonInTopic.difficulty,
+            progress,
+            isFirst: false,
+            isCompleted: false,
+          },
+        },
+      });
+    }
+
+    // No next lesson in current topic
+    // Look for any incomplete lesson from other topics
+    const allCompletedIds = (await LessonCompletion.find({ userId })).map(
+      (c) => c.lessonId
+    );
+
+    const firstIncompleteLesson = await Lesson.findOne({
+      userId,
+      isFullyGenerated: true,
+      _id: { $nin: allCompletedIds },
+    }).sort({ createdAt: 1 });
+
+    if (firstIncompleteLesson) {
+      // Found an incomplete lesson in another topic
+      return res.status(200).json({
+        success: true,
+        data: {
+          nextLesson: {
+            lessonId: firstIncompleteLesson._id,
+            title: firstIncompleteLesson.skillName,
+            topic: firstIncompleteLesson.topic,
+            category: firstIncompleteLesson.category,
+            difficulty: firstIncompleteLesson.difficulty,
+            progress: 0,
+            isFirst: false,
+            isCompleted: false,
+            message: `Great job completing ${lastLesson.topic}! Ready to start a new topic?`,
+          },
+        },
+      });
+    }
+
+    // All lessons completed! Show message to generate more
+    return res.status(200).json({
+      success: true,
+      data: {
+        nextLesson: {
+          lessonId: lastLesson._id,
+          title: lastLesson.skillName,
+          topic: lastLesson.topic,
+          category: lastLesson.category,
+          difficulty: lastLesson.difficulty,
+          progress: 100,
+          isCompleted: true,
+          message:
+            '🎉 Amazing! You completed all lessons! Generate more to continue learning.',
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Error getting continue journey:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get continue journey',
+      error: error.message,
+    });
+  }
+};
+
 export {
   generateLessonStructure,
   generatePlaceholderContent,
@@ -812,4 +1062,6 @@ export {
   getLessonCompletionStatus,
   getUserActivity,
   getUserStats,
+  getAIRecommendation,
+  getContinueJourney,
 };

@@ -11,6 +11,8 @@ import {
   getLessonCompletionStatus,
   getUserActivity,
   getUserStats,
+  getAIRecommendation,
+  getContinueJourney,
 } from '../controllers/lessonController.js';
 import {
   validateGenerateLessonStructure,
@@ -47,6 +49,12 @@ router.get('/stats', authenticate, getLessonStats);
 
 // GET /api/lessons/user-stats - Get user statistics (weekly XP, skill proficiency)
 router.get('/user-stats', authenticate, getUserStats);
+
+// GET /api/lessons/ai-recommendation - Get AI-powered lesson recommendation for today
+router.get('/ai-recommendation', authenticate, getAIRecommendation);
+
+// GET /api/lessons/continue-journey - Get next lesson to continue based on last completed
+router.get('/continue-journey', authenticate, getContinueJourney);
 
 // GET /api/lessons/activity - Get user's daily activity for heatmap
 router.get('/activity', authenticate, getUserActivity);

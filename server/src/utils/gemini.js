@@ -201,4 +201,132 @@ Return ONLY the JSON object, no additional text.`;
   }
 }
 
-export { generateLesson, generateLessonOutlines, categorizeTopic };
+/**
+ * Recommend the best lesson for today based on user's progress history
+ * @param {Array} completedLessons - Array of completed lessons with details
+ * @param {Array} availableLessons - Array of available lessons to choose from
+ * @param {Object} userStats - User statistics (XP, level, skills)
+ * @returns {Promise<Object>} Recommended lesson with reasoning
+ */
+async function recommendTodaysLesson(
+  completedLessons,
+  availableLessons,
+  userStats
+) {
+  try {
+    // Build a comprehensive prompt with user history
+    const completedSummary = completedLessons
+      .slice(0, 10)
+      .map(
+        (lesson) =>
+          `- ${lesson.skillName} (${lesson.category}, ${lesson.difficulty}) - Completed ${lesson.completionCount} time(s), Best accuracy: ${lesson.bestAccuracy}%`
+      )
+      .join('\n');
+
+    const availableSummary = availableLessons
+      .map(
+        (lesson, index) =>
+          `${index + 1}. ID: ${lesson._id}, Title: "${
+            lesson.skillName
+          }", Category: ${lesson.category}, Difficulty: ${
+            lesson.difficulty
+          }, Duration: ${lesson.duration}`
+      )
+      .join('\n');
+
+    const prompt = `You are an AI learning advisor. Based on the user's learning history, recommend the BEST lesson for them to take today. 
+
+USER PROFILE:
+- Total XP: ${userStats.xp || 0}
+- Current Level: ${userStats.level || 1}
+- League: ${userStats.league || 'Bronze'}
+
+RECENTLY COMPLETED LESSONS:
+${completedSummary || 'No lessons completed yet'}
+
+AVAILABLE LESSONS:
+${availableSummary}
+
+Analyze the user's learning patterns and recommend ONE lesson that:
+1. Matches their current skill level and progression
+2. Fills knowledge gaps or builds on completed lessons
+3. Provides appropriate challenge (not too easy, not too hard)
+4. Aligns with their demonstrated interests
+
+Return ONLY valid JSON (no markdown, no code blocks):
+{
+  "lessonId": "exact ID from available lessons",
+  "title": "lesson title",
+  "category": "lesson category",
+  "difficulty": "lesson difficulty",
+  "estimatedTime": "lesson duration",
+  "xpReward": calculated XP reward (100-500 based on difficulty),
+  "reason": "1-2 SHORT sentences (max 20 words each) explaining why this lesson is recommended"
+}
+
+IMPORTANT: Use the exact lesson ID from the available lessons list above.
+Return ONLY the JSON object, no additional text.`;
+
+    const result = await getClient().models.generateContent({
+      model: 'gemini-2.0-flash-001',
+      contents: prompt,
+    });
+    const text = result.text;
+
+    // Clean the response
+    let cleanedText = text.trim();
+    if (cleanedText.startsWith('```json')) {
+      cleanedText = cleanedText.replace(/^```json\n/, '').replace(/\n```$/, '');
+    } else if (cleanedText.startsWith('```')) {
+      cleanedText = cleanedText.replace(/^```\n/, '').replace(/\n```$/, '');
+    }
+
+    const recommendation = JSON.parse(cleanedText);
+
+    // Validate the recommendation has a valid lesson ID
+    const recommendedLesson = availableLessons.find(
+      (lesson) => lesson._id.toString() === recommendation.lessonId
+    );
+
+    if (!recommendedLesson) {
+      // Fallback: return the first incomplete lesson
+      const fallbackLesson = availableLessons[0];
+      return {
+        lessonId: fallbackLesson._id.toString(),
+        title: fallbackLesson.skillName,
+        category: fallbackLesson.category,
+        difficulty: fallbackLesson.difficulty,
+        estimatedTime: fallbackLesson.duration,
+        xpReward: 250,
+        reason:
+          'This lesson is a great next step in your learning journey. Start here to build your skills!',
+      };
+    }
+
+    return recommendation;
+  } catch (error) {
+    console.error('Error generating lesson recommendation with Gemini:', error);
+    // Return fallback recommendation
+    if (availableLessons.length > 0) {
+      const fallbackLesson = availableLessons[0];
+      return {
+        lessonId: fallbackLesson._id.toString(),
+        title: fallbackLesson.skillName,
+        category: fallbackLesson.category,
+        difficulty: fallbackLesson.difficulty,
+        estimatedTime: fallbackLesson.duration,
+        xpReward: 250,
+        reason:
+          'This lesson is a great next step in your learning journey. Start here to build your skills!',
+      };
+    }
+    throw new Error(`Failed to generate recommendation: ${error.message}`);
+  }
+}
+
+export {
+  generateLesson,
+  generateLessonOutlines,
+  categorizeTopic,
+  recommendTodaysLesson,
+};

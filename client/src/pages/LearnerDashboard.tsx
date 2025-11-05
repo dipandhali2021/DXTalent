@@ -52,6 +52,26 @@ const LearnerDashboard = () => {
       claimed?: boolean;
     }>
   >([]);
+  const [aiRecommendation, setAiRecommendation] = useState<{
+    lessonId: string;
+    title: string;
+    category: string;
+    difficulty: string;
+    estimatedTime: string;
+    xpReward: number;
+    reason: string;
+  } | null>(null);
+  const [loadingRecommendation, setLoadingRecommendation] = useState(true);
+  const [lastLesson, setLastLesson] = useState<{
+    lessonId: string;
+    title: string;
+    topic?: string;
+    progress: number;
+    isFirst?: boolean;
+    isCompleted?: boolean;
+    message?: string;
+  } | null>(null);
+  const [loadingContinueJourney, setLoadingContinueJourney] = useState(true);
 
   // Fetch user activity data for selected month
   useEffect(() => {
@@ -153,6 +173,55 @@ const LearnerDashboard = () => {
     };
 
     fetchChallenges();
+  }, []);
+
+  // Fetch AI recommendation
+  useEffect(() => {
+    const fetchAIRecommendation = async () => {
+      try {
+        setLoadingRecommendation(true);
+        const response = await api.get('/lessons/ai-recommendation');
+        if (response.data.success && response.data.data.recommendation) {
+          setAiRecommendation(response.data.data.recommendation);
+        }
+      } catch (error) {
+        console.error('Error fetching AI recommendation:', error);
+        setAiRecommendation(null);
+      } finally {
+        setLoadingRecommendation(false);
+      }
+    };
+
+    fetchAIRecommendation();
+  }, []);
+
+  // Fetch last lesson progress
+  useEffect(() => {
+    const fetchLastLesson = async () => {
+      try {
+        setLoadingContinueJourney(true);
+        const response = await api.get('/lessons/continue-journey');
+        if (response.data.success && response.data.data.nextLesson) {
+          const lesson = response.data.data.nextLesson;
+          setLastLesson({
+            lessonId: lesson.lessonId,
+            title: lesson.title,
+            topic: lesson.topic,
+            progress: lesson.progress,
+            isFirst: lesson.isFirst,
+            isCompleted: lesson.isCompleted,
+            message: lesson.message,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching continue journey:', error);
+        setLastLesson(null);
+      } finally {
+        setLoadingContinueJourney(false);
+      }
+    };
+
+    fetchLastLesson();
   }, []);
 
   // Claim challenge reward
@@ -408,28 +477,99 @@ const LearnerDashboard = () => {
             <h2 className="text-3xl font-bold">Continue Your Journey</h2>
             <p className="text-blue-100">Pick up where you left off</p>
 
-            <div className="space-y-3">
-              <h3 className="text-xl font-bold">
-                React Fundamentals: Lesson 5
-              </h3>
-              <div className="relative">
-                <div className="h-3 bg-blue-300 rounded-full overflow-hidden brutal-border border-white">
-                  <div
-                    className="h-full bg-yellow-400 rounded-full"
-                    style={{ width: '75%' }}
-                  ></div>
-                </div>
+            {loadingContinueJourney ? (
+              <div className="space-y-3">
+                <p className="text-blue-100">Loading your progress...</p>
               </div>
-              <p className="text-sm text-blue-100">75% Complete</p>
-            </div>
-
-            <Button
-              variant="outline"
-              className="bg-white text-primary hover:bg-blue-50 brutal-border border-white px-8"
-              size="lg"
-            >
-              Continue →
-            </Button>
+            ) : lastLesson ? (
+              <div className="space-y-3">
+                {lastLesson.topic && (
+                  <div className="flex items-center gap-2 text-sm text-blue-200 font-semibold">
+                    <span className="text-lg">📚</span>
+                    <span>{lastLesson.topic}</span>
+                  </div>
+                )}
+                <div className="space-y-1">
+                  {lastLesson.isCompleted ? (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">✅</span>
+                        <h3 className="text-xl font-bold">
+                          Completed: {lastLesson.title}
+                        </h3>
+                      </div>
+                    </>
+                  ) : lastLesson.isFirst ? (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">🚀</span>
+                        <h3 className="text-xl font-bold">
+                          {lastLesson.title}
+                        </h3>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="text-xl font-bold">{lastLesson.title}</h3>
+                    </>
+                  )}
+                </div>
+                {lastLesson.message && (
+                  <p className="text-sm text-blue-100 italic">
+                    {lastLesson.message}
+                  </p>
+                )}
+                {!lastLesson.isCompleted &&
+                  lastLesson.progress !== undefined && (
+                    <>
+                      <div className="relative">
+                        <div className="h-3 bg-blue-300 rounded-full overflow-hidden brutal-border border-white">
+                          <div
+                            className="h-full bg-yellow-400 rounded-full transition-all duration-500"
+                            style={{ width: `${lastLesson.progress}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      <p className="text-sm text-blue-100">
+                        {lastLesson.progress}% of topic complete
+                      </p>
+                    </>
+                  )}
+                <Button
+                  variant="outline"
+                  className="bg-white text-primary hover:bg-blue-50 brutal-border border-white px-8"
+                  size="lg"
+                  onClick={() => {
+                    if (lastLesson.isCompleted) {
+                      navigate('/lessons');
+                    } else {
+                      navigate(`/lesson/${lastLesson.lessonId}`);
+                    }
+                  }}
+                >
+                  {lastLesson.isFirst
+                    ? 'Start Learning →'
+                    : lastLesson.isCompleted
+                    ? 'Generate More Lessons →'
+                    : 'Continue →'}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-blue-100">
+                  Start your learning journey today!
+                </p>
+                <Link to="/lessons">
+                  <Button
+                    variant="outline"
+                    className="bg-white text-primary hover:bg-blue-50 brutal-border border-white px-8"
+                    size="lg"
+                  >
+                    Browse Lessons →
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* AI Suggests */}
@@ -437,16 +577,60 @@ const LearnerDashboard = () => {
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <span>🧠</span> AI Suggests
             </h2>
-            <p className="text-sm">
-              Based on your progress, try learning TypeScript Advanced Patterns!
-            </p>
-            <Button
-              variant="outline"
-              className="w-full bg-white hover:bg-gray-50 brutal-border border-black"
-              size="lg"
-            >
-              Start Lesson
-            </Button>
+            {loadingRecommendation ? (
+              <p className="text-sm">Analyzing your progress...</p>
+            ) : aiRecommendation ? (
+              <>
+                <div className="space-y-2">
+                  <p className="text-sm">
+                    Based on your progress, try learning
+                  </p>
+                  <div className="bg-white brutal-border rounded-lg p-3 space-y-2">
+                    <div className="font-bold text-lg text-gray-900">
+                      {aiRecommendation.title}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-md text-xs font-semibold brutal-border border-purple-300">
+                        📚 {aiRecommendation.category}
+                      </span>
+                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded-md text-xs font-bold brutal-border border-green-300">
+                        ⚡ +{aiRecommendation.xpReward} XP
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-700 bg-yellow-100 brutal-border rounded-lg p-3">
+                  <p className="leading-relaxed">
+                    ✨ {aiRecommendation.reason}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full bg-white hover:bg-gray-50 brutal-border border-black font-bold"
+                  size="lg"
+                  onClick={() =>
+                    navigate(`/lesson/${aiRecommendation.lessonId}`)
+                  }
+                >
+                  Start Lesson
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="text-sm">
+                  Generate lessons to get personalized recommendations!
+                </p>
+                <Link to="/lessons">
+                  <Button
+                    variant="outline"
+                    className="w-full bg-white hover:bg-gray-50 brutal-border border-black"
+                    size="lg"
+                  >
+                    Browse Lessons
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </motion.div>
 
@@ -508,17 +692,19 @@ const LearnerDashboard = () => {
           />
         </motion.div>
 
-        {/* Additional AI Lesson Suggestions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <AILessonSuggestions
-            suggestions={mockData.aiSuggestions}
-            onStartLesson={(id) => console.log('Start lesson:', id)}
-          />
-        </motion.div>
+        {/* Additional AI Lesson Suggestions - Show only if we have the mock data or hide it */}
+        {mockData.aiSuggestions.length > 0 && !aiRecommendation && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <AILessonSuggestions
+              suggestions={mockData.aiSuggestions}
+              onStartLesson={(id) => navigate(`/lesson/${id}`)}
+            />
+          </motion.div>
+        )}
       </main>
     </div>
   );
