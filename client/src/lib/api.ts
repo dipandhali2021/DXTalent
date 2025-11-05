@@ -302,4 +302,76 @@ export const leaderboardAPI = {
     }
 };
 
+// Admin API functions
+export const adminAPI = {
+    // Dashboard Stats
+    getDashboardStats: async () => {
+        const response = await api.get('/admin/dashboard/stats');
+        return response.data;
+    },
+
+    // User Growth Data
+    getUserGrowth: async (months: number = 6) => {
+        const response = await api.get(`/admin/dashboard/user-growth?months=${months}`);
+        return response.data;
+    },
+
+    // Revenue Data
+    getRevenueData: async (months: number = 6) => {
+        const response = await api.get(`/admin/dashboard/revenue?months=${months}`);
+        return response.data;
+    },
+
+    // Recent Users
+    getRecentUsers: async (limit: number = 10) => {
+        const response = await api.get(`/admin/dashboard/recent-users?limit=${limit}`);
+        return response.data;
+    },
+
+    // Top Lessons
+    getTopLessons: async (limit: number = 10) => {
+        const response = await api.get(`/admin/dashboard/top-lessons?limit=${limit}`);
+        return response.data;
+    },
+
+    // Get All Users with pagination
+    getAllUsers: async (filters?: {
+        page?: number;
+        limit?: number;
+        role?: string;
+        search?: string;
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+    }) => {
+        const params = new URLSearchParams();
+        if (filters?.page) params.append('page', String(filters.page));
+        if (filters?.limit) params.append('limit', String(filters.limit));
+        if (filters?.role) params.append('role', filters.role);
+        if (filters?.search) params.append('search', filters.search);
+        if (filters?.sortBy) params.append('sortBy', filters.sortBy);
+        if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
+
+        const response = await api.get(`/admin/users${params.toString() ? '?' + params.toString() : ''}`);
+        return response.data;
+    },
+
+    // Update User
+    updateUser: async (userId: string, updateData: { role?: string; isEmailVerified?: boolean }) => {
+        const response = await api.put(`/admin/users/${userId}`, updateData);
+        return response.data;
+    },
+
+    // Delete User
+    deleteUser: async (userId: string) => {
+        const response = await api.delete(`/admin/users/${userId}`);
+        return response.data;
+    },
+
+    // Get Analytics
+    getAnalytics: async () => {
+        const response = await api.get('/admin/analytics');
+        return response.data;
+    }
+};
+
 export default api;

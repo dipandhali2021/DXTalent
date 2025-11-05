@@ -2,7 +2,7 @@ import { RateLimiterMemory } from 'rate-limiter-flexible';
 
 // Rate limiter for login attempts
 export const loginLimiter = new RateLimiterMemory({
-  points: parseInt(process.env.RATE_LIMIT_MAX_ATTEMPTS) || 5,
+  points: parseInt(process.env.RATE_LIMIT_MAX_ATTEMPTS) || 500,
   duration: parseInt(process.env.RATE_LIMIT_WINDOW_MS) / 1000 || 600, // 10 minutes
   blockDuration: 600, // Block for 10 minutes
 });

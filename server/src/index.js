@@ -9,6 +9,7 @@ import lessonRoutes from './routes/lessonRoutes.js';
 import seedRoutes from './routes/seedRoutes.js';
 import leaderboardRoutes from './routes/leaderboardRoutes.js';
 import challengeRoutes from './routes/challengeRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -21,18 +22,18 @@ connectDB();
 
 // Security middleware
 app.use(
-  helmet({
-    crossOriginResourcePolicy: { policy: 'cross-origin' },
-  })
+    helmet({
+        crossOriginResourcePolicy: { policy: 'cross-origin' },
+    })
 );
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'https://dxtalent.vercel.app',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['set-cookie'],
+    origin: process.env.FRONTEND_URL || 'https://dxtalent.vercel.app',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['set-cookie'],
 };
 app.use(cors(corsOptions));
 
@@ -49,56 +50,59 @@ app.use('/api/lessons', lessonRoutes);
 app.use('/api/seed', seedRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/challenges', challengeRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Server is running',
-    timestamp: new Date().toISOString(),
-  });
+    res.json({
+        success: true,
+        message: 'Server is running',
+        timestamp: new Date().toISOString(),
+    });
 });
 
 // Root route
 app.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'DXTalent API Server',
-    version: '1.0.0',
-    endpoints: {
-      auth: '/api/auth',
-      lessons: '/api/lessons',
-      leaderboard: '/api/leaderboard',
-      health: '/health',
-    },
-  });
+    res.json({
+        success: true,
+        message: 'DXTalent API Server',
+        version: '1.0.0',
+        endpoints: {
+            auth: '/api/auth',
+            lessons: '/api/lessons',
+            leaderboard: '/api/leaderboard',
+            challenges: '/api/challenges',
+            admin: '/api/admin',
+            health: '/health',
+        },
+    });
 });
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found',
-  });
+    res.status(404).json({
+        success: false,
+        message: 'Route not found',
+    });
 });
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
+    console.error('Error:', err);
 
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
-  });
+    res.status(err.status || 500).json({
+        success: false,
+        message: err.message || 'Internal server error',
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    });
 });
 
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL}`);
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL}`);
 });
 
 export default app;
