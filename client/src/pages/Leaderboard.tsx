@@ -19,6 +19,7 @@ import {
   Crown,
   Loader2,
   Info,
+  Mail,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -37,11 +38,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DashboardHeader from '@/components/DashboardHeader';
 import LeagueProgressDialog from '@/components/LeagueProgressDialog';
 import { leaderboardAPI } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 
 interface LeaderboardUser {
   id: string;
   rank: number;
   username: string;
+  email?: string;
   avatar: string;
   xp: number;
   streak: number;
@@ -65,6 +68,7 @@ interface AIInsight {
 
 const Leaderboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLeague, setSelectedLeague] = useState('all');
   const [selectedSkill, setSelectedSkill] = useState('all');
@@ -203,9 +207,7 @@ const Leaderboard = () => {
     return gradients[league] || 'from-background to-muted';
   };
 
-  const topThree = leaderboardData.slice(0, 3);
-  const restOfLeaderboard = leaderboardData.slice(3);
-
+  // Apply all filters to leaderboard data
   const filteredData = leaderboardData.filter((user) => {
     const matchesSearch = user.username
       .toLowerCase()
@@ -217,207 +219,178 @@ const Leaderboard = () => {
     return matchesSearch && matchesLeague && matchesSkill;
   });
 
+  const topThree = filteredData.slice(0, 3);
+  const restOfLeaderboard = filteredData.slice(3);
+
   return (
     <div className="min-h-screen bg-background transition-all duration-1000">
       {/* Dashboard Header */}
-      <DashboardHeader role="user" />
+      <DashboardHeader
+        role={(user?.role as 'user' | 'recruiter' | 'admin') || 'user'}
+      />
 
-      {/* Leaderboard Content */}
-      <div className="z-40 bg-background backdrop-blur-sm brutal-border-b shadow-md">
-        <div className="container mx-auto px-4 py-4">
-          {/* Filters Section */}
+      {/* Leaderboard Heading */}
+      <div className="container mx-auto px-4 pt-8 pb-4">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-6"
+        >
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-handwritten mb-2 flex items-center justify-center gap-3">
+            <Trophy className="w-10 h-10 md:w-12 md:h-12 text-yellow-500" />
+            Leaderboard
+            <Trophy className="w-10 h-10 md:w-12 md:h-12 text-yellow-500" />
+          </h1>
+          <p className="text-muted-foreground text-sm md:text-base">
+            Compete with learners worldwide and climb to the top!
+          </p>
+        </motion.div>
+      </div>
+
+      {/* Main Content with Sidebar */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left Sidebar - Filters */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3 }}
-            className="mt-6"
+            className="w-full lg:w-64 flex-shrink-0"
           >
-            <Card className="brutal-border brutal-shadow rotate-[-0.5deg]">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {/* Top Row: AI Insights & Recruiter Mode */}
-
-                  <div className="flex flex-col lg:flex-row gap-4">
-                    {/* Search */}
-                    <div className="flex-1 relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Search players..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 brutal-border font-handwritten"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between gap-4 flex-wrap">
-                      {/* AI Insights Button */}
-                      <Button
-                        variant={showInsights ? 'default' : 'outline-brutal'}
-                        size="sm"
-                        onClick={() => setShowInsights(!showInsights)}
-                        className="gap-2"
-                      >
-                        <Sparkles className="w-4 h-4" />
-                        AI Insights
-                      </Button>
-
-                      {/* League Progress Info Button */}
-                      <Button
-                        variant="outline-brutal"
-                        size="sm"
-                        onClick={() => setShowLeagueDialog(true)}
-                        className="gap-2"
-                      >
-                        <Info className="w-4 h-4" />
-                        League Info
-                      </Button>
-                    </div>
-
-                    {/* Skill Filter Buttons */}
-                    <div className="flex gap-2 flex-wrap">
-                      {[
-                        'all',
-                        'Marketing',
-                        'Development',
-                        'Data',
-                        'Business',
-                        'Design',
-                        'Other',
-                      ].map((skill) => (
-                        <Button
-                          key={skill}
-                          variant={
-                            selectedSkill === skill ? 'default' : 'outline'
-                          }
-                          size="sm"
-                          onClick={() => setSelectedSkill(skill)}
-                          className="capitalize"
-                        >
-                          {skill === 'all' ? 'All Skills' : skill}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    {/* League Filter */}
-                    <div className="flex gap-2 flex-wrap">
-                      {[
-                        'all',
-                        'master',
-                        'diamond',
-                        'platinum',
-                        'gold',
-                        'silver',
-                        'bronze',
-                      ].map((league) => (
-                        <Button
-                          key={league}
-                          variant={
-                            selectedLeague === league ? 'default' : 'outline'
-                          }
-                          size="sm"
-                          onClick={() => setSelectedLeague(league)}
-                          className="capitalize"
-                        >
-                          {league === 'all' ? 'All' : league}
-                        </Button>
-                      ))}
-                    </div>
-
-                    {/* Timeframe Toggle */}
-                    <div className="flex gap-2">
-                      {['daily', 'weekly', 'all-time'].map((tf) => (
-                        <Button
-                          key={tf}
-                          variant={timeframe === tf ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setTimeframe(tf)}
-                          className="capitalize"
-                        >
-                          {tf === 'all-time' ? 'All Time' : tf}
-                        </Button>
-                      ))}
-                    </div>
+            <Card className="brutal-border brutal-shadow sticky top-4">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Filter className="w-5 h-5" />
+                  Filters
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* League Info Button */}
+                <div className="pt-4 border-t border-border">
+                  <Button
+                    variant="outline-brutal"
+                    size="sm"
+                    onClick={() => setShowLeagueDialog(true)}
+                    className="w-full gap-2"
+                  >
+                    <Info className="w-4 h-4" />
+                    My League Info
+                  </Button>
+                </div>
+                {/* Search */}
+                <div>
+                  <label className="text-sm font-semibold mb-2 block">
+                    Search
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search players..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 brutal-border"
+                    />
                   </div>
                 </div>
+
+                {/* League Filter */}
+                <div>
+                  <label className="text-sm font-semibold mb-2 block">
+                    League
+                  </label>
+                  <div className="flex flex-col gap-2">
+                    {[
+                      { value: 'all', label: 'All Leagues' },
+                      { value: 'master', label: 'Master' },
+                      { value: 'diamond', label: 'Diamond' },
+                      { value: 'platinum', label: 'Platinum' },
+                      { value: 'gold', label: 'Gold' },
+                      { value: 'silver', label: 'Silver' },
+                      { value: 'bronze', label: 'Bronze' },
+                    ].map((league) => (
+                      <Button
+                        key={league.value}
+                        variant={
+                          selectedLeague === league.value
+                            ? 'default'
+                            : 'outline'
+                        }
+                        size="sm"
+                        onClick={() => setSelectedLeague(league.value)}
+                        className="w-full justify-start capitalize"
+                      >
+                        {league.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Skill Filter */}
+                <div>
+                  <label className="text-sm font-semibold mb-2 block">
+                    Skills
+                  </label>
+                  <div className="flex flex-col gap-2">
+                    {[
+                      { value: 'all', label: 'All Skills' },
+                      { value: 'Marketing', label: 'Marketing' },
+                      { value: 'Development', label: 'Development' },
+                      { value: 'Data', label: 'Data' },
+                      { value: 'Business', label: 'Business' },
+                      { value: 'Design', label: 'Design' },
+                      { value: 'Other', label: 'Other' },
+                    ].map((skill) => (
+                      <Button
+                        key={skill.value}
+                        variant={
+                          selectedSkill === skill.value ? 'default' : 'outline'
+                        }
+                        size="sm"
+                        onClick={() => setSelectedSkill(skill.value)}
+                        className="w-full justify-start"
+                      >
+                        {skill.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Filter Results Info */}
+                {(searchQuery ||
+                  selectedLeague !== 'all' ||
+                  selectedSkill !== 'all') && (
+                  <div className="pt-4 border-t border-border space-y-3">
+                    <div className="text-sm">
+                      <span className="text-muted-foreground">Showing </span>
+                      <span className="font-bold text-foreground">
+                        {filteredData.length}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {' '}
+                        {filteredData.length === 1 ? 'player' : 'players'}
+                      </span>
+                    </div>
+                    <Button
+                      variant="outline-brutal"
+                      size="sm"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setSelectedLeague('all');
+                        setSelectedSkill('all');
+                      }}
+                      className="w-full"
+                    >
+                      Clear All Filters
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
-        </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* AI Insights Sidebar */}
-          <AnimatePresence>
-            {showInsights && (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="lg:col-span-1"
-              >
-                <Card className="brutal-border brutal-shadow sticky top-24">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <Sparkles className="w-5 h-5 text-primary" />
-                      AI Insights
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {loading && aiInsights.length === 0 ? (
-                      <div className="flex justify-center py-8">
-                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                      </div>
-                    ) : (
-                      aiInsights.map((insight, index) => {
-                        const Icon = getIconComponent(insight.icon);
-                        return (
-                          <motion.div
-                            key={index}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className="p-4 rounded-lg brutal-border bg-card/50 hover:bg-card transition-colors"
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className="p-2 rounded-full bg-primary/10">
-                                <Icon className="w-4 h-4 text-primary" />
-                              </div>
-                              <div>
-                                <h4 className="font-bold text-sm mb-1">
-                                  {insight.title}
-                                </h4>
-                                <p className="text-xs text-muted-foreground">
-                                  {insight.description}
-                                </p>
-                              </div>
-                            </div>
-                          </motion.div>
-                        );
-                      })
-                    )}
-                    <div className="pt-4 border-t">
-                      <Badge
-                        variant="secondary"
-                        className="text-xs bg-yellow-500/20 text-yellow-700 dark:text-yellow-300"
-                      >
-                        <Sparkles className="w-3 h-3 mr-1" />
-                        Powered by AI
-                      </Badge>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Updated daily
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Leaderboard Content */}
-          <div className={showInsights ? 'lg:col-span-3' : 'lg:col-span-4'}>
+          {/* Right Content - Leaderboard */}
+          <div className="flex-1 min-w-0">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
@@ -443,6 +416,27 @@ const Leaderboard = () => {
                     No leaderboard data available yet. Complete some lessons to
                     appear on the leaderboard!
                   </p>
+                </CardContent>
+              </Card>
+            ) : filteredData.length === 0 ? (
+              <Card className="brutal-border brutal-shadow">
+                <CardContent className="p-8 text-center">
+                  <Search className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-xl font-bold mb-2">No Results Found</h3>
+                  <p className="text-muted-foreground mb-4">
+                    No players match your current filters. Try adjusting your
+                    search criteria.
+                  </p>
+                  <Button
+                    variant="outline-brutal"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setSelectedLeague('all');
+                      setSelectedSkill('all');
+                    }}
+                  >
+                    Clear All Filters
+                  </Button>
                 </CardContent>
               </Card>
             ) : (
@@ -537,16 +531,41 @@ const Leaderboard = () => {
                                 </Badge>
                               ))}
                             </div>
-                            <Button
-                              variant="outline-brutal"
-                              size="sm"
-                              className="mt-4 w-full"
-                              onClick={() =>
-                                navigate(`/profile/${topThree[1].id}`)
-                              }
-                            >
-                              View Profile
-                            </Button>
+                            <div className="flex gap-2 mt-4">
+                              {(user?.role === 'recruiter' ||
+                                user?.role === 'admin') && (
+                                <Button
+                                  variant="hero"
+                                  size="sm"
+                                  className="flex-1 gap-1"
+                                  onClick={() => {
+                                    const subject = encodeURIComponent(
+                                      'Interview Invitation - DXTalent'
+                                    );
+                                    const body = encodeURIComponent(
+                                      `Hi ${topThree[1].username},\n\nWe're impressed by your performance on DXTalent and would like to invite you for an interview.\n\nBest regards`
+                                    );
+                                    window.open(
+                                      `https://mail.google.com/mail/?view=cm&fs=1&to=${topThree[1].email}&su=${subject}&body=${body}`,
+                                      '_blank'
+                                    );
+                                  }}
+                                >
+                                  <Mail className="w-3.5 h-3.5" />
+                                  Invite
+                                </Button>
+                              )}
+                              <Button
+                                variant="outline-brutal"
+                                size="sm"
+                                className="flex-1"
+                                onClick={() =>
+                                  navigate(`/profile/${topThree[1].id}`)
+                                }
+                              >
+                                View Profile
+                              </Button>
+                            </div>
                           </CardContent>
                         </Card>
                       </motion.div>
@@ -636,16 +655,41 @@ const Leaderboard = () => {
                                 </Badge>
                               ))}
                             </div>
-                            <Button
-                              variant="default"
-                              size="sm"
-                              className="mt-4 w-full"
-                              onClick={() =>
-                                navigate(`/profile/${topThree[0].id}`)
-                              }
-                            >
-                              View Profile
-                            </Button>
+                            <div className="flex gap-2 mt-4">
+                              {(user?.role === 'recruiter' ||
+                                user?.role === 'admin') && (
+                                <Button
+                                  variant="hero"
+                                  size="sm"
+                                  className="flex-1 gap-1"
+                                  onClick={() => {
+                                    const subject = encodeURIComponent(
+                                      'Interview Invitation - DXTalent'
+                                    );
+                                    const body = encodeURIComponent(
+                                      `Hi ${topThree[0].username},\n\nWe're impressed by your performance on DXTalent and would like to invite you for an interview.\n\nBest regards`
+                                    );
+                                    window.open(
+                                      `https://mail.google.com/mail/?view=cm&fs=1&to=${topThree[0].email}&su=${subject}&body=${body}`,
+                                      '_blank'
+                                    );
+                                  }}
+                                >
+                                  <Mail className="w-3.5 h-3.5" />
+                                  Invite
+                                </Button>
+                              )}
+                              <Button
+                                variant="default"
+                                size="sm"
+                                className="flex-1"
+                                onClick={() =>
+                                  navigate(`/profile/${topThree[0].id}`)
+                                }
+                              >
+                                View Profile
+                              </Button>
+                            </div>
                           </CardContent>
                         </Card>
                       </motion.div>
@@ -733,16 +777,41 @@ const Leaderboard = () => {
                                 </Badge>
                               ))}
                             </div>
-                            <Button
-                              variant="outline-brutal"
-                              size="sm"
-                              className="mt-4 w-full"
-                              onClick={() =>
-                                navigate(`/profile/${topThree[2].id}`)
-                              }
-                            >
-                              View Profile
-                            </Button>
+                            <div className="flex gap-2 mt-4">
+                              {(user?.role === 'recruiter' ||
+                                user?.role === 'admin') && (
+                                <Button
+                                  variant="hero"
+                                  size="sm"
+                                  className="flex-1 gap-1"
+                                  onClick={() => {
+                                    const subject = encodeURIComponent(
+                                      'Interview Invitation - DXTalent'
+                                    );
+                                    const body = encodeURIComponent(
+                                      `Hi ${topThree[2].username},\n\nWe're impressed by your performance on DXTalent and would like to invite you for an interview.\n\nBest regards`
+                                    );
+                                    window.open(
+                                      `https://mail.google.com/mail/?view=cm&fs=1&to=${topThree[2].email}&su=${subject}&body=${body}`,
+                                      '_blank'
+                                    );
+                                  }}
+                                >
+                                  <Mail className="w-3.5 h-3.5" />
+                                  Invite
+                                </Button>
+                              )}
+                              <Button
+                                variant="outline-brutal"
+                                size="sm"
+                                className="flex-1"
+                                onClick={() =>
+                                  navigate(`/profile/${topThree[2].id}`)
+                                }
+                              >
+                                View Profile
+                              </Button>
+                            </div>
                           </CardContent>
                         </Card>
                       </motion.div>
@@ -764,7 +833,7 @@ const Leaderboard = () => {
                     {/* Grid Container - 4 per row */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                       <AnimatePresence>
-                        {restOfLeaderboard.map((user, index) => {
+                        {restOfLeaderboard.map((leaderboardUser, index) => {
                           // Alternate tilt angles for visual interest
                           const tiltAngle =
                             index % 2 === 0
@@ -773,7 +842,7 @@ const Leaderboard = () => {
 
                           return (
                             <motion.div
-                              key={user.id}
+                              key={leaderboardUser.id}
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
                               exit={{ opacity: 0, x: 20 }}
@@ -784,12 +853,14 @@ const Leaderboard = () => {
                               <div className="flex items-start justify-between mb-3">
                                 <div className="flex items-center gap-2">
                                   <div className="text-3xl font-bold text-primary">
-                                    #{user.rank}
+                                    #{leaderboardUser.rank}
                                   </div>
-                                  {user.previousRank &&
-                                    user.previousRank !== user.rank && (
+                                  {leaderboardUser.previousRank &&
+                                    leaderboardUser.previousRank !==
+                                      leaderboardUser.rank && (
                                       <div className="flex items-center">
-                                        {user.previousRank > user.rank ? (
+                                        {leaderboardUser.previousRank >
+                                        leaderboardUser.rank ? (
                                           <ArrowUp className="w-4 h-4 text-green-500" />
                                         ) : (
                                           <ArrowDown className="w-4 h-4 text-red-500" />
@@ -801,15 +872,15 @@ const Leaderboard = () => {
                                 {/* XP Display */}
                                 <div className="text-right">
                                   <div className="text-2xl font-bold text-primary">
-                                    {user.xp.toLocaleString()}
+                                    {leaderboardUser.xp.toLocaleString()}
                                   </div>
                                   <div className="text-xs text-muted-foreground">
                                     XP
                                   </div>
-                                  {user.xpGain && (
+                                  {leaderboardUser.xpGain && (
                                     <div className="text-xs text-green-500 flex items-center justify-end">
                                       <Sparkles className="w-3 h-3 mr-1" />+
-                                      {user.xpGain}
+                                      {leaderboardUser.xpGain}
                                     </div>
                                   )}
                                 </div>
@@ -818,16 +889,16 @@ const Leaderboard = () => {
                               {/* Avatar & Username */}
                               <div className="flex items-center gap-3 mb-3">
                                 {renderAvatar(
-                                  user.avatar,
-                                  user.username,
+                                  leaderboardUser.avatar,
+                                  leaderboardUser.username,
                                   'w-16 h-16'
                                 )}
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-1">
                                     <h4 className="font-bold text-lg truncate font-handwritten">
-                                      {user.username}
+                                      {leaderboardUser.username}
                                     </h4>
-                                    {user.verified && (
+                                    {leaderboardUser.verified && (
                                       <Award className="w-4 h-4 text-primary flex-shrink-0" />
                                     )}
                                   </div>
@@ -838,12 +909,12 @@ const Leaderboard = () => {
                               <div className="flex items-center gap-2 flex-wrap mb-3">
                                 <Badge
                                   className={`${getLeagueBadgeColor(
-                                    user.league
+                                    leaderboardUser.league
                                   )} text-xs`}
                                 >
-                                  {user.league}
+                                  {leaderboardUser.league}
                                 </Badge>
-                                {user.promotion === 'up' && (
+                                {leaderboardUser.promotion === 'up' && (
                                   <Badge
                                     variant="secondary"
                                     className="text-green-500 border-green-500 text-xs"
@@ -852,7 +923,7 @@ const Leaderboard = () => {
                                     Promoted
                                   </Badge>
                                 )}
-                                {user.promotion === 'down' && (
+                                {leaderboardUser.promotion === 'down' && (
                                   <Badge
                                     variant="secondary"
                                     className="text-red-500 border-red-500 text-xs"
@@ -865,15 +936,17 @@ const Leaderboard = () => {
 
                               {/* Skills */}
                               <div className="flex gap-2 mb-3 flex-wrap">
-                                {user.skills.slice(0, 3).map((skill) => (
-                                  <Badge
-                                    key={skill}
-                                    variant="outline"
-                                    className="text-xs"
-                                  >
-                                    {skill}
-                                  </Badge>
-                                ))}
+                                {leaderboardUser.skills
+                                  .slice(0, 3)
+                                  .map((skill) => (
+                                    <Badge
+                                      key={skill}
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
+                                      {skill}
+                                    </Badge>
+                                  ))}
                               </div>
 
                               {/* Stats Row */}
@@ -881,7 +954,7 @@ const Leaderboard = () => {
                                 <div className="flex items-center gap-1">
                                   <Flame className="w-4 h-4 text-destructive" />
                                   <span className="font-bold">
-                                    {user.streak}
+                                    {leaderboardUser.streak}
                                   </span>
                                   <span className="text-xs text-muted-foreground">
                                     days
@@ -890,7 +963,7 @@ const Leaderboard = () => {
                                 <div className="flex items-center gap-1">
                                   <Zap className="w-4 h-4 text-accent" />
                                   <span className="font-bold">
-                                    {user.accuracy}%
+                                    {leaderboardUser.accuracy}%
                                   </span>
                                   <span className="text-xs text-muted-foreground">
                                     acc
@@ -905,24 +978,50 @@ const Leaderboard = () => {
                                     Progress to next league
                                   </span>
                                   <span className="font-bold">
-                                    {Math.floor((user.xp % 5000) / 50)}%
+                                    {Math.floor(
+                                      (leaderboardUser.xp % 5000) / 50
+                                    )}
+                                    %
                                   </span>
                                 </div>
                                 <Progress
-                                  value={(user.xp % 5000) / 50}
+                                  value={(leaderboardUser.xp % 5000) / 50}
                                   className="h-2"
                                 />
                               </div>
 
                               {/* Action Buttons */}
                               <div className="space-y-2">
+                                {(user?.role === 'recruiter' ||
+                                  user?.role === 'admin') && (
+                                  <Button
+                                    variant="hero"
+                                    size="sm"
+                                    onClick={() => {
+                                      const subject = encodeURIComponent(
+                                        'Interview Invitation - DXTalent'
+                                      );
+                                      const body = encodeURIComponent(
+                                        `Hi ${leaderboardUser.username},\n\nWe're impressed by your performance on DXTalent and would like to invite you for an interview.\n\nBest regards`
+                                      );
+                                      window.open(
+                                        `https://mail.google.com/mail/?view=cm&fs=1&to=${leaderboardUser.email}&su=${subject}&body=${body}`,
+                                        '_blank'
+                                      );
+                                    }}
+                                    className="w-full transition-opacity gap-1"
+                                  >
+                                    <Mail className="w-3.5 h-3.5" />
+                                    Invite
+                                  </Button>
+                                )}
                                 <Button
                                   variant="default"
                                   size="sm"
                                   onClick={() =>
-                                    navigate(`/profile/${user.id}`)
+                                    navigate(`/profile/${leaderboardUser.id}`)
                                   }
-                                  className="w-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                  className="w-full transition-opacity"
                                 >
                                   View Profile
                                 </Button>

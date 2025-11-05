@@ -39,14 +39,11 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
           { to: '/admin/dashboard', icon: Trophy, label: 'Dashboard' },
           { to: '/admin/users', icon: User, label: 'Users' },
           { to: '/admin/lessons', icon: BookOpen, label: 'Lessons' },
-          { to: '/admin/settings', icon: Settings, label: 'Settings' },
         ];
       case 'recruiter':
         return [
           { to: '/recruiter/dashboard', icon: Trophy, label: 'Dashboard' },
-          { to: '/recruiter/candidates', icon: User, label: 'Candidates' },
-          { to: '/recruiter/jobs', icon: BookOpen, label: 'Jobs' },
-          { to: '/recruiter/settings', icon: Settings, label: 'Settings' },
+          { to: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
         ];
       default:
         return [
@@ -85,68 +82,70 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
                 </Button>
               </Link>
             ))}
-            {/* Compact Level, XP & Streak - restyled */}
-            <div className="hidden md:flex items-center gap-3 ml-3">
-              {/* Level Display with Progress Bar */}
-              <div
-                className="brutal-border brutal-shadow bg-card rounded-lg px-3 py-1.5 flex items-center gap-2 transform -rotate-[0.5deg] transition-transform duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:rotate-0 cursor-pointer min-w-[120px]"
-                title={`${
-                  (user as any)?.stats?.levelName ?? 'Novice Explorer'
-                } - ${(user as any)?.stats?.xpProgress ?? 0}% to next level`}
-                aria-label="Level"
-              >
-                <Award className="w-4 h-4 text-purple-500" />
-                <div className="leading-none flex-1">
-                  <div className="text-sm font-bold flex items-center gap-1">
-                    <span>Lvl {(user as any)?.stats?.level ?? 1}</span>
-                  </div>
-                  <div className="text-[10px] text-muted-foreground truncate max-w-[80px]">
-                    {(user as any)?.stats?.levelName ?? 'Novice Explorer'}
-                  </div>
-                  {/* Progress bar */}
-                  <div className="w-full bg-gray-200 rounded-full h-1 mt-1">
-                    <div
-                      className="bg-purple-500 h-1 rounded-full transition-all duration-300"
-                      style={{
-                        width: `${(user as any)?.stats?.xpProgress ?? 0}%`,
-                      }}
-                    />
+            {/* Compact Level, XP & Streak - only show for regular users */}
+            {role === 'user' && (
+              <div className="hidden md:flex items-center gap-3 ml-3">
+                {/* Level Display with Progress Bar */}
+                <div
+                  className="brutal-border brutal-shadow bg-card rounded-lg px-3 py-1.5 flex items-center gap-2 transform -rotate-[0.5deg] transition-transform duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:rotate-0 cursor-pointer min-w-[120px]"
+                  title={`${
+                    (user as any)?.stats?.levelName ?? 'Novice Explorer'
+                  } - ${(user as any)?.stats?.xpProgress ?? 0}% to next level`}
+                  aria-label="Level"
+                >
+                  <Award className="w-4 h-4 text-purple-500" />
+                  <div className="leading-none flex-1">
+                    <div className="text-sm font-bold flex items-center gap-1">
+                      <span>Lvl {(user as any)?.stats?.level ?? 1}</span>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground truncate max-w-[80px]">
+                      {(user as any)?.stats?.levelName ?? 'Novice Explorer'}
+                    </div>
+                    {/* Progress bar */}
+                    <div className="w-full bg-gray-200 rounded-full h-1 mt-1">
+                      <div
+                        className="bg-purple-500 h-1 rounded-full transition-all duration-300"
+                        style={{
+                          width: `${(user as any)?.stats?.xpProgress ?? 0}%`,
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div
-                className="brutal-border brutal-shadow bg-card rounded-lg px-2 py-1 flex items-center gap-2 transform rotate-[1deg] transition-transform duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:rotate-0 cursor-pointer"
-                title={`${(user as any)?.stats?.xpPoints ?? 0} XP`}
-                aria-label="XP"
-              >
-                <Zap className="w-4 h-4 text-yellow-500" />
-                <div className="leading-none">
-                  <div className="text-sm font-bold">
-                    {(user as any)?.stats?.xpPoints ?? 0}
+                <div
+                  className="brutal-border brutal-shadow bg-card rounded-lg px-2 py-1 flex items-center gap-2 transform rotate-[1deg] transition-transform duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:rotate-0 cursor-pointer"
+                  title={`${(user as any)?.stats?.xpPoints ?? 0} XP`}
+                  aria-label="XP"
+                >
+                  <Zap className="w-4 h-4 text-yellow-500" />
+                  <div className="leading-none">
+                    <div className="text-sm font-bold">
+                      {(user as any)?.stats?.xpPoints ?? 0}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground">XP</div>
                   </div>
-                  <div className="text-[10px] text-muted-foreground">XP</div>
                 </div>
-              </div>
 
-              <div
-                className="brutal-border brutal-shadow bg-card rounded-lg px-2 py-1 flex items-center gap-2 transform rotate-[1deg] transition-transform duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:rotate-0 cursor-pointer"
-                title={`Streak: ${
-                  (user as any)?.stats?.currentStreak ?? 0
-                } days`}
-                aria-label="Streak"
-              >
-                <Calendar className="w-4 h-4 text-blue-500" />
-                <div className="leading-none">
-                  <div className="text-sm font-bold">
-                    {(user as any)?.stats?.currentStreak ?? 0}d
-                  </div>
-                  <div className="text-[10px] text-muted-foreground">
-                    Streak
+                <div
+                  className="brutal-border brutal-shadow bg-card rounded-lg px-2 py-1 flex items-center gap-2 transform rotate-[1deg] transition-transform duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:rotate-0 cursor-pointer"
+                  title={`Streak: ${
+                    (user as any)?.stats?.currentStreak ?? 0
+                  } days`}
+                  aria-label="Streak"
+                >
+                  <Calendar className="w-4 h-4 text-blue-500" />
+                  <div className="leading-none">
+                    <div className="text-sm font-bold">
+                      {(user as any)?.stats?.currentStreak ?? 0}d
+                    </div>
+                    <div className="text-[10px] text-muted-foreground">
+                      Streak
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
             <Separator orientation="vertical" className="h-6 mx-2" />
             <Button
               variant="outline-brutal"

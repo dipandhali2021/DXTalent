@@ -747,7 +747,7 @@ export const getUserById = async (req, res) => {
     const { userId } = req.params;
 
     const user = await User.findById(userId).select(
-      'username profilePicture role stats isEmailVerified createdAt'
+      'username email profilePicture role stats isEmailVerified createdAt'
     );
 
     if (!user) {
@@ -757,24 +757,38 @@ export const getUserById = async (req, res) => {
       });
     }
 
+    // Check if requester is a recruiter or admin to show email
+    const requestingUser = req.user; // May be undefined if not authenticated
+    const isRecruiterOrAdmin =
+      requestingUser &&
+      (requestingUser.role === 'recruiter' || requestingUser.role === 'admin');
+
+    // Build response object
+    const userData = {
+      id: user._id,
+      username: user.username,
+      profilePicture: user.profilePicture,
+      role: user.role,
+      stats: {
+        level: user.stats.level,
+        xpPoints: user.stats.xpPoints,
+        league: user.stats.league,
+        currentStreak: user.stats.currentStreak,
+      },
+      isEmailVerified: user.isEmailVerified,
+      joinedAt: user.createdAt,
+    };
+
+    // Include email if requester is recruiter or admin
+    if (isRecruiterOrAdmin) {
+      userData.email = user.email;
+    }
+
     // Return limited public fields only
     res.json({
       success: true,
       data: {
-        user: {
-          id: user._id,
-          username: user.username,
-          profilePicture: user.profilePicture,
-          role: user.role,
-          stats: {
-            level: user.stats.level,
-            xpPoints: user.stats.xpPoints,
-            league: user.stats.league,
-            currentStreak: user.stats.currentStreak,
-          },
-          isEmailVerified: user.isEmailVerified,
-          joinedAt: user.createdAt,
-        },
+        user: userData,
       },
     });
   } catch (error) {

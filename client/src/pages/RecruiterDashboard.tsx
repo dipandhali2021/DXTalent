@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,67 +43,107 @@ import {
   Line,
 } from 'recharts';
 import DashboardHeader from '@/components/DashboardHeader';
+import { recruiterAPI } from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 
 const RecruiterDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [skillFilter, setSkillFilter] = useState('all');
   const [leagueFilter, setLeagueFilter] = useState('all');
 
-  // Mock data
+  // State for real data
+  const [candidates, setCandidates] = useState<any[]>([]);
+  const [trendingSkills, setTrendingSkills] = useState<any[]>([]);
+  const [weeklyActivity, setWeeklyActivity] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch all data in parallel
+        const [candidatesRes, skillsRes, activityRes] = await Promise.all([
+          recruiterAPI.getTopCandidates({ limit: 50 }), // Fetch more for filtering
+          recruiterAPI.getTrendingSkills({ limit: 5, days: 30 }),
+          recruiterAPI.getActiveLearners({ weeks: 4 }),
+        ]);
+
+        if (candidatesRes.success) {
+          setCandidates(candidatesRes.data.candidates || []);
+        }
+
+        if (skillsRes.success) {
+          setTrendingSkills(skillsRes.data.trendingSkills || []);
+        }
+
+        if (activityRes.success) {
+          setWeeklyActivity(activityRes.data.weeklyActivity || []);
+        }
+      } catch (error: any) {
+        console.error('Error fetching dashboard data:', error);
+        toast({
+          title: '❌ Error',
+          description: 'Failed to load dashboard data',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  // Apply filters and search
+  const applyFilters = () => {
+    let filtered = [...candidates];
+
+    // Apply search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((candidate) => {
+        const nameMatch = candidate.name?.toLowerCase().includes(query);
+        const usernameMatch = candidate.username?.toLowerCase().includes(query);
+        const skillsMatch = candidate.topSkills?.some((skill: string) =>
+          skill.toLowerCase().includes(query)
+        );
+        return nameMatch || usernameMatch || skillsMatch;
+      });
+    }
+
+    // Apply skill/category filter
+    if (skillFilter !== 'all') {
+      filtered = filtered.filter((candidate) =>
+        candidate.topSkills?.some(
+          (skill: string) => skill.toLowerCase() === skillFilter.toLowerCase()
+        )
+      );
+    }
+
+    // Apply league filter
+    if (leagueFilter !== 'all') {
+      filtered = filtered.filter(
+        (candidate) =>
+          candidate.league?.toLowerCase() === leagueFilter.toLowerCase()
+      );
+    }
+
+    return filtered;
+  };
+
+  // Get filtered candidates
+  const filteredCandidates = applyFilters();
+
+  // Display top 3 filtered candidates
+  const displayedCandidates = filteredCandidates.slice(0, 3);
+
+  // Mock data for interviews (this can be replaced with real data later)
   const mockData = {
-    candidates: [
-      {
-        id: '1',
-        name: 'Sarah Johnson',
-        username: 'sarahj',
-        avatar: '',
-        xp: 15200,
-        accuracy: 92,
-        league: 'Platinum',
-        topSkills: ['React', 'TypeScript', 'Node.js'],
-        streak: 45,
-        badges: 12,
-      },
-      {
-        id: '2',
-        name: 'Michael Chen',
-        username: 'mchen',
-        avatar: '',
-        xp: 13800,
-        accuracy: 88,
-        league: 'Gold',
-        topSkills: ['Python', 'Django', 'PostgreSQL'],
-        streak: 30,
-        badges: 10,
-      },
-      {
-        id: '3',
-        name: 'Emily Rodriguez',
-        username: 'emilyR',
-        avatar: '',
-        xp: 14500,
-        accuracy: 95,
-        league: 'Platinum',
-        topSkills: ['Vue.js', 'JavaScript', 'CSS'],
-        streak: 60,
-        badges: 15,
-      },
-    ],
-    skillDemand: [
-      { skill: 'React', demand: 85 },
-      { skill: 'Python', demand: 78 },
-      { skill: 'Node.js', demand: 72 },
-      { skill: 'TypeScript', demand: 68 },
-      { skill: 'AWS', demand: 65 },
-    ],
-    weeklyActivity: [
-      { week: 'Week 1', learners: 120 },
-      { week: 'Week 2', learners: 145 },
-      { week: 'Week 3', learners: 160 },
-      { week: 'Week 4', learners: 180 },
-    ],
     interviews: [
       {
         id: '1',
@@ -156,10 +196,12 @@ const RecruiterDashboard = () => {
           {/* Talent Search Section */}
           <Card className="brutal-border brutal-shadow">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Search className="w-5 h-5" />
-                Talent Search
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Search className="w-5 h-5" />
+                  Talent Search
+                </CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-col md:flex-row gap-4">
@@ -169,18 +211,25 @@ const RecruiterDashboard = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="brutal-border"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        // Trigger re-render by updating state
+                        setSearchQuery(e.currentTarget.value);
+                      }
+                    }}
                   />
                 </div>
                 <Select value={skillFilter} onValueChange={setSkillFilter}>
                   <SelectTrigger className="w-full md:w-[180px] brutal-border">
-                    <SelectValue placeholder="Filter by skill" />
+                    <SelectValue placeholder="Filter by category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Skills</SelectItem>
-                    <SelectItem value="react">React</SelectItem>
-                    <SelectItem value="python">Python</SelectItem>
-                    <SelectItem value="node">Node.js</SelectItem>
-                    <SelectItem value="typescript">TypeScript</SelectItem>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="marketing">Marketing</SelectItem>
+                    <SelectItem value="development">Development</SelectItem>
+                    <SelectItem value="data">Data</SelectItem>
+                    <SelectItem value="business">Business</SelectItem>
+                    <SelectItem value="design">Design</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={leagueFilter} onValueChange={setLeagueFilter}>
@@ -192,33 +241,104 @@ const RecruiterDashboard = () => {
                     <SelectItem value="platinum">Platinum</SelectItem>
                     <SelectItem value="gold">Gold</SelectItem>
                     <SelectItem value="silver">Silver</SelectItem>
+                    <SelectItem value="bronze">Bronze</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="hero" className="gap-2">
-                  <Filter className="w-4 h-4" />
-                  Apply
+                <Button
+                  variant="hero"
+                  className="gap-2"
+                  onClick={() => {
+                    // Reset all filters
+                    setSearchQuery('');
+                    setSkillFilter('all');
+                    setLeagueFilter('all');
+                  }}
+                >
+                  Reset
                 </Button>
               </div>
+              {(searchQuery ||
+                skillFilter !== 'all' ||
+                leagueFilter !== 'all') && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">
+                    Showing {filteredCandidates.length} result
+                    {filteredCandidates.length !== 1 ? 's' : ''}
+                    {searchQuery && ` for "${searchQuery}"`}
+                  </span>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Main Content Grid: Left (Candidates & Charts) + Right (Invites & Actions) */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-            {/* Left Side: Candidate Cards & Charts (3/4 width) */}
-            <div className="lg:col-span-3 space-y-4">
+          {/* Main Content: Full Width for Candidates & Charts */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
               {/* Top Candidates Header */}
               <div className="space-y-1">
                 <h2 className="text-2xl md:text-3xl font-bold">
-                  Top Candidates
+                  {searchQuery ||
+                  skillFilter !== 'all' ||
+                  leagueFilter !== 'all'
+                    ? 'Search Results'
+                    : 'Top Candidates'}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Based on recent activity & performance
+                  {searchQuery ||
+                  skillFilter !== 'all' ||
+                  leagueFilter !== 'all'
+                    ? `Found ${filteredCandidates.length} matching candidate${
+                        filteredCandidates.length !== 1 ? 's' : ''
+                      }`
+                    : 'Based on recent activity & performance'}
                 </p>
               </div>
+              {/* View All Link */}
+              <div className="flex justify-center">
+                <Button
+                  variant="outline-brutal"
+                  className="gap-2"
+                  onClick={() => navigate('/leaderboard')}
+                >
+                  Leaderboard
+                  <ExternalLink className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
 
-              {/* Candidate Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {mockData.candidates.map((candidate) => (
+            {/* Candidate Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {loading ? (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-muted-foreground">Loading candidates...</p>
+                </div>
+              ) : displayedCandidates.length === 0 ? (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-muted-foreground">
+                    {searchQuery ||
+                    skillFilter !== 'all' ||
+                    leagueFilter !== 'all'
+                      ? 'No candidates found matching your search criteria. Try adjusting your filters.'
+                      : 'No candidates found'}
+                  </p>
+                  {(searchQuery ||
+                    skillFilter !== 'all' ||
+                    leagueFilter !== 'all') && (
+                    <Button
+                      variant="outline-brutal"
+                      className="mt-4"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setSkillFilter('all');
+                        setLeagueFilter('all');
+                      }}
+                    >
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                displayedCandidates.map((candidate) => (
                   <Card
                     key={candidate.id}
                     className="brutal-border brutal-shadow hover:scale-[1.02] transition-transform"
@@ -286,15 +406,22 @@ const RecruiterDashboard = () => {
                           Top Skills
                         </div>
                         <div className="flex flex-wrap gap-1.5">
-                          {candidate.topSkills.map((skill, idx) => (
-                            <Badge
-                              key={idx}
-                              variant="secondary"
-                              className="brutal-border text-xs py-0"
-                            >
-                              {skill}
-                            </Badge>
-                          ))}
+                          {candidate.topSkills &&
+                          candidate.topSkills.length > 0 ? (
+                            candidate.topSkills.map((skill, idx) => (
+                              <Badge
+                                key={idx}
+                                variant="secondary"
+                                className="brutal-border text-xs py-0 bg-yellow-300 text-black hover:bg-yellow-400"
+                              >
+                                {skill}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              No skills yet
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -303,32 +430,56 @@ const RecruiterDashboard = () => {
                           variant="hero"
                           className="flex-1 gap-1 text-sm"
                           size="sm"
+                          onClick={() => {
+                            const subject = encodeURIComponent(
+                              'Interview Invitation - DXTalent'
+                            );
+                            const body = encodeURIComponent(
+                              `Hi ${candidate.name},\n\nWe're impressed by your performance on DXTalent and would like to invite you for an interview.\n\nBest regards`
+                            );
+                            window.open(
+                              `https://mail.google.com/mail/?view=cm&fs=1&to=${candidate.email}&su=${subject}&body=${body}`,
+                              '_blank'
+                            );
+                          }}
                         >
                           <Mail className="w-3.5 h-3.5" />
                           Invite
                         </Button>
-                        <Button variant="outline-brutal" size="sm">
+                        <Button
+                          variant="outline-brutal"
+                          size="sm"
+                          onClick={() => navigate(`/profile/${candidate.id}`)}
+                        >
                           <ExternalLink className="w-3.5 h-3.5" />
                         </Button>
                       </div>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
+                ))
+              )}
+            </div>
 
-              {/* Analytics Section */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Skill Demand Chart */}
-                <Card className="brutal-border brutal-shadow">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <TrendingUp className="w-4 h-4" />
-                      Trending Skills
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
+            {/* Analytics Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Skill Demand Chart */}
+              <Card className="brutal-border brutal-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <TrendingUp className="w-4 h-4" />
+                    Trending Skills
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground text-sm">
+                        Loading...
+                      </p>
+                    </div>
+                  ) : (
                     <ResponsiveContainer width="100%" height={240}>
-                      <BarChart data={mockData.skillDemand}>
+                      <BarChart data={trendingSkills}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
                         <XAxis dataKey="skill" fontSize={12} />
                         <YAxis fontSize={12} />
@@ -349,20 +500,28 @@ const RecruiterDashboard = () => {
                         />
                       </BarChart>
                     </ResponsiveContainer>
-                  </CardContent>
-                </Card>
+                  )}
+                </CardContent>
+              </Card>
 
-                {/* Activity Chart */}
-                <Card className="brutal-border brutal-shadow">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <Users className="w-4 h-4" />
-                      Active Learners
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
+              {/* Activity Chart */}
+              <Card className="brutal-border brutal-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Users className="w-4 h-4" />
+                    Active Learners
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground text-sm">
+                        Loading...
+                      </p>
+                    </div>
+                  ) : (
                     <ResponsiveContainer width="100%" height={240}>
-                      <LineChart data={mockData.weeklyActivity}>
+                      <LineChart data={weeklyActivity}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
                         <XAxis dataKey="week" fontSize={12} />
                         <YAxis fontSize={12} />
@@ -383,76 +542,7 @@ const RecruiterDashboard = () => {
                         />
                       </LineChart>
                     </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-
-            {/* Right Side: Recent Invites & Quick Actions (1/4 width) */}
-            <div className="space-y-4">
-              {/* Recent Invites (Interview Management) */}
-              <Card className="brutal-border brutal-shadow">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Mail className="w-4 h-4" />
-                    Recent Invites
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {mockData.interviews.map((interview) => (
-                    <div
-                      key={interview.id}
-                      className="p-3 bg-muted/50 brutal-border rounded-lg flex items-center justify-between"
-                    >
-                      <div className="flex-1">
-                        <h4 className="font-bold text-sm">
-                          {interview.candidate}
-                        </h4>
-                        <p className="text-xs text-muted-foreground">
-                          {interview.date}
-                        </p>
-                      </div>
-                      <Badge
-                        className={`brutal-border text-xs ${getStatusColor(
-                          interview.status
-                        )}`}
-                      >
-                        {interview.status}
-                      </Badge>
-                    </div>
-                  ))}
-                  <Button
-                    variant="outline-brutal"
-                    className="w-full text-sm"
-                    size="sm"
-                  >
-                    View All Invites
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Quick Actions */}
-              <Card className="brutal-border brutal-shadow bg-yellow-300">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-xl font-bold">
-                    Quick Actions
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button
-                    variant="outline"
-                    className="w-full bg-white hover:bg-gray-50 brutal-border border-black text-sm py-4"
-                    size="sm"
-                  >
-                    Generate Interview Link
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full bg-white hover:bg-gray-50 brutal-border border-black text-sm py-4"
-                    size="sm"
-                  >
-                    Export Candidates
-                  </Button>
+                  )}
                 </CardContent>
               </Card>
             </div>
