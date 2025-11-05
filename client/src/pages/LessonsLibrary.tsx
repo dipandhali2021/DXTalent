@@ -7,6 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -19,6 +27,9 @@ import {
   ArrowLeft,
   BookOpen,
   CheckCircle2,
+  FileText,
+  RefreshCw,
+  Award,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import DashboardHeader from '@/components/DashboardHeader';
@@ -88,6 +99,16 @@ const LessonsLibrary = () => {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState<string | null>(null);
+  const [isGeneratingTest, setIsGeneratingTest] = useState<string | null>(null);
+
+  // Test options dialog state
+  const [showTestDialog, setShowTestDialog] = useState(false);
+  const [testDialogData, setTestDialogData] = useState<{
+    lesson: Lesson;
+    hasPassed: boolean;
+    totalAttempts: number;
+    bestScore: any;
+  } | null>(null);
 
   // Group lessons by their topic (derived from similar skillNames)
   const groupLessonsByTopic = (lessonsList: Lesson[]): TopicCategory[] => {
@@ -224,6 +245,115 @@ const LessonsLibrary = () => {
       return;
     }
     navigate(`/lesson/${lesson._id}`);
+  };
+
+  // Handle take test click
+  const handleTakeTest = async (
+    lessonOrTopic: Lesson | TopicCategory,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation(); // Prevent card click
+
+    // If it's a topic, get the first ready lesson
+    let lesson: Lesson;
+    if ('lessons' in lessonOrTopic) {
+      // It's a TopicCategory
+      const readyLesson = lessonOrTopic.lessons.find((l) => l.isFullyGenerated);
+      if (!readyLesson) {
+        toast({
+          title: 'No lessons ready',
+          description:
+            'Please generate at least one lesson in this topic before taking the test.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      lesson = readyLesson;
+    } else {
+      // It's a Lesson
+      lesson = lessonOrTopic;
+      if (lesson.placeholder && !lesson.isFullyGenerated) {
+        toast({
+          title: 'Lesson not ready',
+          description:
+            'Please generate this lesson first before taking the test.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
+    setIsGeneratingTest(lesson._id);
+
+    try {
+      // Check test status first
+      const statusResponse = await lessonAPI.getTestStatus(lesson._id);
+
+      if (statusResponse.success && statusResponse.data.hasTest) {
+        const { hasPassed, totalAttempts, bestScore } = statusResponse.data;
+
+        // Show dialog with options
+        setTestDialogData({
+          lesson,
+          hasPassed,
+          totalAttempts,
+          bestScore,
+        });
+        setShowTestDialog(true);
+        setIsGeneratingTest(null);
+        return;
+      }
+
+      // No existing test, generate new one
+      await generateAndStartTest(lesson, false);
+    } catch (error: any) {
+      console.error('Error checking test status:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to check test status. Please try again.',
+        variant: 'destructive',
+      });
+      setIsGeneratingTest(null);
+    }
+  };
+
+  // Generate and start test
+  const generateAndStartTest = async (lesson: Lesson, forceNew: boolean) => {
+    setIsGeneratingTest(lesson._id);
+    setShowTestDialog(false);
+
+    try {
+      const response = await lessonAPI.generateTest(lesson._id, 20, forceNew);
+      if (response.success) {
+        const xpMessage = response.data.isNewTest
+          ? 'New test generated! Pass for 100 XP!'
+          : response.data.totalAttempts > 0 && response.data.bestScore
+          ? 'Retaking test - earn 20 XP!'
+          : 'Your test is ready. Good luck!';
+
+        toast({
+          title: 'Test generated! 📝',
+          description: xpMessage,
+        });
+
+        // Navigate to test page with test data
+        navigate('/test', {
+          state: {
+            testData: response.data,
+            testId: response.data.testId,
+          },
+        });
+      }
+    } catch (error: any) {
+      console.error('Error generating test:', error);
+      toast({
+        title: 'Test generation failed',
+        description: error.response?.data?.message || 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGeneratingTest(null);
+    }
   };
 
   // Handle topic category click
@@ -537,6 +667,10 @@ const LessonsLibrary = () => {
                               ? 'outline'
                               : 'default'
                           }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleLessonClick(lesson);
+                          }}
                         >
                           {lesson.completionStatus?.isCompleted ? (
                             <>
@@ -544,7 +678,10 @@ const LessonsLibrary = () => {
                               Retake (10 XP)
                             </>
                           ) : (
-                            'Start Learning'
+                            <>
+                              <BookOpen className="mr-2 h-4 w-4" />
+                              Start Learning
+                            </>
                           )}
                         </Button>
                       )}
@@ -636,10 +773,41 @@ const LessonsLibrary = () => {
                         </div>
                       </div>
 
-                      <Button className="w-full" size="sm">
-                        <BookOpen className="mr-2 h-4 w-4" />
-                        View Lessons
-                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          className="w-full"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleTopicClick(topic);
+                          }}
+                        >
+                          <BookOpen className="mr-2 h-4 w-4" />
+                          View Lessons
+                        </Button>
+                        <Button
+                          className="w-full"
+                          size="sm"
+                          variant="secondary"
+                          onClick={(e) => handleTakeTest(topic, e)}
+                          disabled={
+                            isGeneratingTest !== null ||
+                            !topic.lessons.some((l) => l.isFullyGenerated)
+                          }
+                        >
+                          {isGeneratingTest !== null ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Loading...
+                            </>
+                          ) : (
+                            <>
+                              <FileText className="mr-2 h-4 w-4" />
+                              Take Test
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -673,6 +841,122 @@ const LessonsLibrary = () => {
           </>
         )}
       </div>
+
+      {/* Test Options Dialog */}
+      <Dialog open={showTestDialog} onOpenChange={setShowTestDialog}>
+        <DialogContent className="brutal-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-handwritten text-2xl flex items-center gap-2">
+              <FileText className="w-6 h-6 text-primary" />
+              Test Options
+            </DialogTitle>
+            <DialogDescription className="text-base pt-2">
+              {testDialogData?.hasPassed ? (
+                <div className="space-y-2">
+                  <p className="font-medium text-foreground">
+                    🎉 You've passed this test before!
+                  </p>
+                  <div className="bg-accent/10 brutal-border p-3 rounded">
+                    <p className="text-sm">
+                      <span className="font-bold">Best Score:</span>{' '}
+                      {testDialogData.bestScore?.accuracy}%
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-bold">Total Attempts:</span>{' '}
+                      {testDialogData.totalAttempts}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p>
+                  You've attempted this test {testDialogData?.totalAttempts}{' '}
+                  time(s).
+                  {testDialogData?.totalAttempts &&
+                  testDialogData.totalAttempts > 0
+                    ? ' Keep trying or try new questions!'
+                    : ' Choose your test option below.'}
+                </p>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-4">
+            {/* Retake Same Test Option */}
+            <button
+              onClick={() =>
+                testDialogData &&
+                generateAndStartTest(testDialogData.lesson, false)
+              }
+              className="w-full brutal-border bg-card hover:bg-muted p-4 text-left transition-all hover:shadow-brutal-hover hover:-translate-y-1"
+            >
+              <div className="flex items-start gap-3">
+                <div className="bg-primary/10 brutal-border p-2 rounded">
+                  <RefreshCw className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-handwritten font-bold text-lg mb-1">
+                    Retake Same Test
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Same questions, test your memory and consistency
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Badge className="brutal-border bg-accent/20 text-accent-foreground">
+                      <Zap className="w-3 h-3 mr-1" />
+                      {testDialogData?.hasPassed ? '20 XP' : 'Practice'}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      • 20 questions
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </button>
+
+            {/* Generate New Test Option */}
+            <button
+              onClick={() =>
+                testDialogData &&
+                generateAndStartTest(testDialogData.lesson, true)
+              }
+              className="w-full brutal-border bg-primary/5 hover:bg-primary/10 p-4 text-left transition-all hover:shadow-brutal-hover hover:-translate-y-1"
+            >
+              <div className="flex items-start gap-3">
+                <div className="bg-primary brutal-border p-2 rounded">
+                  <Sparkles className="w-5 h-5 text-primary-foreground" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-handwritten font-bold text-lg mb-1">
+                    Generate New Test
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Fresh questions, new challenge to master the topic
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Badge className="brutal-border bg-primary text-primary-foreground">
+                      <Award className="w-3 h-3 mr-1" />
+                      100 XP
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      • 20 new questions
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </button>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowTestDialog(false)}
+              className="w-full"
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

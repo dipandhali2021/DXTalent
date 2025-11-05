@@ -13,6 +13,9 @@ import {
   getUserStats,
   getAIRecommendation,
   getContinueJourney,
+  generateLessonTest,
+  submitTest,
+  getTestStatus,
 } from '../controllers/lessonController.js';
 import {
   validateGenerateLessonStructure,
@@ -42,6 +45,25 @@ router.post(
   authenticate,
   validateLessonId,
   generatePlaceholderContent
+);
+
+// POST /api/lessons/:lessonId/generate-test - Generate a test for a lesson
+router.post(
+  '/:lessonId/generate-test',
+  authenticate,
+  validateLessonId,
+  generateLessonTest
+);
+
+// POST /api/lessons/tests/:testId/submit - Submit test attempt
+router.post('/tests/:testId/submit', authenticate, submitTest);
+
+// GET /api/lessons/:lessonId/test-status - Get test status for a lesson
+router.get(
+  '/:lessonId/test-status',
+  authenticate,
+  validateLessonId,
+  getTestStatus
 );
 
 // GET /api/lessons/stats - Get lesson statistics for user

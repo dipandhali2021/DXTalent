@@ -217,6 +217,24 @@ export const lessonAPI = {
     getLessonCompletionStatus: async (lessonId: string) => {
         const response = await api.get(`/lessons/${lessonId}/completion-status`);
         return response.data;
+    },
+
+    // Generate test for a lesson
+    generateTest: async (lessonId: string, questionCount?: number, forceNew?: boolean) => {
+        const response = await api.post(`/lessons/${lessonId}/generate-test`, { questionCount, forceNew });
+        return response.data;
+    },
+
+    // Submit test attempt
+    submitTest: async (testId: string, answers: number[], timeTaken: number) => {
+        const response = await api.post(`/lessons/tests/${testId}/submit`, { answers, timeTaken });
+        return response.data;
+    },
+
+    // Get test status for a lesson
+    getTestStatus: async (lessonId: string) => {
+        const response = await api.get(`/lessons/${lessonId}/test-status`);
+        return response.data;
     }
 };
 

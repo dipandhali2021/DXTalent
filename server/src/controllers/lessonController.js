@@ -1,9 +1,12 @@
 import Lesson from '../models/Lesson.js';
+import Test from '../models/Test.js';
+import User from '../models/User.js';
 import {
   generateLesson,
   generateLessonOutlines,
   categorizeTopic,
   recommendTodaysLesson,
+  generateTest,
 } from '../utils/gemini.js';
 import { computeLevelFromXP, calculateLessonXP } from '../utils/level.js';
 import { updateStreak, getActivityData } from '../utils/streak.js';
@@ -1051,6 +1054,323 @@ const getContinueJourney = async (req, res) => {
   }
 };
 
+/**
+ * Generate a test for a specific lesson topic
+ * If test exists and forceNew=false, return existing test
+ * If test exists and forceNew=true, generate new test
+ * POST /api/lessons/:lessonId/generate-test
+ */
+const generateLessonTest = async (req, res) => {
+  try {
+    const { lessonId } = req.params;
+    const { questionCount = 20, forceNew = false } = req.body;
+    const userId = req.user?.id || '507f1f77bcf86cd799439011';
+
+    // Find the lesson
+    const lesson = await Lesson.findById(lessonId);
+    if (!lesson) {
+      return res.status(404).json({
+        success: false,
+        message: 'Lesson not found',
+      });
+    }
+
+    // Check if user has an existing active test for this lesson
+    let existingTest = await Test.findOne({
+      userId,
+      lessonId,
+      isActive: true,
+    }).sort({ createdAt: -1 });
+
+    // If forceNew is false and test exists, return existing test
+    if (!forceNew && existingTest) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          testId: existingTest._id,
+          testName: existingTest.testName,
+          topic: existingTest.topic,
+          difficulty: existingTest.difficulty,
+          timeLimit: existingTest.timeLimit,
+          passingScore: existingTest.passingScore,
+          totalXP: existingTest.totalXP,
+          questions: existingTest.questions,
+          isNewTest: false,
+          totalAttempts: existingTest.totalAttempts,
+          bestScore: existingTest.bestScore,
+        },
+      });
+    }
+
+    // If forceNew is true and test exists, deactivate old test
+    if (forceNew && existingTest) {
+      existingTest.isActive = false;
+      await existingTest.save();
+    }
+
+    // Generate new test using Gemini AI
+    const testData = await generateTest(
+      lesson.topic || lesson.skillName,
+      lesson.difficulty,
+      questionCount
+    );
+
+    // Save test to database
+    const newTest = new Test({
+      userId,
+      lessonId,
+      testName: testData.testName,
+      topic: testData.topic,
+      difficulty: testData.difficulty,
+      timeLimit: testData.timeLimit,
+      passingScore: testData.passingScore,
+      totalXP: testData.totalXP,
+      questions: testData.questions,
+      attempts: [],
+      totalAttempts: 0,
+    });
+
+    await newTest.save();
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        testId: newTest._id,
+        testName: newTest.testName,
+        topic: newTest.topic,
+        difficulty: newTest.difficulty,
+        timeLimit: newTest.timeLimit,
+        passingScore: newTest.passingScore,
+        totalXP: newTest.totalXP,
+        questions: newTest.questions,
+        isNewTest: true,
+        totalAttempts: 0,
+        bestScore: null,
+      },
+    });
+  } catch (error) {
+    console.error('Error generating test:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to generate test',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Submit test attempt and calculate XP
+ * First time pass: full XP (400-600)
+ * Retake same test (passed before): 20 XP
+ * New test (generated new questions): 100 XP if pass
+ * Retake old test: 10 XP if pass
+ * POST /api/lessons/tests/:testId/submit
+ */
+const submitTest = async (req, res) => {
+  try {
+    const { testId } = req.params;
+    const { answers, timeTaken } = req.body;
+    const userId = req.user?.id || '507f1f77bcf86cd799439011';
+
+    // Find the test
+    const test = await Test.findById(testId);
+    if (!test) {
+      return res.status(404).json({
+        success: false,
+        message: 'Test not found',
+      });
+    }
+
+    // Verify ownership
+    if (test.userId.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized',
+      });
+    }
+
+    // Calculate score
+    let correctAnswers = 0;
+    const processedAnswers = answers.map((answer, index) => {
+      const question = test.questions[index];
+      const isCorrect = answer === question.correctAnswer;
+      if (isCorrect) correctAnswers++;
+
+      return {
+        questionId: question.id,
+        selectedAnswer: answer,
+        isCorrect,
+      };
+    });
+
+    const totalQuestions = test.questions.length;
+    const accuracy = Math.round((correctAnswers / totalQuestions) * 100);
+    const passed = accuracy >= test.passingScore;
+
+    // Calculate XP based on attempt type
+    let xpEarned = 0;
+    const isFirstAttempt = test.totalAttempts === 0;
+    const hasPassedBefore = test.attempts.some((attempt) => attempt.passed);
+
+    if (passed) {
+      if (isFirstAttempt) {
+        // First time pass: full XP
+        xpEarned = test.totalXP;
+      } else if (hasPassedBefore) {
+        // Retake (already passed before): 20 XP
+        xpEarned = 20;
+      } else {
+        // First pass after failing: full XP
+        xpEarned = test.totalXP;
+      }
+    } else {
+      // Failed: no XP
+      xpEarned = 0;
+    }
+
+    // Create attempt record
+    const attemptNumber = test.totalAttempts + 1;
+    const attempt = {
+      attemptNumber,
+      score: accuracy,
+      correctAnswers,
+      totalQuestions,
+      accuracy,
+      xpEarned,
+      timeTaken,
+      passed,
+      answers: processedAnswers,
+      completedAt: new Date(),
+    };
+
+    // Update test
+    test.attempts.push(attempt);
+    test.totalAttempts += 1;
+    test.lastAttemptAt = new Date();
+
+    if (!test.firstCompletedAt) {
+      test.firstCompletedAt = new Date();
+    }
+
+    // Update best score if this is better
+    if (
+      !test.bestScore ||
+      accuracy > test.bestScore.accuracy ||
+      (accuracy === test.bestScore.accuracy &&
+        xpEarned > test.bestScore.xpEarned)
+    ) {
+      test.bestScore = {
+        accuracy,
+        correctAnswers,
+        totalQuestions,
+        xpEarned,
+        attemptNumber,
+      };
+    }
+
+    await test.save();
+
+    // Update user XP and streak if passed
+    if (passed && xpEarned > 0) {
+      const user = await User.findById(userId);
+      if (user) {
+        user.xp += xpEarned;
+        user.level = computeLevelFromXP(user.xp);
+        user.league = calculateLeague(user.xp);
+
+        // Update streak
+        const streakData = updateStreak(user);
+        user.currentStreak = streakData.currentStreak;
+        user.longestStreak = streakData.longestStreak;
+        user.lastActiveDate = streakData.lastActiveDate;
+
+        await user.save();
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        attempt: {
+          attemptNumber,
+          score: accuracy,
+          correctAnswers,
+          totalQuestions,
+          accuracy,
+          xpEarned,
+          passed,
+          timeTaken,
+        },
+        bestScore: test.bestScore,
+        totalAttempts: test.totalAttempts,
+        message: passed
+          ? isFirstAttempt || !hasPassedBefore
+            ? `Congratulations! You earned ${xpEarned} XP!`
+            : `Great job! You earned ${xpEarned} XP for retaking.`
+          : 'Keep trying! You can retake the test.',
+      },
+    });
+  } catch (error) {
+    console.error('Error submitting test:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to submit test',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Get test status for a lesson
+ * GET /api/lessons/:lessonId/test-status
+ */
+const getTestStatus = async (req, res) => {
+  try {
+    const { lessonId } = req.params;
+    const userId = req.user?.id || '507f1f77bcf86cd799439011';
+
+    const test = await Test.findOne({
+      userId,
+      lessonId,
+      isActive: true,
+    }).sort({ createdAt: -1 });
+
+    if (!test) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          hasTest: false,
+          testId: null,
+          totalAttempts: 0,
+          bestScore: null,
+          hasPassed: false,
+        },
+      });
+    }
+
+    const hasPassed = test.attempts.some((attempt) => attempt.passed);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        hasTest: true,
+        testId: test._id,
+        totalAttempts: test.totalAttempts,
+        bestScore: test.bestScore,
+        hasPassed,
+        lastAttemptAt: test.lastAttemptAt,
+      },
+    });
+  } catch (error) {
+    console.error('Error getting test status:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to get test status',
+      error: error.message,
+    });
+  }
+};
+
 export {
   generateLessonStructure,
   generatePlaceholderContent,
@@ -1064,4 +1384,7 @@ export {
   getUserStats,
   getAIRecommendation,
   getContinueJourney,
+  generateLessonTest,
+  submitTest,
+  getTestStatus,
 };

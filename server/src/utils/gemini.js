@@ -66,7 +66,7 @@ Requirements:
 Return ONLY the JSON object, no additional text.`;
 
     const result = await getClient().models.generateContent({
-      model: 'gemini-2.0-flash-001',
+      model: 'gemini-2.5-flash',
       contents: prompt,
     });
     const text = result.text;
@@ -129,7 +129,7 @@ Requirements:
 Return ONLY the JSON array, no additional text.`;
 
     const result = await getClient().models.generateContent({
-      model: 'gemini-2.0-flash-001',
+      model: 'gemini-2.5-flash',
       contents: prompt,
     });
     const text = result.text;
@@ -175,7 +175,7 @@ Return ONLY valid JSON (no markdown, no code blocks):
 Return ONLY the JSON object, no additional text.`;
 
     const result = await getClient().models.generateContent({
-      model: 'gemini-2.0-flash-001',
+      model: 'gemini-2.5-flash',
       contents: prompt,
     });
     const text = result.text;
@@ -268,7 +268,7 @@ IMPORTANT: Use the exact lesson ID from the available lessons list above.
 Return ONLY the JSON object, no additional text.`;
 
     const result = await getClient().models.generateContent({
-      model: 'gemini-2.0-flash-001',
+      model: 'gemini-2.5-flash',
       contents: prompt,
     });
     const text = result.text;
@@ -324,9 +324,95 @@ Return ONLY the JSON object, no additional text.`;
   }
 }
 
+/**
+ * Generate a comprehensive test with 20 questions on a given topic
+ * @param {string} topic - The topic to generate test questions for
+ * @param {string} difficulty - Difficulty level (Beginner, Intermediate, Advanced)
+ * @param {number} questionCount - Number of questions to generate (default: 20)
+ * @returns {Promise<Object>} Generated test data with questions
+ */
+async function generateTest(
+  topic,
+  difficulty = 'Intermediate',
+  questionCount = 20
+) {
+  try {
+    const prompt = `Generate a comprehensive ${difficulty}-level test on "${topic}" with ${questionCount} multiple-choice questions.
+
+Return ONLY valid JSON (no markdown, no code blocks) with this exact structure:
+{
+  "testName": "test title",
+  "topic": "${topic}",
+  "difficulty": "${difficulty}",
+  "timeLimit": time in seconds (30-45 minutes based on difficulty),
+  "passingScore": passing percentage (70-80 based on difficulty),
+  "totalXP": total XP reward (400-600 based on difficulty),
+  "questions": [
+    {
+      "id": 1,
+      "question": "clear, specific question text",
+      "options": ["option A", "option B", "option C", "option D"],
+      "correctAnswer": 0,
+      "explanation": "detailed explanation of the correct answer",
+      "points": 5
+    }
+  ]
+}
+
+Requirements:
+- Generate exactly ${questionCount} questions
+- Each question must have 4 options
+- correctAnswer is the index (0-3) of the correct option
+- Make questions progressively harder throughout the test
+- Cover different aspects of ${topic}
+- Include both conceptual and practical questions
+- Provide clear, educational explanations
+- Each question worth 5 points
+- Beginner: 45 min, 70% pass, 400 XP
+- Intermediate: 40 min, 75% pass, 500 XP
+- Advanced: 35 min, 80% pass, 600 XP
+- Ensure questions test real understanding, not just memorization
+
+Return ONLY the JSON object, no additional text.`;
+
+    const result = await getClient().models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+    });
+    const text = result.text;
+
+    // Clean the response - remove markdown code blocks if present
+    let cleanedText = text.trim();
+    if (cleanedText.startsWith('```json')) {
+      cleanedText = cleanedText.replace(/^```json\n/, '').replace(/\n```$/, '');
+    } else if (cleanedText.startsWith('```')) {
+      cleanedText = cleanedText.replace(/^```\n/, '').replace(/\n```$/, '');
+    }
+
+    const testData = JSON.parse(cleanedText);
+
+    // Validate the structure
+    if (!testData.questions || !Array.isArray(testData.questions)) {
+      throw new Error('Invalid test structure: missing questions array');
+    }
+
+    if (testData.questions.length !== questionCount) {
+      throw new Error(
+        `Invalid test structure: expected ${questionCount} questions, got ${testData.questions.length}`
+      );
+    }
+
+    return testData;
+  } catch (error) {
+    console.error('Error generating test with Gemini:', error);
+    throw new Error(`Failed to generate test: ${error.message}`);
+  }
+}
+
 export {
   generateLesson,
   generateLessonOutlines,
   categorizeTopic,
   recommendTodaysLesson,
+  generateTest,
 };
