@@ -404,6 +404,11 @@ const LearnerDashboard = () => {
     },
   };
 
+  // Real badge count (fallback to mock while loading)
+  const badgesEarned = loadingBadges
+    ? mockData.overview.badges
+    : badges.filter((b) => b.earned).length;
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header Navigation */}
@@ -488,7 +493,7 @@ const LearnerDashboard = () => {
                   <Award className="w-6 h-6 text-accent-foreground" />
                 </div>
                 <p className="font-handwritten text-3xl font-bold">
-                  {mockData.overview.badges}
+                  {badgesEarned}
                 </p>
                 <p className="font-handwritten text-muted-foreground">Badges</p>
               </CardContent>

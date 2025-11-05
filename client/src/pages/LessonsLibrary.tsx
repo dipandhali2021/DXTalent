@@ -581,7 +581,9 @@ const LessonsLibrary = () => {
               topics
             </p>
           )}
-          <GenerateLessonDialog onLessonsGenerated={fetchLessons} />
+          {!selectedTopic && (
+            <GenerateLessonDialog onLessonsGenerated={fetchLessons} />
+          )}
         </div>
 
         {/* Loading State */}

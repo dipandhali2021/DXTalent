@@ -2,7 +2,6 @@ import express from 'express';
 import {
   seedDefaultLessons,
   resetAndSeedLessons,
-  migrateXpHistoryEndpoint,
 } from '../controllers/seedController.js';
 import { authenticate } from '../middleware/auth.js';
 
@@ -14,7 +13,5 @@ router.post('/default-lessons', authenticate, seedDefaultLessons);
 // Reset and reseed all lessons (use with caution)
 router.post('/reset-lessons', authenticate, resetAndSeedLessons);
 
-// Migrate XP history for all users
-router.post('/migrate-xp-history', migrateXpHistoryEndpoint);
 
 export default router;

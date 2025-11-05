@@ -28,6 +28,7 @@ const translations = {
     'hero.partners': '200+ Recruiting Partners',
     'hero.start_learning': 'Start Learning',
     'hero.for_recruiters': 'For Recruiters',
+    'hero.go_to_dashboard': 'Go to Dashboard',
 
     // Features Section
     'features.badge': '💡 Why Choose Us',
