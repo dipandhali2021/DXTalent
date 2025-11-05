@@ -9,6 +9,7 @@ import {
   getLessonStats,
   completeLesson,
   getLessonCompletionStatus,
+  getUserActivity,
 } from '../controllers/lessonController.js';
 import {
   validateGenerateLessonStructure,
@@ -42,6 +43,9 @@ router.post(
 
 // GET /api/lessons/stats - Get lesson statistics for user
 router.get('/stats', authenticate, getLessonStats);
+
+// GET /api/lessons/activity - Get user's daily activity for heatmap
+router.get('/activity', authenticate, getUserActivity);
 
 // GET /api/lessons - Get all lessons for authenticated user
 router.get('/', authenticate, validateLessonQuery, getUserLessons);

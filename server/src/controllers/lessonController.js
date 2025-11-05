@@ -5,6 +5,7 @@ import {
   categorizeTopic,
 } from '../utils/gemini.js';
 import { computeLevelFromXP, calculateLessonXP } from '../utils/level.js';
+import { updateStreak, getActivityData } from '../utils/streak.js';
 
 /**
  * Generate initial lesson structure with first 3 lessons fully generated
@@ -483,6 +484,9 @@ const completeLesson = async (req, res) => {
       user.stats.challengesCompleted += 1;
     }
 
+    // Update streak and daily activity
+    const streakInfo = updateStreak(user, new Date());
+
     // Calculate new level based on milestone system
     const levelInfo = computeLevelFromXP(user.stats.xpPoints);
     user.stats.level = levelInfo.level;
@@ -517,6 +521,12 @@ const completeLesson = async (req, res) => {
         completionCount: lessonCompletion.completionCount,
         bestScore: lessonCompletion.bestScore,
         leveledUp,
+        streak: {
+          current: streakInfo.currentStreak,
+          longest: streakInfo.longestStreak,
+          todayLessons: streakInfo.todayLessons,
+          streakIncreased: streakInfo.streakIncreased,
+        },
       },
     });
   } catch (error) {
@@ -579,6 +589,47 @@ const getLessonCompletionStatus = async (req, res) => {
   }
 };
 
+/**
+ * Get user's daily activity for heatmap
+ * GET /api/lessons/activity
+ */
+const getUserActivity = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { days = 365 } = req.query;
+
+    const User = (await import('../models/User.js')).default;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Get activity data for the specified number of days
+    const activityData = getActivityData(user.dailyActivity, parseInt(days));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        activity: activityData,
+        currentStreak: user.stats.currentStreak || 0,
+        longestStreak: user.stats.longestStreak || 0,
+        totalLessons: user.stats.challengesCompleted || 0,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching user activity:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch user activity',
+      error: error.message,
+    });
+  }
+};
+
 export {
   generateLessonStructure,
   generatePlaceholderContent,
@@ -588,4 +639,5 @@ export {
   getLessonStats,
   completeLesson,
   getLessonCompletionStatus,
+  getUserActivity,
 };

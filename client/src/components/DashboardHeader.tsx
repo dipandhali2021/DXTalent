@@ -128,13 +128,15 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
 
               <div
                 className="brutal-border brutal-shadow bg-card rounded-lg px-2 py-1 flex items-center gap-2 transform rotate-[1deg] transition-transform duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:rotate-0 cursor-pointer"
-                title={`Streak: ${(user as any)?.streak ?? 0} days`}
+                title={`Streak: ${
+                  (user as any)?.stats?.currentStreak ?? 0
+                } days`}
                 aria-label="Streak"
               >
                 <Calendar className="w-4 h-4 text-blue-500" />
                 <div className="leading-none">
                   <div className="text-sm font-bold">
-                    {(user as any)?.streak ?? 0}d
+                    {(user as any)?.stats?.currentStreak ?? 0}d
                   </div>
                   <div className="text-[10px] text-muted-foreground">
                     Streak

@@ -10,17 +10,47 @@ import { motion } from 'framer-motion';
 import DashboardHeader from '@/components/DashboardHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Award, Brain, Calendar, Trophy, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import api from '@/lib/api';
 
 const LearnerDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [activityData, setActivityData] = useState<
+    { date: string; count: number }[]
+  >([]);
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [longestStreak, setLongestStreak] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch user activity data
+  useEffect(() => {
+    const fetchActivityData = async () => {
+      try {
+        const response = await api.get('/lessons/activity?days=84'); // Last 12 weeks
+        if (response.data.success) {
+          setActivityData(response.data.data.activity);
+          setCurrentStreak(response.data.data.currentStreak);
+          setLongestStreak(response.data.data.longestStreak);
+        }
+      } catch (error) {
+        console.error('Error fetching activity data:', error);
+        // Set empty activity data on error
+        setActivityData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivityData();
+  }, []);
 
   // Mock data - Replace with real data from API
   const mockData = {
     overview: {
-      xp: 12450,
+      xp: (user as any)?.stats?.xpPoints || 0,
       league: 'Gold',
-      streak: 15,
+      streak: currentStreak,
       badges: 8,
     },
     skillData: [
@@ -35,16 +65,6 @@ const LearnerDashboard = () => {
       { week: 'Week 2', xp: 1500 },
       { week: 'Week 3', xp: 1800 },
       { week: 'Week 4', xp: 2100 },
-    ],
-    activityData: [
-      { date: '2025-10-15', count: 5 },
-      { date: '2025-10-16', count: 3 },
-      { date: '2025-10-17', count: 8 },
-      { date: '2025-10-18', count: 0 },
-      { date: '2025-10-19', count: 6 },
-      { date: '2025-10-20', count: 10 },
-      { date: '2025-10-21', count: 4 },
-      // Add more dates...
     ],
     challenges: [
       {
@@ -298,7 +318,15 @@ const LearnerDashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <StreakHeatmap activityData={mockData.activityData} />
+          {loading ? (
+            <Card className="brutal-border brutal-shadow">
+              <CardContent className="p-6 text-center">
+                <p>Loading activity data...</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <StreakHeatmap activityData={activityData} />
+          )}
         </motion.div>
 
         {/* Challenges and Leaderboard */}

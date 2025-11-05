@@ -96,6 +96,24 @@ const userSchema = new mongoose.Schema(
         type: Number,
         default: 0,
       },
+      currentStreak: {
+        type: Number,
+        default: 0,
+      },
+      longestStreak: {
+        type: Number,
+        default: 0,
+      },
+      lastLessonDate: {
+        type: Date,
+        default: null,
+      },
+    },
+    // Daily activity tracking: { "2025-11-05": 3, "2025-11-04": 5 } = lessons completed per day
+    dailyActivity: {
+      type: Map,
+      of: Number,
+      default: new Map(),
     },
   },
   {
