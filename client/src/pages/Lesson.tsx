@@ -19,6 +19,7 @@ import { useWindowSize } from 'react-use';
 import { lessonAPI } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
+import { useBadgeNotifications } from '@/hooks/use-badge-notifications';
 
 interface Question {
   question: string;
@@ -41,6 +42,7 @@ const Lesson = () => {
   const { width, height } = useWindowSize();
   const { toast } = useToast();
   const { refreshUser } = useAuth();
+  const { checkForNewBadges } = useBadgeNotifications();
 
   const [lesson, setLesson] = useState<LessonData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -165,6 +167,9 @@ const Lesson = () => {
 
         // Refresh user data to update XP in header
         await refreshUser();
+
+        // Check for newly earned badges
+        await checkForNewBadges();
 
         // Update totalXP with actual XP earned from backend
         if (response.success) {

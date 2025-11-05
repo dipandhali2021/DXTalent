@@ -219,6 +219,16 @@ export const getLeaderboard = async (req, res) => {
 
         const previousRank = previousRankings.get(user._id.toString()) || rank;
 
+        // Update user's highest leaderboard rank if this is better
+        const currentUser = await User.findById(user._id);
+        if (
+          !currentUser.badgeStats.highestLeaderboardRank ||
+          rank < currentUser.badgeStats.highestLeaderboardRank
+        ) {
+          currentUser.badgeStats.highestLeaderboardRank = rank;
+          await currentUser.save();
+        }
+
         return {
           id: user._id.toString(),
           rank,

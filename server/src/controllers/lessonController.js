@@ -11,6 +11,7 @@ import {
 import { computeLevelFromXP, calculateLessonXP } from '../utils/level.js';
 import { updateStreak, getActivityData } from '../utils/streak.js';
 import { calculateLeague } from './leaderboardController.js';
+import { checkAndAwardBadges } from '../utils/badgeService.js';
 
 /**
  * Generate initial lesson structure with first 3 lessons fully generated
@@ -492,6 +493,40 @@ const completeLesson = async (req, res) => {
     // Update streak and daily activity
     const streakInfo = updateStreak(user, new Date());
 
+    // Update badge stats
+    if (isFirstCompletion) {
+      user.badgeStats.lessonsCompletedTotal += 1;
+    }
+
+    // Track lessons completed today
+    const today = new Date().toISOString().split('T')[0];
+    const lastDate = user.badgeStats.lastLessonCompletionDate
+      ? new Date(user.badgeStats.lastLessonCompletionDate)
+          .toISOString()
+          .split('T')[0]
+      : null;
+
+    if (lastDate === today) {
+      user.badgeStats.lessonsCompletedToday += 1;
+    } else {
+      user.badgeStats.lessonsCompletedToday = 1;
+    }
+
+    user.badgeStats.lastLessonCompletionDate = new Date();
+
+    // Track perfect test scores
+    if (accuracy === 100) {
+      user.badgeStats.perfectTestsCount += 1;
+    }
+
+    // Track categories explored
+    if (
+      lesson.category &&
+      !user.badgeStats.categoriesExplored.includes(lesson.category)
+    ) {
+      user.badgeStats.categoriesExplored.push(lesson.category);
+    }
+
     // Calculate new level based on milestone system
     const levelInfo = computeLevelFromXP(user.stats.xpPoints);
     user.stats.level = levelInfo.level;
@@ -506,6 +541,9 @@ const completeLesson = async (req, res) => {
     user.stats.league = newLeague;
 
     await user.save();
+
+    // Check for newly earned badges
+    const newBadges = await checkAndAwardBadges(userId);
 
     // Check if user leveled up
     const leveledUp = levelInfo.level > previousLevel;
@@ -541,6 +579,7 @@ const completeLesson = async (req, res) => {
           todayLessons: streakInfo.todayLessons,
           streakIncreased: streakInfo.streakIncreased,
         },
+        newBadges: newBadges.length > 0 ? newBadges : undefined,
       },
     });
   } catch (error) {

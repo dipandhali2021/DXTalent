@@ -25,8 +25,16 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { authAPI, userAPI } from '@/lib/api';
+import { authAPI, userAPI, badgeAPI } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import BadgeGrid from '@/components/BadgeGrid';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -44,6 +52,14 @@ const Profile = () => {
   const [isOwnProfile, setIsOwnProfile] = useState(true);
   const [loadingPublic, setLoadingPublic] = useState(false);
   const [publicUser, setPublicUser] = useState<any>(null);
+  const [badges, setBadges] = useState<any[]>([]);
+  const [loadingBadges, setLoadingBadges] = useState(true);
+  const [selectedBadge, setSelectedBadge] = useState<any>(null);
+  const [badgeDialogOpen, setBadgeDialogOpen] = useState(false);
+  const [badgeFilter, setBadgeFilter] = useState<'all' | 'earned' | 'locked'>(
+    'all'
+  );
+  const [checkingBadges, setCheckingBadges] = useState(false);
 
   useEffect(() => {
     // If route has an id param and it's not current user, we'll fetch public profile
@@ -94,6 +110,63 @@ const Profile = () => {
       }
     }
   }, [user]);
+
+  // Fetch badges when component mounts
+  useEffect(() => {
+    const fetchBadges = async () => {
+      try {
+        setLoadingBadges(true);
+        const response = await badgeAPI.getAllBadges();
+        if (response.success) {
+          setBadges(response.data.badges);
+        }
+      } catch (error) {
+        console.error('Error fetching badges:', error);
+      } finally {
+        setLoadingBadges(false);
+      }
+    };
+
+    if (user && isOwnProfile) {
+      fetchBadges();
+    }
+  }, [user, isOwnProfile]);
+
+  const handleCheckBadges = async () => {
+    try {
+      setCheckingBadges(true);
+      const response = await badgeAPI.checkBadges();
+      if (response.success && response.data.newBadges.length > 0) {
+        toast({
+          title: `🎉 ${response.data.newBadges.length} New Badge${
+            response.data.newBadges.length > 1 ? 's' : ''
+          } Earned!`,
+          description: response.data.newBadges
+            .map((b: any) => `${b.badge.emoji} ${b.badge.name}`)
+            .join(', '),
+        });
+        // Refresh badges
+        const badgesResponse = await badgeAPI.getAllBadges();
+        if (badgesResponse.success) {
+          setBadges(badgesResponse.data.badges);
+        }
+      } else {
+        toast({
+          title: '👀 No New Badges',
+          description: 'Keep completing lessons to earn more badges!',
+        });
+      }
+    } catch (error) {
+      console.error('Error checking badges:', error);
+      toast({
+        title: '❌ Error',
+        description: 'Failed to check for new badges',
+        variant: 'destructive',
+      });
+    } finally {
+      setCheckingBadges(false);
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -509,21 +582,172 @@ const Profile = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex gap-4 flex-wrap">
-                    {['🏆', '⭐', '🎯', '🚀', '💡', '🔥'].map((emoji, i) => (
-                      <div
-                        key={i}
-                        className="w-16 h-16 bg-accent border-[3px] border-border rounded-lg flex items-center justify-center text-3xl hover:rotate-12 transition-transform cursor-pointer"
-                      >
-                        {emoji}
-                      </div>
-                    ))}
-                  </div>
+                  {loadingBadges ? (
+                    <div className="text-center py-4">
+                      <p className="font-handwritten">Loading badges...</p>
+                    </div>
+                  ) : (
+                    <BadgeGrid
+                      badges={badges.filter((b) => b.earned).slice(0, 6)}
+                      compact
+                      onBadgeClick={(badge) => {
+                        setSelectedBadge(badge);
+                        setBadgeDialogOpen(true);
+                      }}
+                    />
+                  )}
                 </CardContent>
               </Card>
             </div>
           </div>
         </div>
+
+        {/* All Badges Section - Full Width */}
+        {isOwnProfile && !loadingBadges && badges.length > 0 && (
+          <div className="max-w-4xl mx-auto mt-8">
+            <Card className="border-[3px] border-border shadow-brutal rotate-[0.5deg]">
+              <CardHeader>
+                <CardTitle className="font-handwritten text-3xl">
+                  🏆 All Badges
+                </CardTitle>
+                <CardDescription className="font-handwritten text-lg">
+                  Earn badges by completing lessons, maintaining streaks, and
+                  achieving milestones!
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* Filter Tabs */}
+                  <div className="flex gap-2 flex-wrap">
+                    <Button
+                      variant={badgeFilter === 'all' ? 'default' : 'outline'}
+                      size="sm"
+                      className="border-[3px]"
+                      onClick={() => setBadgeFilter('all')}
+                    >
+                      All ({badges.length})
+                    </Button>
+                    <Button
+                      variant={badgeFilter === 'earned' ? 'default' : 'outline'}
+                      size="sm"
+                      className="border-[3px]"
+                      onClick={() => setBadgeFilter('earned')}
+                    >
+                      Earned ({badges.filter((b) => b.earned).length})
+                    </Button>
+                    <Button
+                      variant={badgeFilter === 'locked' ? 'default' : 'outline'}
+                      size="sm"
+                      className="border-[3px]"
+                      onClick={() => setBadgeFilter('locked')}
+                    >
+                      Locked ({badges.filter((b) => !b.earned).length})
+                    </Button>
+                    <Button
+                      variant="hero"
+                      size="sm"
+                      className="ml-auto"
+                      onClick={handleCheckBadges}
+                      disabled={checkingBadges}
+                    >
+                      {checkingBadges
+                        ? '🔄 Checking...'
+                        : '🔍 Check for New Badges'}
+                    </Button>
+                  </div>
+
+                  {/* Badge Grid */}
+                  <BadgeGrid
+                    badges={
+                      badgeFilter === 'all'
+                        ? badges
+                        : badgeFilter === 'earned'
+                        ? badges.filter((b) => b.earned)
+                        : badges.filter((b) => !b.earned)
+                    }
+                    onBadgeClick={(badge) => {
+                      setSelectedBadge(badge);
+                      setBadgeDialogOpen(true);
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Badge Detail Dialog */}
+        <Dialog open={badgeDialogOpen} onOpenChange={setBadgeDialogOpen}>
+          <DialogContent className="border-[3px] border-border">
+            {selectedBadge && (
+              <>
+                <DialogHeader>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-16 h-16 bg-accent border-[3px] border-border rounded-2xl flex items-center justify-center text-4xl">
+                      {selectedBadge.emoji}
+                    </div>
+                    <div>
+                      <DialogTitle className="font-handwritten text-2xl">
+                        {selectedBadge.name}
+                      </DialogTitle>
+                      <DialogDescription className="font-handwritten">
+                        {selectedBadge.rarity.toUpperCase()} Badge •{' '}
+                        {selectedBadge.xpReward} XP
+                      </DialogDescription>
+                    </div>
+                  </div>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <p className="font-handwritten text-lg">
+                    {selectedBadge.description}
+                  </p>
+
+                  {selectedBadge.earned ? (
+                    <div className="bg-green-100 border-[3px] border-green-500 rounded-lg p-4">
+                      <p className="font-handwritten text-green-800 font-bold">
+                        ✅ Badge Earned!
+                      </p>
+                      <p className="font-handwritten text-sm text-green-700">
+                        Earned on{' '}
+                        {new Date(selectedBadge.earnedAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="bg-yellow-100 border-[3px] border-yellow-500 rounded-lg p-4 space-y-3">
+                      <p className="font-handwritten text-yellow-800 font-bold">
+                        🎯 In Progress
+                      </p>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="font-handwritten text-sm text-yellow-700">
+                            {selectedBadge.current} / {selectedBadge.target}
+                          </span>
+                          <span className="font-handwritten text-sm font-bold text-yellow-800">
+                            {selectedBadge.progress}%
+                          </span>
+                        </div>
+                        <div className="h-3 bg-yellow-200 border-[2px] border-yellow-500 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-yellow-500 transition-all"
+                            style={{ width: `${selectedBadge.progress}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <Button
+                    variant="hero"
+                    className="w-full"
+                    onClick={() => setBadgeDialogOpen(false)}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

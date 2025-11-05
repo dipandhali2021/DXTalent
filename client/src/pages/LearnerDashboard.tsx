@@ -11,13 +11,23 @@ import DashboardHeader from '@/components/DashboardHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Award, Brain, Calendar, Trophy, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import api from '@/lib/api';
+import api, { badgeAPI } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { useBadgeNotifications } from '@/hooks/use-badge-notifications';
+import BadgeGrid from '@/components/BadgeGrid';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const LearnerDashboard = () => {
   const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { checkForNewBadges } = useBadgeNotifications();
   const [activityData, setActivityData] = useState<
     { date: string; count: number }[]
   >([]);
@@ -72,6 +82,10 @@ const LearnerDashboard = () => {
     message?: string;
   } | null>(null);
   const [loadingContinueJourney, setLoadingContinueJourney] = useState(true);
+  const [badges, setBadges] = useState<any[]>([]);
+  const [loadingBadges, setLoadingBadges] = useState(true);
+  const [selectedBadge, setSelectedBadge] = useState<any>(null);
+  const [badgeDialogOpen, setBadgeDialogOpen] = useState(false);
 
   // Fetch user activity data for selected month
   useEffect(() => {
@@ -222,6 +236,29 @@ const LearnerDashboard = () => {
     };
 
     fetchLastLesson();
+  }, []);
+
+  // Fetch badges
+  useEffect(() => {
+    const fetchBadges = async () => {
+      try {
+        setLoadingBadges(true);
+        const response = await badgeAPI.getAllBadges();
+        if (response.success) {
+          setBadges(response.data.badges);
+        }
+      } catch (error) {
+        console.error('Error fetching badges:', error);
+        setBadges([]);
+      } finally {
+        setLoadingBadges(false);
+      }
+    };
+
+    fetchBadges();
+
+    // Check for new badge notifications
+    checkForNewBadges();
   }, []);
 
   // Claim challenge reward
@@ -685,6 +722,154 @@ const LearnerDashboard = () => {
             onViewFull={() => navigate('/leaderboard')}
           />
         </motion.div>
+
+        {/* Recent Badges Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <Card className="brutal-border brutal-shadow rotate-[-0.5deg]">
+            <CardContent className="p-8">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-3xl font-bold font-handwritten flex items-center gap-2">
+                    🏆 Recent Badges
+                  </h2>
+                  <p className="text-muted-foreground font-handwritten">
+                    Keep earning badges to unlock rewards!
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate('/profile')}
+                  className="brutal-border"
+                >
+                  View All →
+                </Button>
+              </div>
+
+              {loadingBadges ? (
+                <div className="text-center py-8">
+                  <p className="font-handwritten">Loading badges...</p>
+                </div>
+              ) : badges.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="font-handwritten text-muted-foreground">
+                    Complete lessons to start earning badges!
+                  </p>
+                </div>
+              ) : (
+                <BadgeGrid
+                  badges={badges.filter((b) => b.earned).slice(0, 6)}
+                  compact
+                  onBadgeClick={(badge) => {
+                    setSelectedBadge(badge);
+                    setBadgeDialogOpen(true);
+                  }}
+                />
+              )}
+
+              {/* Show next badges to earn if fewer than 3 earned */}
+              {badges.filter((b) => b.earned).length < 3 && (
+                <div className="mt-8 pt-8 border-t-[3px] border-border">
+                  <h3 className="text-xl font-bold font-handwritten mb-4">
+                    🎯 Next Badges to Earn
+                  </h3>
+                  <BadgeGrid
+                    badges={badges
+                      .filter((b) => !b.earned)
+                      .sort((a, b) => b.progress - a.progress)
+                      .slice(0, 3)}
+                    compact
+                    onBadgeClick={(badge) => {
+                      setSelectedBadge(badge);
+                      setBadgeDialogOpen(true);
+                    }}
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Badge Detail Dialog */}
+        <Dialog open={badgeDialogOpen} onOpenChange={setBadgeDialogOpen}>
+          <DialogContent className="border-[3px] border-border">
+            {selectedBadge && (
+              <>
+                <DialogHeader>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-16 h-16 bg-accent border-[3px] border-border rounded-2xl flex items-center justify-center text-4xl">
+                      {selectedBadge.emoji}
+                    </div>
+                    <div>
+                      <DialogTitle className="font-handwritten text-2xl">
+                        {selectedBadge.name}
+                      </DialogTitle>
+                      <DialogDescription className="font-handwritten">
+                        {selectedBadge.rarity.toUpperCase()} Badge •{' '}
+                        {selectedBadge.xpReward} XP
+                      </DialogDescription>
+                    </div>
+                  </div>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <p className="font-handwritten text-lg">
+                    {selectedBadge.description}
+                  </p>
+
+                  {selectedBadge.earned ? (
+                    <div className="bg-green-100 border-[3px] border-green-500 rounded-lg p-4">
+                      <p className="font-handwritten text-green-800 font-bold">
+                        ✅ Badge Earned!
+                      </p>
+                      <p className="font-handwritten text-sm text-green-700">
+                        Earned on{' '}
+                        {new Date(selectedBadge.earnedAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="bg-yellow-100 border-[3px] border-yellow-500 rounded-lg p-4 space-y-3">
+                      <p className="font-handwritten text-yellow-800 font-bold">
+                        🎯 In Progress
+                      </p>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="font-handwritten text-sm text-yellow-700">
+                            {selectedBadge.current} / {selectedBadge.target}
+                          </span>
+                          <span className="font-handwritten text-sm font-bold text-yellow-800">
+                            {selectedBadge.progress}%
+                          </span>
+                        </div>
+                        <div className="h-3 bg-yellow-200 border-[2px] border-yellow-500 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-yellow-500 transition-all"
+                            style={{ width: `${selectedBadge.progress}%` }}
+                          />
+                        </div>
+                      </div>
+                      <p className="font-handwritten text-sm text-yellow-700 italic">
+                        💡 Keep going! You're{' '}
+                        {selectedBadge.target - selectedBadge.current} away from
+                        earning this badge!
+                      </p>
+                    </div>
+                  )}
+
+                  <Button
+                    variant="hero"
+                    className="w-full"
+                    onClick={() => setBadgeDialogOpen(false)}
+                  >
+                    {selectedBadge.earned ? 'Awesome!' : 'Got It!'}
+                  </Button>
+                </div>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
