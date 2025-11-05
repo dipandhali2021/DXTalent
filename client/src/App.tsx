@@ -19,6 +19,7 @@ import Lesson from './pages/Lesson';
 import Test from './pages/Test';
 import LessonsLibrary from './pages/LessonsLibrary';
 import Leaderboard from './pages/Leaderboard';
+import Subscription from './pages/Subscription';
 
 const queryClient = new QueryClient();
 
@@ -75,7 +76,7 @@ const App = () => (
                 path="/recruiter/dashboard"
                 element={
                   <ProtectedRoute requireAuth={true}>
-                  <RecruiterDashboard />
+                    <RecruiterDashboard />
                   </ProtectedRoute>
                 }
               />
@@ -83,7 +84,7 @@ const App = () => (
                 path="/admin/dashboard"
                 element={
                   <ProtectedRoute requireAuth={true}>
-                  <AdminDashboard />
+                    <AdminDashboard />
                   </ProtectedRoute>
                 }
               />
@@ -95,6 +96,14 @@ const App = () => (
                 element={
                   <ProtectedRoute requireAuth={true}>
                     <Leaderboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/subscription"
+                element={
+                  <ProtectedRoute requireAuth={true}>
+                    <Subscription />
                   </ProtectedRoute>
                 }
               />

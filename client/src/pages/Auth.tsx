@@ -23,7 +23,6 @@ const Auth = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'user',
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<any>({});
@@ -101,12 +100,7 @@ const Auth = () => {
           navigate('/dashboard');
         }
       } else {
-        await register(
-          formData.username,
-          formData.email,
-          formData.password,
-          formData.role
-        );
+        await register(formData.username, formData.email, formData.password);
         // Show success message and switch to login
         setIsLogin(true);
         setFormData({
@@ -114,7 +108,6 @@ const Auth = () => {
           email: formData.email,
           password: '',
           confirmPassword: '',
-          role: 'user',
         });
       }
     } catch (error) {
@@ -305,27 +298,20 @@ const Auth = () => {
                         </p>
                       )}
                     </div>
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="role"
-                        className="font-handwritten text-lg"
-                      >
-                        I am a...
-                      </Label>
-                      <select
-                        id="role"
-                        value={formData.role}
-                        onChange={(e) =>
-                          setFormData({ ...formData, role: e.target.value })
-                        }
-                        className="w-full border-[3px] border-border font-handwritten rounded-md p-2"
-                      >
-                        <option value="user">Learner</option>
-                        <option value="recruiter">Recruiter</option>
-                      </select>
-                    </div>
                   </>
                 )}
+
+                {/* Info message for sign up */}
+                {!isLogin && (
+                  <div className="bg-accent/10 brutal-border p-3 rounded-lg">
+                    <p className="text-sm text-muted-foreground font-handwritten">
+                      💡 You'll start as a <strong>Learner</strong>. Upgrade to
+                      Pro or become a Recruiter through our pricing plans after
+                      signing up!
+                    </p>
+                  </div>
+                )}
+
                 <Button
                   type="submit"
                   className="w-full"

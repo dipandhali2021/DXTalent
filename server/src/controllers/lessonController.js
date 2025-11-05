@@ -129,6 +129,39 @@ const generatePlaceholderContent = async (req, res) => {
     const { lessonId } = req.params;
     const userId = req.user.id;
 
+    // Get user to check generation limits
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Check generation limits (only for regular users, not recruiters)
+    if (user.role !== 'recruiter') {
+      const totalAllowed =
+        user.generationLimits.aiLessonsPerMonth +
+        user.generationLimits.addonGenerations;
+      const used = user.generationLimits.currentMonthGenerations;
+
+      if (used >= totalAllowed) {
+        return res.status(403).json({
+          success: false,
+          message: 'Monthly AI lesson generation limit reached',
+          data: {
+            limit: totalAllowed,
+            used: used,
+            subscriptionType: user.subscriptionType,
+            upgradeMessage:
+              user.subscriptionType === 'free'
+                ? 'Upgrade to Pro Learner for 5 generations per month'
+                : 'Purchase addon package for 3 more generations',
+          },
+        });
+      }
+    }
+
     const lesson = await Lesson.findOne({ _id: lessonId, userId });
 
     if (!lesson) {
@@ -161,10 +194,28 @@ const generatePlaceholderContent = async (req, res) => {
 
     await lesson.save();
 
+    // Increment generation counter (only for non-recruiters)
+    if (user.role !== 'recruiter') {
+      user.generationLimits.currentMonthGenerations += 1;
+
+      // Use addon generations first if available
+      if (user.generationLimits.addonGenerations > 0) {
+        user.generationLimits.addonGenerations -= 1;
+      }
+
+      await user.save();
+    }
+
     res.status(200).json({
       success: true,
       message: 'Lesson content generated successfully',
       data: lesson,
+      generationsRemaining:
+        user.role === 'recruiter'
+          ? 'unlimited'
+          : user.generationLimits.aiLessonsPerMonth +
+            user.generationLimits.addonGenerations -
+            user.generationLimits.currentMonthGenerations,
     });
   } catch (error) {
     console.error('Error generating placeholder content:', error);

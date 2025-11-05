@@ -34,6 +34,50 @@ const userSchema = new mongoose.Schema(
       enum: ['user', 'recruiter', 'admin'],
       default: 'user',
     },
+    // Subscription fields
+    subscriptionType: {
+      type: String,
+      enum: ['free', 'pro', 'recruiter'],
+      default: 'free',
+    },
+    stripeCustomerId: {
+      type: String,
+      sparse: true,
+    },
+    stripeSubscriptionId: {
+      type: String,
+      sparse: true,
+    },
+    subscriptionStatus: {
+      type: String,
+      enum: ['active', 'canceled', 'past_due', 'trialing', 'unpaid'],
+      default: 'active',
+    },
+    subscriptionStartDate: {
+      type: Date,
+    },
+    subscriptionEndDate: {
+      type: Date,
+    },
+    // Generation limits
+    generationLimits: {
+      aiLessonsPerMonth: {
+        type: Number,
+        default: 1, // Free tier gets 1
+      },
+      currentMonthGenerations: {
+        type: Number,
+        default: 0,
+      },
+      lastResetDate: {
+        type: Date,
+        default: Date.now,
+      },
+      addonGenerations: {
+        type: Number,
+        default: 0, // Additional purchased generations
+      },
+    },
     googleId: {
       type: String,
       sparse: true,

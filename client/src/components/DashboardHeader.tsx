@@ -10,6 +10,7 @@ import {
   Menu,
   X,
   Award,
+  CreditCard,
 } from 'lucide-react';
 import { Zap, Calendar } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -147,6 +148,24 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
               </div>
             )}
             <Separator orientation="vertical" className="h-6 mx-2" />
+
+            {/* Subscription Button - Show for users and recruiters */}
+            {role !== 'admin' && (
+              <>
+                <Link to="/subscription">
+                  <Button
+                    variant="outline-brutal"
+                    className="gap-2 bg-primary/10 hover:bg-primary/20 border-primary"
+                    title="Manage Subscription"
+                  >
+                    <CreditCard className="w-4 h-4" />
+                    <span className="hidden lg:inline">Subscription</span>
+                  </Button>
+                </Link>
+                <Separator orientation="vertical" className="h-6 mx-2" />
+              </>
+            )}
+
             <Button
               variant="outline-brutal"
               className="gap-2 group hover:bg-red-600 hover:border-red-700 hover:text-white transition-colors"
@@ -188,6 +207,17 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
                 </Button>
               </Link>
             ))}
+
+            {/* Subscription Button - Mobile */}
+            {role !== 'admin' && (
+              <Link to="/subscription">
+                <Button variant="ghost" className="w-full justify-start gap-2">
+                  <CreditCard className="w-4 h-4" />
+                  Subscription
+                </Button>
+              </Link>
+            )}
+
             <Button
               variant="outline-brutal"
               className="w-full justify-start gap-2 group hover:bg-red-600 hover:border-red-700 hover:text-white transition-colors"

@@ -37,7 +37,13 @@ export default function Hero() {
           navigate('/recruiter/dashboard');
           break;
         default:
-          navigate('/dashboard');
+          // For learners, show pricing to upgrade to recruiter
+          const pricingSection = document.getElementById('pricing');
+          if (pricingSection) {
+            pricingSection.scrollIntoView({ behavior: 'smooth' });
+          } else {
+            navigate('/#pricing');
+          }
       }
     } else {
       navigate('/auth');
@@ -54,6 +60,7 @@ export default function Hero() {
       >
         <img src={logo} alt="DXTalent" className="h-16 ml-4 object-contain" />
       </Link>
+
       {/* Decorative background elements */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-20 left-10 text-6xl rotate-12 opacity-30">
@@ -106,24 +113,50 @@ export default function Hero() {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-          <Button
-            variant="hero"
-            size="lg"
-            className="group"
-            onClick={handleStartLearning}
-          >
-            <Target className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
-            Start Learning
-          </Button>
-          <Button
-            variant="outline-brutal"
-            size="lg"
-            className="group"
-            onClick={handleForRecruiters}
-          >
-            <Trophy className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-            For Recruiters
-          </Button>
+          {!isAuthenticated || user?.role === 'user' ? (
+            <>
+              <Button
+                variant="hero"
+                size="lg"
+                className="group"
+                onClick={handleStartLearning}
+              >
+                <Target className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
+                Start Learning
+              </Button>
+              <Button
+                variant="outline-brutal"
+                size="lg"
+                className="group"
+                onClick={handleForRecruiters}
+              >
+                <Trophy className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                For Recruiters
+              </Button>
+            </>
+          ) : user?.role === 'recruiter' ? (
+            <>
+              <Button
+                variant="hero"
+                size="lg"
+                className="group"
+                onClick={handleForRecruiters}
+              >
+                <Trophy className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                Go to Dashboard
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="hero"
+              size="lg"
+              className="group"
+              onClick={handleStartLearning}
+            >
+              <Target className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
+              Go to Dashboard
+            </Button>
+          )}
         </div>
 
         {/* Stats */}

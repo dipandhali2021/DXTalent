@@ -11,6 +11,7 @@ import leaderboardRoutes from './routes/leaderboardRoutes.js';
 import challengeRoutes from './routes/challengeRoutes.js';
 import badgeRoutes from './routes/badgeRoutes.js';
 import recruiterRoutes from './routes/recruiterRoutes.js';
+import subscriptionRoutes from './routes/subscriptionRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -38,6 +39,13 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+// Stripe webhook needs raw body - must be before express.json()
+app.use(
+  '/api/subscription/webhook',
+  express.raw({ type: 'application/json' }),
+  subscriptionRoutes
+);
+
 // Body parser middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -53,6 +61,7 @@ app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/challenges', challengeRoutes);
 app.use('/api/badges', badgeRoutes);
 app.use('/api/recruiter', recruiterRoutes);
+app.use('/api/subscription', subscriptionRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {

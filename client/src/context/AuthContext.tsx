@@ -33,8 +33,7 @@ interface AuthContextType {
   register: (
     username: string,
     email: string,
-    password: string,
-    role?: string
+    password: string
   ) => Promise<void>;
   googleLogin: (
     credential: string,
@@ -122,15 +121,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const register = async (
     username: string,
     email: string,
-    password: string,
-    role?: string
+    password: string
   ) => {
     try {
       const response = await authAPI.register({
         username,
         email,
         password,
-        role: role || 'user',
+        role: 'user', // Always register as user, role will be assigned based on subscription
       });
 
       if (response.success) {

@@ -382,4 +382,36 @@ export const recruiterAPI = {
     }
 };
 
+// Subscription API
+export const subscriptionAPI = {
+    // Create Stripe checkout session
+    createCheckoutSession: async (subscriptionType: string, isAddon: boolean = false) => {
+        const response = await api.post('/subscription/checkout', {
+            subscriptionType,
+            isAddon
+        });
+        return response.data;
+    },
+
+    // Get current subscription status
+    getSubscriptionStatus: async () => {
+        const response = await api.get('/subscription/status');
+        return response.data;
+    },
+
+    // Cancel subscription
+    cancelSubscription: async () => {
+        const response = await api.post('/subscription/cancel');
+        return response.data;
+    },
+
+    // Verify session after successful payment
+    verifySession: async (sessionId: string) => {
+        const response = await api.post('/subscription/verify-session', {
+            sessionId
+        });
+        return response.data;
+    }
+};
+
 export default api;
