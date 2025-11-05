@@ -80,6 +80,22 @@ const userSchema = new mongoose.Schema(
         type: Number,
         default: 1,
       },
+      levelName: {
+        type: String,
+        default: 'Novice Explorer',
+      },
+      xpIntoLevel: {
+        type: Number,
+        default: 0,
+      },
+      xpForNextLevel: {
+        type: Number,
+        default: 100,
+      },
+      xpProgress: {
+        type: Number,
+        default: 0,
+      },
     },
   },
   {

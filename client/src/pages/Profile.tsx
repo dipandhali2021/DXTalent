@@ -174,13 +174,10 @@ const Profile = () => {
 
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 font-handwritten text-foreground hover:text-primary transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </Link>
+          <Button variant="outline" size="sm" onClick={() => navigate("/dashboard")}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
           <Button
             variant="destructive"
             onClick={handleLogout}

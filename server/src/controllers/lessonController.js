@@ -4,6 +4,7 @@ import {
   generateLessonOutlines,
   categorizeTopic,
 } from '../utils/gemini.js';
+import { computeLevelFromXP, calculateLessonXP } from '../utils/level.js';
 
 /**
  * Generate initial lesson structure with first 3 lessons fully generated
@@ -369,18 +370,14 @@ const getLessonStats = async (req, res) => {
 const completeLesson = async (req, res) => {
   try {
     const { lessonId } = req.params;
-    const { xpEarned, correctAnswers, totalQuestions } = req.body;
+    const { correctAnswers, totalQuestions } = req.body;
     const userId = req.user.id;
 
     // Validate input
-    if (
-      xpEarned === undefined ||
-      correctAnswers === undefined ||
-      totalQuestions === undefined
-    ) {
+    if (correctAnswers === undefined || totalQuestions === undefined) {
       return res.status(400).json({
         success: false,
-        message: 'xpEarned, correctAnswers, and totalQuestions are required',
+        message: 'correctAnswers and totalQuestions are required',
       });
     }
 
@@ -409,9 +406,9 @@ const completeLesson = async (req, res) => {
     let isFirstCompletion = false;
 
     if (!lessonCompletion) {
-      // First time completing this lesson - award full XP
+      // First time completing this lesson - award difficulty-based XP
       isFirstCompletion = true;
-      actualXpEarned = xpEarned;
+      actualXpEarned = calculateLessonXP(lesson.difficulty, true);
 
       // Create new completion record
       lessonCompletion = await LessonCompletion.create({
@@ -438,7 +435,7 @@ const completeLesson = async (req, res) => {
       });
     } else {
       // Lesson completed before - award only 10 XP
-      actualXpEarned = 10;
+      actualXpEarned = calculateLessonXP(lesson.difficulty, false);
 
       // Update completion record
       lessonCompletion.completionCount += 1;
@@ -475,6 +472,9 @@ const completeLesson = async (req, res) => {
       });
     }
 
+    // Store previous level for level-up detection
+    const previousLevel = user.stats.level;
+
     // Add XP to user stats
     user.stats.xpPoints += actualXpEarned;
 
@@ -483,10 +483,18 @@ const completeLesson = async (req, res) => {
       user.stats.challengesCompleted += 1;
     }
 
-    // Calculate level based on XP (every 1000 XP = 1 level)
-    user.stats.level = Math.floor(user.stats.xpPoints / 1000) + 1;
+    // Calculate new level based on milestone system
+    const levelInfo = computeLevelFromXP(user.stats.xpPoints);
+    user.stats.level = levelInfo.level;
+    user.stats.levelName = levelInfo.levelName;
+    user.stats.xpIntoLevel = levelInfo.xpIntoLevel;
+    user.stats.xpForNextLevel = levelInfo.xpForNextLevel;
+    user.stats.xpProgress = levelInfo.xpProgress;
 
     await user.save();
+
+    // Check if user leveled up
+    const leveledUp = levelInfo.level > previousLevel;
 
     res.status(200).json({
       success: true,
@@ -496,13 +504,19 @@ const completeLesson = async (req, res) => {
       data: {
         xpEarned: actualXpEarned,
         totalXP: user.stats.xpPoints,
-        level: user.stats.level,
+        level: levelInfo.level,
+        levelName: levelInfo.levelName,
+        xpIntoLevel: levelInfo.xpIntoLevel,
+        xpForNextLevel: levelInfo.xpForNextLevel,
+        xpProgress: levelInfo.xpProgress,
+        nextLevelName: levelInfo.nextLevelName,
         correctAnswers,
         totalQuestions,
         accuracy,
         isFirstCompletion,
         completionCount: lessonCompletion.completionCount,
         bestScore: lessonCompletion.bestScore,
+        leveledUp,
       },
     });
   } catch (error) {
