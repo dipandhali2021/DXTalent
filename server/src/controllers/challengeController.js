@@ -691,6 +691,18 @@ export const claimChallenge = async (req, res) => {
     // Award XP
     user.stats.xpPoints += challenge.xpReward;
     user.challenges.completedChallenges.push(challengeId);
+
+    // Log XP transaction in history
+    if (!user.xpHistory) {
+      user.xpHistory = [];
+    }
+    user.xpHistory.push({
+      amount: challenge.xpReward,
+      source: 'challenge',
+      description: `Challenge completed: ${challenge.title}`,
+      timestamp: new Date(),
+    });
+
     await user.save();
 
     res.status(200).json({

@@ -516,9 +516,14 @@ const completeLesson = async (req, res) => {
     let isFirstCompletion = false;
 
     if (!lessonCompletion) {
-      // First time completing this lesson - award difficulty-based XP
+      // First time completing this lesson - award difficulty-based XP proportional to score
       isFirstCompletion = true;
-      actualXpEarned = calculateLessonXP(lesson.difficulty, true);
+      actualXpEarned = calculateLessonXP(
+        lesson.difficulty,
+        true,
+        correctAnswers,
+        totalQuestions
+      );
 
       // Create new completion record
       lessonCompletion = await LessonCompletion.create({
@@ -587,6 +592,17 @@ const completeLesson = async (req, res) => {
 
     // Add XP to user stats
     user.stats.xpPoints += actualXpEarned;
+
+    // Log XP transaction in history
+    if (!user.xpHistory) {
+      user.xpHistory = [];
+    }
+    user.xpHistory.push({
+      amount: actualXpEarned,
+      source: 'lesson',
+      description: `Completed lesson: ${lesson.title}`,
+      timestamp: new Date(),
+    });
 
     // Increment challenges completed only on first completion
     if (isFirstCompletion) {
@@ -835,13 +851,14 @@ const getUserStats = async (req, res) => {
       const dayEnd = new Date(dayDate);
       dayEnd.setHours(23, 59, 59, 999);
 
-      // Get all completions for this specific day
+      let dayXP = 0;
+
+      // Get XP from lesson completions
       const completions = await LessonCompletion.find({
         userId,
         lastCompletionDate: { $gte: dayDate, $lte: dayEnd },
       });
 
-      let dayXP = 0;
       completions.forEach((completion) => {
         completion.completions.forEach((comp) => {
           const compDate = new Date(comp.completedAt);
@@ -852,12 +869,26 @@ const getUserStats = async (req, res) => {
             compDate.getDate() === dayDate.getDate()
           ) {
             dayXP += comp.xpEarned || 0;
-            console.log(
-              `Found completion on ${dayNames[i]}: ${comp.xpEarned} XP`
-            );
           }
         });
       });
+
+      // Get XP from XP history (tests, challenges, badges)
+      if (user.xpHistory && Array.isArray(user.xpHistory)) {
+        user.xpHistory.forEach((xpEntry) => {
+          const entryDate = new Date(xpEntry.timestamp);
+          // Check if XP entry falls on this specific day
+          if (
+            entryDate >= dayDate &&
+            entryDate <= dayEnd &&
+            entryDate.getFullYear() === dayDate.getFullYear() &&
+            entryDate.getMonth() === dayDate.getMonth() &&
+            entryDate.getDate() === dayDate.getDate()
+          ) {
+            dayXP += xpEntry.amount || 0;
+          }
+        });
+      }
 
       console.log(
         `Total XP for ${dayNames[i]} (${
@@ -1480,15 +1511,25 @@ const submitTest = async (req, res) => {
     if (passed && xpEarned > 0) {
       const user = await User.findById(userId);
       if (user) {
-        user.xp += xpEarned;
-        user.level = computeLevelFromXP(user.xp);
-        user.league = calculateLeague(user.xp);
+        user.stats.xpPoints += xpEarned;
+
+        // Log XP transaction in history
+        if (!user.xpHistory) {
+          user.xpHistory = [];
+        }
+        user.xpHistory.push({
+          amount: xpEarned,
+          source: 'test',
+          description: `Test ${
+            isFirstAttempt ? 'passed' : hasPassedBefore ? 'retaken' : 'passed'
+          }`,
+          timestamp: new Date(),
+        });
 
         // Update streak
         const streakData = updateStreak(user);
-        user.currentStreak = streakData.currentStreak;
-        user.longestStreak = streakData.longestStreak;
-        user.lastActiveDate = streakData.lastActiveDate;
+        user.stats.currentStreak = streakData.currentStreak;
+        user.stats.longestStreak = streakData.longestStreak;
 
         await user.save();
       }

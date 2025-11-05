@@ -141,7 +141,6 @@ const Lesson = () => {
 
     if (correct) {
       setEarnedXP(currentQuestion.xpReward);
-      setTotalXP((prev) => prev + currentQuestion.xpReward);
       setCorrectCount((prev) => prev + 1);
       setShowXPAnimation(true);
       setTimeout(() => setShowXPAnimation(false), 1000);
@@ -160,7 +159,6 @@ const Lesson = () => {
       try {
         const response = await lessonAPI.completeLesson(
           lessonId!,
-          totalXP,
           correctCount,
           lesson.questions.length
         );
@@ -171,7 +169,7 @@ const Lesson = () => {
         // Check for newly earned badges
         await checkForNewBadges();
 
-        // Update totalXP with actual XP earned from backend
+        // Set totalXP with actual XP earned from backend
         if (response.success) {
           setTotalXP(response.data.xpEarned);
           setIsRetake(!response.data.isFirstCompletion);
@@ -198,7 +196,7 @@ const Lesson = () => {
   };
 
   const handleReturnToDashboard = () => {
-    navigate('/dashboard/learner');
+    navigate('/dashboard');
   };
 
   if (showSummary) {
@@ -332,11 +330,11 @@ const Lesson = () => {
             <Progress value={progress} className="h-3 brutal-border" />
           </div>
 
-          {/* XP Counter */}
+          {/* XP Counter - Shows estimated XP based on correct answers */}
           <div className="flex items-center gap-2 bg-accent/10 brutal-border px-4 py-2 relative">
             <Zap className="w-5 h-5 text-accent" />
             <span className="font-handwritten font-bold text-lg">
-              {totalXP} XP
+              {correctCount * currentQuestion.xpReward} XP
             </span>
 
             <AnimatePresence>

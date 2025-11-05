@@ -193,7 +193,7 @@ const Test = () => {
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < mockTest.questions.length - 1) {
+    if (currentQuestionIndex < testData.questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     }
   };
@@ -431,7 +431,7 @@ const Test = () => {
 
           <div className="space-y-3">
             <Button
-              onClick={() => navigate('/dashboard/learner')}
+              onClick={() => navigate('/dashboard')}
               className="w-full"
               size="lg"
             >

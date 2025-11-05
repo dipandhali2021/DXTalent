@@ -238,6 +238,27 @@ const userSchema = new mongoose.Schema(
         default: null,
       },
     },
+    // XP History for tracking all XP transactions
+    xpHistory: [
+      {
+        amount: {
+          type: Number,
+          required: true,
+        },
+        source: {
+          type: String,
+          enum: ['lesson', 'test', 'challenge', 'badge', 'streak', 'other'],
+          required: true,
+        },
+        description: {
+          type: String,
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

@@ -34,6 +34,17 @@ const awardBadge = async (userId, badgeId) => {
     // Award XP
     user.stats.xpPoints += badgeConfig.xpReward;
 
+    // Log XP transaction in history
+    if (!user.xpHistory) {
+      user.xpHistory = [];
+    }
+    user.xpHistory.push({
+      amount: badgeConfig.xpReward,
+      source: 'badge',
+      description: `Badge earned: ${badgeConfig.name}`,
+      timestamp: new Date(),
+    });
+
     await user.save();
 
     return {

@@ -164,17 +164,37 @@ export function computeLevelFromXP(totalXP) {
  * @param {boolean} isFirstCompletion - Whether this is the first time completing the lesson
  * @returns {number} XP to award
  */
-export function calculateLessonXP(difficulty, isFirstCompletion) {
+export function calculateLessonXP(
+  difficulty,
+  isFirstCompletion,
+  correctAnswers = null,
+  totalQuestions = null
+) {
   const baseXP = {
     Beginner: 50,
     Intermediate: 100,
     Advanced: 150,
   };
 
-  const xp = baseXP[difficulty] || baseXP.Beginner;
+  const maxXP = baseXP[difficulty] || baseXP.Beginner;
 
   // Award only 10 XP for repeat completions
-  return isFirstCompletion ? xp : 10;
+  if (!isFirstCompletion) {
+    return 10;
+  }
+
+  // If correctAnswers and totalQuestions are provided, calculate proportional XP
+  if (
+    correctAnswers !== null &&
+    totalQuestions !== null &&
+    totalQuestions > 0
+  ) {
+    const scorePercentage = correctAnswers / totalQuestions;
+    return Math.round(maxXP * scorePercentage);
+  }
+
+  // Otherwise return full XP (backward compatibility)
+  return maxXP;
 }
 
 /**

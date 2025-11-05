@@ -204,9 +204,8 @@ export const lessonAPI = {
     },
 
     // Complete a lesson and update user XP
-    completeLesson: async (lessonId: string, xpEarned: number, correctAnswers: number, totalQuestions: number) => {
+    completeLesson: async (lessonId: string, correctAnswers: number, totalQuestions: number) => {
         const response = await api.post(`/lessons/${lessonId}/complete`, {
-            xpEarned,
             correctAnswers,
             totalQuestions
         });
