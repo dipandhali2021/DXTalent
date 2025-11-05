@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Sparkles, Trophy, Target } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import logo from '@/assets/logo.png';
 
 export default function Hero() {
   const { isAuthenticated, user } = useAuth();
@@ -45,6 +46,14 @@ export default function Hero() {
 
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center px-4 py-20 overflow-hidden">
+      {/* Top-left logo (home link) */}
+      <Link
+        to="/"
+        aria-label="Home"
+        className="flex items-center absolute left-4 top-4"
+      >
+        <img src={logo} alt="DXTalent" className="h-16 ml-4 object-contain" />
+      </Link>
       {/* Decorative background elements */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-20 left-10 text-6xl rotate-12 opacity-30">

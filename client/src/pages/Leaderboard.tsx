@@ -66,7 +66,7 @@ const Leaderboard = () => {
   const [selectedSkill, setSelectedSkill] = useState('all');
   const [timeframe, setTimeframe] = useState('weekly');
   const [leaderboardType, setLeaderboardType] = useState('global');
-  const [showInsights, setShowInsights] = useState(true);
+  const [showInsights, setShowInsights] = useState(false);
 
   // Mock data - replace with actual API calls
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([

@@ -15,6 +15,7 @@ import { Zap, Calendar } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
+import logo from '@/assets/logo.png';
 
 interface DashboardHeaderProps {
   role?: 'user' | 'recruiter' | 'admin';
@@ -64,9 +65,12 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
     <header className="sticky top-0 z-50 bg-card brutal-border-b">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo/Title */}
-          <Link to="/" aria-label="Home" className="flex items-center gap-4">
-            <h2 className="text-2xl font-bold">DXTalent</h2>
+          <Link to="/" aria-label="Home" className="flex items-center">
+            <img
+              src={logo}
+              alt="DXTalent"
+              className="h-16 ml-4 object-contain"
+            />
           </Link>
 
           {/* Navigation Menu */}
