@@ -7,6 +7,8 @@ import {
   getLessonById,
   deleteLesson,
   getLessonStats,
+  completeLesson,
+  getLessonCompletionStatus,
 } from '../controllers/lessonController.js';
 import {
   validateGenerateLessonStructure,
@@ -46,6 +48,22 @@ router.get('/', authenticate, validateLessonQuery, getUserLessons);
 
 // GET /api/lessons/:lessonId - Get a single lesson with full content
 router.get('/:lessonId', authenticate, validateLessonId, getLessonById);
+
+// GET /api/lessons/:lessonId/completion-status - Check if lesson was completed before
+router.get(
+  '/:lessonId/completion-status',
+  authenticate,
+  validateLessonId,
+  getLessonCompletionStatus
+);
+
+// POST /api/lessons/:lessonId/complete - Mark lesson as complete and update user XP
+router.post(
+  '/:lessonId/complete',
+  authenticate,
+  validateLessonId,
+  completeLesson
+);
 
 // DELETE /api/lessons/:lessonId - Delete a lesson
 router.delete('/:lessonId', authenticate, validateLessonId, deleteLesson);

@@ -189,10 +189,40 @@ const getUserLessons = async (req, res) => {
       .sort({ createdAt: -1 })
       .select('-questions'); // Exclude questions for list view
 
+    // Get completion status for all lessons
+    const LessonCompletion = (await import('../models/LessonCompletion.js')).default;
+    const lessonIds = lessons.map(lesson => lesson._id);
+    
+    const completions = await LessonCompletion.find({
+      userId,
+      lessonId: { $in: lessonIds }
+    });
+
+    // Create a map of lesson completions
+    const completionMap = new Map();
+    completions.forEach(completion => {
+      completionMap.set(completion.lessonId.toString(), {
+        isCompleted: true,
+        completionCount: completion.completionCount,
+        bestScore: completion.bestScore,
+        lastCompletionDate: completion.lastCompletionDate
+      });
+    });
+
+    // Add completion status to each lesson
+    const lessonsWithCompletion = lessons.map(lesson => {
+      const lessonObj = lesson.toObject();
+      const completion = completionMap.get(lesson._id.toString());
+      return {
+        ...lessonObj,
+        completionStatus: completion || { isCompleted: false, completionCount: 0 }
+      };
+    });
+
     res.status(200).json({
       success: true,
-      count: lessons.length,
-      data: lessons,
+      count: lessonsWithCompletion.length,
+      data: lessonsWithCompletion,
     });
   } catch (error) {
     console.error('Error fetching user lessons:', error);
@@ -328,6 +358,209 @@ const getLessonStats = async (req, res) => {
   }
 };
 
+/**
+ * Complete a lesson and update user XP
+ * POST /api/lessons/:lessonId/complete
+ */
+const completeLesson = async (req, res) => {
+  try {
+    const { lessonId } = req.params;
+    const { xpEarned, correctAnswers, totalQuestions } = req.body;
+    const userId = req.user.id;
+
+    // Validate input
+    if (
+      xpEarned === undefined ||
+      correctAnswers === undefined ||
+      totalQuestions === undefined
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'xpEarned, correctAnswers, and totalQuestions are required',
+      });
+    }
+
+    // Verify lesson exists and belongs to user
+    const lesson = await Lesson.findOne({ _id: lessonId, userId });
+    if (!lesson) {
+      return res.status(404).json({
+        success: false,
+        message: 'Lesson not found',
+      });
+    }
+
+    // Import models
+    const User = (await import('../models/User.js')).default;
+    const LessonCompletion = (await import('../models/LessonCompletion.js'))
+      .default;
+
+    // Check if user has completed this lesson before
+    let lessonCompletion = await LessonCompletion.findOne({
+      userId,
+      lessonId,
+    });
+
+    const accuracy = Math.round((correctAnswers / totalQuestions) * 100);
+    let actualXpEarned = 0;
+    let isFirstCompletion = false;
+
+    if (!lessonCompletion) {
+      // First time completing this lesson - award full XP
+      isFirstCompletion = true;
+      actualXpEarned = xpEarned;
+
+      // Create new completion record
+      lessonCompletion = await LessonCompletion.create({
+        userId,
+        lessonId,
+        completionCount: 1,
+        firstCompletionDate: new Date(),
+        lastCompletionDate: new Date(),
+        bestScore: {
+          correctAnswers,
+          totalQuestions,
+          accuracy,
+        },
+        totalXPEarned: actualXpEarned,
+        completions: [
+          {
+            completedAt: new Date(),
+            correctAnswers,
+            totalQuestions,
+            accuracy,
+            xpEarned: actualXpEarned,
+          },
+        ],
+      });
+    } else {
+      // Lesson completed before - award only 10 XP
+      actualXpEarned = 10;
+
+      // Update completion record
+      lessonCompletion.completionCount += 1;
+      lessonCompletion.lastCompletionDate = new Date();
+      lessonCompletion.totalXPEarned += actualXpEarned;
+
+      // Update best score if this attempt is better
+      if (accuracy > lessonCompletion.bestScore.accuracy) {
+        lessonCompletion.bestScore = {
+          correctAnswers,
+          totalQuestions,
+          accuracy,
+        };
+      }
+
+      // Add this completion to history
+      lessonCompletion.completions.push({
+        completedAt: new Date(),
+        correctAnswers,
+        totalQuestions,
+        accuracy,
+        xpEarned: actualXpEarned,
+      });
+
+      await lessonCompletion.save();
+    }
+
+    // Update user stats
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Add XP to user stats
+    user.stats.xpPoints += actualXpEarned;
+
+    // Increment challenges completed only on first completion
+    if (isFirstCompletion) {
+      user.stats.challengesCompleted += 1;
+    }
+
+    // Calculate level based on XP (every 1000 XP = 1 level)
+    user.stats.level = Math.floor(user.stats.xpPoints / 1000) + 1;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: isFirstCompletion
+        ? 'Lesson completed successfully!'
+        : 'Lesson retaken successfully!',
+      data: {
+        xpEarned: actualXpEarned,
+        totalXP: user.stats.xpPoints,
+        level: user.stats.level,
+        correctAnswers,
+        totalQuestions,
+        accuracy,
+        isFirstCompletion,
+        completionCount: lessonCompletion.completionCount,
+        bestScore: lessonCompletion.bestScore,
+      },
+    });
+  } catch (error) {
+    console.error('Error completing lesson:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to complete lesson',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Get lesson completion status
+ * GET /api/lessons/:lessonId/completion-status
+ */
+const getLessonCompletionStatus = async (req, res) => {
+  try {
+    const { lessonId } = req.params;
+    const userId = req.user.id;
+
+    const LessonCompletion = (await import('../models/LessonCompletion.js'))
+      .default;
+
+    const completion = await LessonCompletion.findOne({
+      userId,
+      lessonId,
+    });
+
+    if (!completion) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          isCompleted: false,
+          completionCount: 0,
+          message: 'First attempt - Full XP will be awarded!',
+        },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        isCompleted: true,
+        completionCount: completion.completionCount,
+        bestScore: completion.bestScore,
+        firstCompletionDate: completion.firstCompletionDate,
+        lastCompletionDate: completion.lastCompletionDate,
+        totalXPEarned: completion.totalXPEarned,
+        message: 'Already completed - Only 10 XP will be awarded for retake',
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching lesson completion status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch lesson completion status',
+      error: error.message,
+    });
+  }
+};
+
 export {
   generateLessonStructure,
   generatePlaceholderContent,
@@ -335,4 +568,6 @@ export {
   getLessonById,
   deleteLesson,
   getLessonStats,
+  completeLesson,
+  getLessonCompletionStatus,
 };

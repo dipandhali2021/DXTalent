@@ -72,8 +72,10 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
           <nav className="hidden md:flex items-center gap-2">
             {navigationItems.map((item) => (
               <Link key={item.to} to={item.to}>
-                
-                <Button variant="ghost" className="brutal-border brutal-shadow bg-card rounded-lg px-2 py-1 flex items-center transform rotate-[1deg] transition-transform duration-200 ease-in-out hover:scale-100 hover:-translate-y-1 hover:rotate-0 cursor-pointer gap-2">
+                <Button
+                  variant="ghost"
+                  className="brutal-border brutal-shadow bg-card rounded-lg px-2 py-1 flex items-center transform rotate-[1deg] transition-transform duration-200 ease-in-out hover:scale-100 hover:-translate-y-1 hover:rotate-0 cursor-pointer gap-2"
+                >
                   <item.icon className="w-4 h-4" />
                   {item.label}
                 </Button>
@@ -83,13 +85,13 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
             <div className="hidden md:flex items-center gap-3 ml-3">
               <div
                 className="brutal-border brutal-shadow bg-card rounded-lg px-2 py-1 flex items-center gap-2 transform -rotate-[1deg] transition-transform duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:rotate-0 cursor-pointer"
-                title={`${(user as any)?.xp ?? 0} XP`}
+                title={`${(user as any)?.stats?.xpPoints ?? 0} XP`}
                 aria-label="XP"
               >
                 <Zap className="w-4 h-4 text-yellow-500" />
                 <div className="leading-none">
                   <div className="text-sm font-bold">
-                    {(user as any)?.xp ?? 0}
+                    {(user as any)?.stats?.xpPoints ?? 0}
                   </div>
                   <div className="text-[10px] text-muted-foreground">XP</div>
                 </div>

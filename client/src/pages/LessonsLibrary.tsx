@@ -39,6 +39,16 @@ interface Lesson {
   isFullyGenerated: boolean;
   placeholder: boolean;
   isDefault?: boolean;
+  completionStatus?: {
+    isCompleted: boolean;
+    completionCount: number;
+    bestScore?: {
+      accuracy: number;
+      correctAnswers: number;
+      totalQuestions: number;
+    };
+    lastCompletionDate?: string;
+  };
 }
 
 interface TopicCategory {
@@ -429,6 +439,12 @@ const LessonsLibrary = () => {
                           >
                             {lesson.difficulty}
                           </Badge>
+                          {lesson.completionStatus?.isCompleted && (
+                            <Badge className="brutal-border text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+                              <CheckCircle2 className="w-3 h-3 mr-1" />
+                              Completed {lesson.completionStatus.completionCount}x
+                            </Badge>
+                          )}
                           {lesson.placeholder && !lesson.isFullyGenerated && (
                             <Badge
                               variant="outline"
@@ -472,6 +488,19 @@ const LessonsLibrary = () => {
                         </div>
                       </div>
 
+                      {/* Show best score if completed */}
+                      {lesson.completionStatus?.isCompleted && 
+                       lesson.completionStatus.bestScore && (
+                        <div className="bg-blue-50 dark:bg-blue-900/10 brutal-border p-2 mb-3 text-center">
+                          <p className="text-xs text-muted-foreground mb-1">Best Score</p>
+                          <p className="text-sm font-handwritten font-bold text-blue-700 dark:text-blue-400">
+                            {lesson.completionStatus.bestScore.accuracy}% 
+                            ({lesson.completionStatus.bestScore.correctAnswers}/
+                            {lesson.completionStatus.bestScore.totalQuestions})
+                          </p>
+                        </div>
+                      )}
+
                       {lesson.placeholder && !lesson.isFullyGenerated ? (
                         <Button
                           className="w-full"
@@ -495,8 +524,19 @@ const LessonsLibrary = () => {
                           )}
                         </Button>
                       ) : (
-                        <Button className="w-full" size="sm">
-                          Start Learning
+                        <Button 
+                          className="w-full" 
+                          size="sm"
+                          variant={lesson.completionStatus?.isCompleted ? "outline" : "default"}
+                        >
+                          {lesson.completionStatus?.isCompleted ? (
+                            <>
+                              <BookOpen className="mr-2 h-4 w-4" />
+                              Retake (10 XP)
+                            </>
+                          ) : (
+                            'Start Learning'
+                          )}
                         </Button>
                       )}
                     </CardContent>

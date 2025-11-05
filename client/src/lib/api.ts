@@ -193,6 +193,22 @@ export const lessonAPI = {
     deleteLesson: async (lessonId: string) => {
         const response = await api.delete(`/lessons/${lessonId}`);
         return response.data;
+    },
+
+    // Complete a lesson and update user XP
+    completeLesson: async (lessonId: string, xpEarned: number, correctAnswers: number, totalQuestions: number) => {
+        const response = await api.post(`/lessons/${lessonId}/complete`, {
+            xpEarned,
+            correctAnswers,
+            totalQuestions
+        });
+        return response.data;
+    },
+
+    // Get lesson completion status
+    getLessonCompletionStatus: async (lessonId: string) => {
+        const response = await api.get(`/lessons/${lessonId}/completion-status`);
+        return response.data;
     }
 };
 

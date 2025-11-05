@@ -11,12 +11,14 @@ import {
   ArrowRight,
   Home,
   Loader2,
+  ArrowLeft,
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
 import { lessonAPI } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 
 interface Question {
   question: string;
@@ -38,6 +40,7 @@ const Lesson = () => {
   const { lessonId } = useParams<{ lessonId: string }>();
   const { width, height } = useWindowSize();
   const { toast } = useToast();
+  const { refreshUser } = useAuth();
 
   const [lesson, setLesson] = useState<LessonData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,8 +53,11 @@ const Lesson = () => {
   const [showXPAnimation, setShowXPAnimation] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
+  const [isSavingProgress, setIsSavingProgress] = useState(false);
+  const [isRetake, setIsRetake] = useState(false);
+  const [completionStatus, setCompletionStatus] = useState<any>(null);
 
-  // Fetch lesson data
+  // Fetch lesson data and completion status
   useEffect(() => {
     const fetchLesson = async () => {
       if (!lessonId) {
@@ -66,9 +72,27 @@ const Lesson = () => {
 
       setIsLoading(true);
       try {
-        const response = await lessonAPI.getLessonById(lessonId);
-        if (response.success) {
-          setLesson(response.data);
+        const [lessonResponse, statusResponse] = await Promise.all([
+          lessonAPI.getLessonById(lessonId),
+          lessonAPI.getLessonCompletionStatus(lessonId),
+        ]);
+
+        if (lessonResponse.success) {
+          setLesson(lessonResponse.data);
+        }
+
+        if (statusResponse.success) {
+          setCompletionStatus(statusResponse.data);
+          setIsRetake(statusResponse.data.isCompleted);
+
+          // Show warning if lesson was already completed
+          if (statusResponse.data.isCompleted) {
+            toast({
+              title: '⚠️ Lesson Already Completed',
+              description: `You've completed this lesson ${statusResponse.data.completionCount} time(s). You'll earn only 10 XP for retaking it.`,
+              duration: 5000,
+            });
+          }
         }
       } catch (error: any) {
         console.error('Error fetching lesson:', error);
@@ -122,14 +146,49 @@ const Lesson = () => {
     }
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (currentQuestionIndex < lesson.questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
       setSelectedAnswer(null);
       setHasAnswered(false);
       setIsCorrect(false);
     } else {
-      setShowSummary(true);
+      // Last question - save progress and show summary
+      setIsSavingProgress(true);
+      try {
+        const response = await lessonAPI.completeLesson(
+          lessonId!,
+          totalXP,
+          correctCount,
+          lesson.questions.length
+        );
+
+        // Refresh user data to update XP in header
+        await refreshUser();
+
+        // Update totalXP with actual XP earned from backend
+        if (response.success) {
+          setTotalXP(response.data.xpEarned);
+          setIsRetake(!response.data.isFirstCompletion);
+        }
+
+        toast({
+          title: response.data.isFirstCompletion
+            ? '🎉 Lesson Completed!'
+            : '✅ Lesson Retaken!',
+          description: `You earned ${response.data.xpEarned} XP!`,
+        });
+      } catch (error: any) {
+        console.error('Error saving lesson progress:', error);
+        toast({
+          title: '⚠️ Progress Saved Locally',
+          description: "We couldn't sync your progress, but your XP is saved!",
+          variant: 'default',
+        });
+      } finally {
+        setIsSavingProgress(false);
+        setShowSummary(true);
+      }
     }
   };
 
@@ -162,11 +221,21 @@ const Lesson = () => {
               <Trophy className="w-24 h-24 text-accent mx-auto" />
             </motion.div>
             <h1 className="text-4xl font-handwritten font-bold mb-4">
-              Lesson Complete! 🎉
+              {isRetake ? 'Lesson Retaken! 🔄' : 'Lesson Complete! 🎉'}
             </h1>
             <p className="text-muted-foreground text-lg">
-              Amazing work! Keep up the streak!
+              {isRetake
+                ? 'Practice makes perfect! Keep improving!'
+                : 'Amazing work! Keep up the streak!'}
             </p>
+            {isRetake && (
+              <div className="mt-4 bg-yellow-100 dark:bg-yellow-900/20 brutal-border border-yellow-500 p-3 rounded-lg">
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  ℹ️ Retakes earn 10 XP to prevent XP farming. First completions
+                  earn full XP!
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-8">
@@ -181,7 +250,9 @@ const Lesson = () => {
               <div className="text-4xl font-handwritten font-bold text-primary mb-2">
                 +{totalXP} XP
               </div>
-              <div className="text-sm text-muted-foreground">XP Earned</div>
+              <div className="text-sm text-muted-foreground">
+                {isRetake ? 'Retake XP' : 'XP Earned'}
+              </div>
             </div>
 
             <div className="bg-secondary/20 brutal-border p-6 text-center">
@@ -228,6 +299,14 @@ const Lesson = () => {
       <header className="bg-card brutal-border-b p-4 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           {/* Skill Name */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/lessons')}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
           <div className="flex items-center gap-2">
             <span className="text-2xl">{lesson.skillIcon}</span>
             <h1 className="text-lg font-handwritten font-bold hidden sm:block">
@@ -399,9 +478,23 @@ const Lesson = () => {
                 Check Answer
               </Button>
             ) : (
-              <Button onClick={handleContinue} size="lg" className="px-12">
-                Continue
-                <ArrowRight className="ml-2" />
+              <Button
+                onClick={handleContinue}
+                size="lg"
+                className="px-12"
+                disabled={isSavingProgress}
+              >
+                {isSavingProgress ? (
+                  <>
+                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    Continue
+                    <ArrowRight className="ml-2" />
+                  </>
+                )}
               </Button>
             )}
           </div>
