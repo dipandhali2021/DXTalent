@@ -374,4 +374,37 @@ export const adminAPI = {
     }
 };
 
+// Badge API functions
+export const badgeAPI = {
+    // Get all badges with user progress
+    getAllBadges: async () => {
+        const response = await api.get('/badges');
+        return response.data;
+    },
+
+    // Get unclaimed badges
+    getUnclaimedBadges: async () => {
+        const response = await api.get('/badges/unclaimed');
+        return response.data;
+    },
+
+    // Claim a badge
+    claimBadge: async (badgeId: string) => {
+        const response = await api.post(`/badges/${badgeId}/claim`);
+        return response.data;
+    },
+
+    // Check for new badges
+    checkBadges: async () => {
+        const response = await api.post('/badges/check');
+        return response.data;
+    },
+
+    // Get badge configuration
+    getBadgeConfig: async () => {
+        const response = await api.get('/badges/config');
+        return response.data;
+    }
+};
+
 export default api;
