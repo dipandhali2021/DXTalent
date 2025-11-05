@@ -127,6 +127,15 @@ export const login = async (req, res) => {
       });
     }
 
+    // Check if account is suspended
+    if (user.accountStatus === 'suspended') {
+      return res.status(403).json({
+        success: false,
+        message: 'Your account has been suspended. Please contact support.',
+        code: 'ACCOUNT_SUSPENDED',
+      });
+    }
+
     // Verify password
     const isPasswordValid = await user.comparePassword(password);
 

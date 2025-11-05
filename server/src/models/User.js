@@ -34,6 +34,11 @@ const userSchema = new mongoose.Schema(
       enum: ['user', 'recruiter', 'admin'],
       default: 'user',
     },
+    accountStatus: {
+      type: String,
+      enum: ['active', 'suspended', 'pending'],
+      default: 'active',
+    },
     // Subscription fields
     subscriptionType: {
       type: String,

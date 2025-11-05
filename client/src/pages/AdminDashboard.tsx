@@ -129,13 +129,40 @@ const AdminDashboard = () => {
         {/* Dashboard Content */}
         <main className="container mx-auto px-4 md:px-6 lg:px-8 py-6 space-y-6">
           {/* Title Section */}
-          <div className="space-y-2">
-            <h1 className="text-4xl md:text-5xl font-bold">
-              Admin Control Center 🎮
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Manage your platform like a boss
-            </p>
+          <div className="flex items-center justify-between mb-6 w-full">
+            <div className="space-y-2">
+              <h1 className="text-4xl md:text-5xl font-bold">
+                Admin Control Center 🎮
+              </h1>
+              <p className="text-lg text-muted-foreground">
+                Manage your platform like a boss
+              </p>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="rotate-[-1deg]">
+                <Button
+                  variant="hero"
+                  className="w-full h-15 text-lg flex gap-2"
+                  onClick={() => navigate('/admin/users')}
+                >
+                  <Users className="w-8 h-8" />
+                  User Management
+                </Button>
+              </div>
+
+              <div className="rotate-[-1deg]">
+                <Button
+                  variant="outline-brutal"
+                  className="w-full h-15 text-lg flex gap-2"
+                  onClick={() => navigate('/admin/payments')}
+                >
+                  <DollarSign className="w-8 h-8" />
+                  Payments
+                </Button>
+              </div>
+            </div>
           </div>
 
           {loading ? (
@@ -205,7 +232,12 @@ const AdminDashboard = () => {
                         <DollarSign className="w-6 h-6 text-accent-foreground" />
                       </div>
                       <p className="text-2xl font-bold">
-                        ${(mockData.stats.totalRevenue / 1000).toFixed(1)}K
+                        {(() => {
+                          const raw = Number(mockData.stats.totalRevenue) || 0;
+                          if (raw >= 1000)
+                            return `$${(raw / 1000).toFixed(1)}K`;
+                          return `$${raw.toFixed(0)}`;
+                        })()}
                       </p>
                       <p className="text-sm text-muted-foreground">Revenue</p>
                     </CardContent>
@@ -347,13 +379,6 @@ const AdminDashboard = () => {
                         </Badge>
                       </div>
                     ))}
-                    <Button
-                      variant="outline"
-                      className="w-full brutal-border"
-                      onClick={() => navigate('/admin/users')}
-                    >
-                      Manage Users
-                    </Button>
                   </CardContent>
                 </Card>
 
@@ -386,55 +411,8 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                     ))}
-                    <Button
-                      variant="outline"
-                      className="w-full brutal-border"
-                      onClick={() => navigate('/admin/lessons')}
-                    >
-                      Manage Lessons
-                    </Button>
                   </CardContent>
                 </Card>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="grid md:grid-cols-4 gap-4">
-                <div className="rotate-[-1deg]">
-                  <Button
-                    variant="hero"
-                    className="w-full h-24 text-lg flex flex-col gap-2"
-                  >
-                    <Users className="w-8 h-8" />
-                    User Management
-                  </Button>
-                </div>
-                <div className="rotate-[1deg]">
-                  <Button
-                    variant="accent"
-                    className="w-full h-24 text-lg flex flex-col gap-2"
-                  >
-                    <BookOpen className="w-8 h-8" />
-                    Lesson Editor
-                  </Button>
-                </div>
-                <div className="rotate-[-1deg]">
-                  <Button
-                    variant="outline-brutal"
-                    className="w-full h-24 text-lg flex flex-col gap-2"
-                  >
-                    <DollarSign className="w-8 h-8" />
-                    Payments
-                  </Button>
-                </div>
-                <div className="rotate-[1deg]">
-                  <Button
-                    variant="outline-brutal"
-                    className="w-full h-24 text-lg flex flex-col gap-2"
-                  >
-                    <TrendingUp className="w-8 h-8" />
-                    Analytics
-                  </Button>
-                </div>
               </div>
             </>
           )}

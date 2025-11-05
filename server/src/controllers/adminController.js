@@ -22,8 +22,11 @@ export const getDashboardStats = async (req, res) => {
     const totalLessons = await Lesson.countDocuments();
 
     // Calculate Revenue from Payment model (actual payments tracked)
+    // Keep the raw numeric revenue on the server and let the frontend
+    // handle display formatting to avoid double-formatting / NaN issues.
     const revenueData = await Payment.calculateTotalRevenue();
-    const totalRevenue = (revenueData.netRevenue / 1000).toFixed(1); // Convert to K format
+    const netRevenue = Number(revenueData?.netRevenue) || 0;
+    const totalRevenue = netRevenue; // numeric dollars
 
     // Retention Rate (users who completed lessons in last 30 days vs total users)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -318,6 +321,7 @@ export const getAllUsers = async (req, res) => {
       page = 1,
       limit = 20,
       role,
+      status,
       subscriptionType,
       search,
       sortBy = 'createdAt',
@@ -328,6 +332,7 @@ export const getAllUsers = async (req, res) => {
 
     // Apply filters
     if (role) query.role = role;
+    if (status) query.accountStatus = status;
     if (subscriptionType) query.subscriptionType = subscriptionType;
     if (search) {
       query.$or = [
@@ -348,9 +353,49 @@ export const getAllUsers = async (req, res) => {
       User.countDocuments(query),
     ]);
 
+    // Format users for frontend
+    const formattedUsers = users.map((user) => {
+      const timeDiff = user.lastLogin
+        ? Date.now() - new Date(user.lastLogin).getTime()
+        : null;
+      let lastActive = 'Never';
+
+      if (timeDiff) {
+        const minutes = Math.floor(timeDiff / (1000 * 60));
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+        const weeks = Math.floor(days / 7);
+
+        if (minutes < 60) {
+          lastActive = `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+        } else if (hours < 24) {
+          lastActive = `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+        } else if (days < 7) {
+          lastActive = `${days} day${days !== 1 ? 's' : ''} ago`;
+        } else {
+          lastActive = `${weeks} week${weeks !== 1 ? 's' : ''} ago`;
+        }
+      }
+
+      return {
+        id: user._id.toString(),
+        name: user.username,
+        email: user.email,
+        role: user.role,
+        status: user.accountStatus || 'active',
+        joinedDate: user.createdAt.toISOString().split('T')[0],
+        lastActive,
+        xp: user.stats?.xpPoints || 0,
+        avatar:
+          user.profilePicture ||
+          `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`,
+        subscriptionType: user.subscriptionType,
+      };
+    });
+
     res.json({
       success: true,
-      users,
+      users: formattedUsers,
       pagination: {
         total,
         page: parseInt(page),
@@ -437,6 +482,76 @@ export const deleteUser = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error deleting user',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Suspend user account (admin only)
+ */
+export const suspendUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: { accountStatus: 'suspended' } },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'User suspended successfully',
+      user,
+    });
+  } catch (error) {
+    console.error('Error suspending user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error suspending user',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Activate user account (admin only)
+ */
+export const activateUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: { accountStatus: 'active' } },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'User activated successfully',
+      user,
+    });
+  } catch (error) {
+    console.error('Error activating user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error activating user',
       error: error.message,
     });
   }
@@ -636,8 +751,31 @@ export const getAllPayments = async (req, res) => {
         {
           $group: {
             _id: null,
-            totalRevenue: { $sum: '$amount' },
-            totalRefunds: { $sum: '$refundAmount' },
+            totalRevenue: {
+              $sum: {
+                $cond: [
+                  { $eq: ['$status', 'completed'] },
+                  {
+                    $cond: [
+                      { $eq: ['$paymentType', 'refund'] },
+                      0, // Don't count refund transactions as revenue
+                      '$amount',
+                    ],
+                  },
+                  0,
+                ],
+              },
+            },
+            // Sum refundAmount from refunded payments + amount from refund-type payments
+            totalRefunds: {
+              $sum: {
+                $cond: [
+                  { $eq: ['$paymentType', 'refund'] },
+                  '$amount', // Refund transaction amount
+                  '$refundAmount', // Refunded amount from original payment
+                ],
+              },
+            },
             count: { $sum: 1 },
           },
         },
@@ -679,13 +817,39 @@ export const getAllPayments = async (req, res) => {
     payments = paymentsData;
 
     // Calculate total revenue from filtered results
+    // Count 'completed' payments for revenue, handle both refund types:
+    // 1. Payments with status='refunded' (original payment that was refunded)
+    // 2. Payments with paymentType='refund' (refund transaction itself)
     const revenueStats = await Payment.aggregate([
       { $match: query },
       {
         $group: {
           _id: null,
-          totalRevenue: { $sum: '$amount' },
-          totalRefunds: { $sum: '$refundAmount' },
+          totalRevenue: {
+            $sum: {
+              $cond: [
+                { $eq: ['$status', 'completed'] },
+                {
+                  $cond: [
+                    { $eq: ['$paymentType', 'refund'] },
+                    0, // Don't count refund transactions as revenue
+                    '$amount',
+                  ],
+                },
+                0,
+              ],
+            },
+          },
+          // Sum refundAmount from refunded payments + amount from refund-type payments
+          totalRefunds: {
+            $sum: {
+              $cond: [
+                { $eq: ['$paymentType', 'refund'] },
+                '$amount', // Refund transaction amount
+                '$refundAmount', // Refunded amount from original payment
+              ],
+            },
+          },
           count: { $sum: 1 },
         },
       },
@@ -751,13 +915,18 @@ export const getPaymentStats = async (req, res) => {
     // Get payment method distribution
     const paymentMethodStats = await Payment.aggregate([
       {
-        $match: { status: 'completed' },
+        $match: { status: { $in: ['completed', 'refunded'] } },
       },
       {
         $group: {
           _id: '$paymentMethod',
           count: { $sum: 1 },
-          totalAmount: { $sum: '$amount' },
+          totalAmount: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'completed'] }, '$amount', 0],
+            },
+          },
+          refundedAmount: { $sum: '$refundAmount' },
         },
       },
     ]);

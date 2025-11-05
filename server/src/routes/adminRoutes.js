@@ -8,6 +8,8 @@ import {
   getAllUsers,
   updateUser,
   deleteUser,
+  suspendUser,
+  activateUser,
   getAnalytics,
   getUserDetails,
   getAllPayments,
@@ -35,6 +37,8 @@ router.get('/users', getAllUsers);
 router.get('/users/:userId', getUserDetails);
 router.put('/users/:userId', updateUser);
 router.delete('/users/:userId', deleteUser);
+router.post('/users/:userId/suspend', suspendUser);
+router.post('/users/:userId/activate', activateUser);
 
 // Analytics
 router.get('/analytics', getAnalytics);

@@ -301,7 +301,11 @@ const AdminPayments = () => {
                 <div>
                   <p className="text-sm text-muted-foreground">Total Revenue</p>
                   <p className="text-2xl font-bold">
-                    ${(stats.totalRevenue / 1000).toFixed(1)}K
+                    {(() => {
+                      const raw = Number(stats.totalRevenue) || 0;
+                      if (raw >= 1000) return `$${(raw / 1000).toFixed(1)}K`;
+                      return `$${raw.toFixed(0)}`;
+                    })()}
                   </p>
                 </div>
               </div>
@@ -317,7 +321,11 @@ const AdminPayments = () => {
                 <div>
                   <p className="text-sm text-muted-foreground">Net Revenue</p>
                   <p className="text-2xl font-bold">
-                    ${(stats.netRevenue / 1000).toFixed(1)}K
+                    {(() => {
+                      const raw = Number(stats.netRevenue) || 0;
+                      if (raw >= 1000) return `$${(raw / 1000).toFixed(1)}K`;
+                      return `$${raw.toFixed(0)}`;
+                    })()}
                   </p>
                 </div>
               </div>
@@ -332,7 +340,13 @@ const AdminPayments = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Refunds</p>
-                  <p className="text-2xl font-bold">${stats.totalRefunds}</p>
+                  <p className="text-2xl font-bold">
+                    {(() => {
+                      const raw = Number(stats.totalRefunds || 0);
+                      if (raw >= 1000) return `$${(raw / 1000).toFixed(1)}K`;
+                      return `$${raw.toFixed(0)}`;
+                    })()}
+                  </p>
                 </div>
               </div>
             </CardContent>

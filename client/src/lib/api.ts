@@ -451,6 +451,7 @@ export const adminAPI = {
         page?: number;
         limit?: number;
         role?: string;
+        status?: string;
         subscriptionType?: string;
         search?: string;
         sortBy?: string;
@@ -476,6 +477,18 @@ export const adminAPI = {
     // Delete user
     deleteUser: async (userId: string) => {
         const response = await api.delete(`/admin/users/${userId}`);
+        return response.data;
+    },
+
+    // Suspend user
+    suspendUser: async (userId: string) => {
+        const response = await api.post(`/admin/users/${userId}/suspend`);
+        return response.data;
+    },
+
+    // Activate user
+    activateUser: async (userId: string) => {
+        const response = await api.post(`/admin/users/${userId}/activate`);
         return response.data;
     },
 

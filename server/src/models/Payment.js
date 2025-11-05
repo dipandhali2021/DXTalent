@@ -83,14 +83,37 @@ paymentSchema.statics.calculateTotalRevenue = async function () {
   const result = await this.aggregate([
     {
       $match: {
-        status: { $in: ['completed'] },
+        status: { $in: ['completed', 'refunded'] },
       },
     },
     {
       $group: {
         _id: null,
-        totalRevenue: { $sum: '$amount' },
-        totalRefunds: { $sum: '$refundAmount' },
+        totalRevenue: {
+          $sum: {
+            $cond: [
+              { $eq: ['$status', 'completed'] },
+              {
+                $cond: [
+                  { $eq: ['$paymentType', 'refund'] },
+                  0, // Don't count refund transactions as revenue
+                  '$amount',
+                ],
+              },
+              0,
+            ],
+          },
+        },
+        // Sum refundAmount from refunded payments + amount from refund-type payments
+        totalRefunds: {
+          $sum: {
+            $cond: [
+              { $eq: ['$paymentType', 'refund'] },
+              '$amount', // Refund transaction amount
+              '$refundAmount', // Refunded amount from original payment
+            ],
+          },
+        },
       },
     },
   ]);
@@ -115,7 +138,7 @@ paymentSchema.statics.getRevenueByPeriod = async function (months = 6) {
   const result = await this.aggregate([
     {
       $match: {
-        status: 'completed',
+        status: { $in: ['completed', 'refunded'] },
         createdAt: { $gte: startDate },
       },
     },
@@ -125,8 +148,26 @@ paymentSchema.statics.getRevenueByPeriod = async function (months = 6) {
           year: { $year: '$createdAt' },
           month: { $month: '$createdAt' },
         },
-        revenue: { $sum: '$amount' },
-        refunds: { $sum: '$refundAmount' },
+        revenue: {
+          $sum: {
+            $cond: [
+              { $eq: ['$status', 'completed'] },
+              {
+                $cond: [{ $eq: ['$paymentType', 'refund'] }, 0, '$amount'],
+              },
+              0,
+            ],
+          },
+        },
+        refunds: {
+          $sum: {
+            $cond: [
+              { $eq: ['$paymentType', 'refund'] },
+              '$amount',
+              '$refundAmount',
+            ],
+          },
+        },
         count: { $sum: 1 },
       },
     },
@@ -152,15 +193,44 @@ paymentSchema.statics.getPaymentStats = async function () {
   const stats = await this.aggregate([
     {
       $match: {
-        status: { $in: ['completed'] },
+        status: { $in: ['completed', 'refunded'] },
       },
     },
     {
       $group: {
         _id: '$paymentType',
-        totalAmount: { $sum: '$amount' },
+        totalAmount: {
+          $sum: {
+            $cond: [
+              { $eq: ['$status', 'completed'] },
+              {
+                $cond: [{ $eq: ['$paymentType', 'refund'] }, 0, '$amount'],
+              },
+              0,
+            ],
+          },
+        },
         count: { $sum: 1 },
-        avgAmount: { $avg: '$amount' },
+        avgAmount: {
+          $avg: {
+            $cond: [
+              { $eq: ['$status', 'completed'] },
+              {
+                $cond: [{ $eq: ['$paymentType', 'refund'] }, 0, '$amount'],
+              },
+              0,
+            ],
+          },
+        },
+        refundedAmount: {
+          $sum: {
+            $cond: [
+              { $eq: ['$paymentType', 'refund'] },
+              '$amount',
+              '$refundAmount',
+            ],
+          },
+        },
       },
     },
   ]);
