@@ -7,6 +7,7 @@ import connectDB from './config/database.js';
 import authRoutes from './routes/authRoutes.js';
 import lessonRoutes from './routes/lessonRoutes.js';
 import seedRoutes from './routes/seedRoutes.js';
+import leaderboardRoutes from './routes/leaderboardRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -45,6 +46,7 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/lessons', lessonRoutes);
 app.use('/api/seed', seedRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {
@@ -64,6 +66,7 @@ app.get('/', (req, res) => {
     endpoints: {
       auth: '/api/auth',
       lessons: '/api/lessons',
+      leaderboard: '/api/leaderboard',
       health: '/health',
     },
   });

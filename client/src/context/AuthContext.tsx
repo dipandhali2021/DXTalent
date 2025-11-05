@@ -20,6 +20,8 @@ interface User {
     challengesCompleted: number;
     xpPoints: number;
     level: number;
+    league?: 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'master';
+    currentStreak?: number;
   };
 }
 

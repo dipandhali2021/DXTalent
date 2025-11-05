@@ -21,11 +21,11 @@ import {
   Zap,
   Lock,
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { authAPI } from '@/lib/api';
+import { authAPI, userAPI } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
 const Profile = () => {
@@ -39,17 +39,59 @@ const Profile = () => {
   const [profilePicture, setProfilePicture] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSendingReset, setIsSendingReset] = useState(false);
+  const params = useParams();
+  const viewedUserId = params.id;
+  const [isOwnProfile, setIsOwnProfile] = useState(true);
+  const [loadingPublic, setLoadingPublic] = useState(false);
+  const [publicUser, setPublicUser] = useState<any>(null);
 
   useEffect(() => {
-    // Refresh user data on mount
+    // If route has an id param and it's not current user, we'll fetch public profile
+    if (viewedUserId) {
+      // If current user exists and matches param, show own profile
+      if (user && user.id === viewedUserId) {
+        setIsOwnProfile(true);
+        refreshUser();
+        return;
+      }
+
+      // Otherwise load public profile
+      const fetchPublic = async () => {
+        try {
+          setLoadingPublic(true);
+          const resp = await userAPI.getUserPublic(viewedUserId as string);
+          if (resp.success) {
+            const pu = resp.data.user;
+            setPublicUser(pu);
+            setIsOwnProfile(false);
+            setUsername(pu.username || '');
+            setEmail('');
+            setProfilePicture(pu.profilePicture || '');
+          }
+        } catch (err) {
+          console.error('Failed to load public profile', err);
+        } finally {
+          setLoadingPublic(false);
+        }
+      };
+
+      fetchPublic();
+      return;
+    }
+
+    // No id param: show current user's profile
     refreshUser();
   }, []);
 
   useEffect(() => {
     if (user) {
-      setUsername(user.username);
-      setEmail(user.email);
-      setProfilePicture(user.profilePicture || '');
+      // If viewing own profile or no viewedUserId, populate fields
+      if (!viewedUserId || (user && user.id === viewedUserId)) {
+        setIsOwnProfile(true);
+        setUsername(user.username);
+        setEmail(user.email);
+        setProfilePicture(user.profilePicture || '');
+      }
     }
   }, [user]);
 
@@ -129,12 +171,25 @@ const Profile = () => {
     }
   };
 
-  if (!user) {
+  if (viewedUserId && loadingPublic) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 font-handwritten text-lg">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If no user (not logged in) and not viewing a public profile, prompt to login
+  if (!user && !viewedUserId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="font-handwritten text-lg">
+            Please login to view your profile.
+          </p>
         </div>
       </div>
     );
@@ -158,7 +213,8 @@ const Profile = () => {
     return badges[role] || badges.user;
   };
 
-  const roleBadge = getRoleBadge(user.role);
+  const roleForBadge = isOwnProfile ? user?.role : publicUser?.role;
+  const roleBadge = getRoleBadge(roleForBadge || 'user');
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 relative overflow-hidden">
@@ -174,10 +230,14 @@ const Profile = () => {
 
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <Button variant="outline" size="sm" onClick={() => navigate("/dashboard")}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/dashboard')}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
           <Button
             variant="destructive"
             onClick={handleLogout}
@@ -206,7 +266,7 @@ const Profile = () => {
                     <div className="absolute -bottom-2 -right-2 bg-accent text-accent-foreground w-8 h-8 rounded-full border-[3px] border-border flex items-center justify-center rotate-12">
                       {roleBadge.emoji}
                     </div>
-                    {isEditing && (
+                    {isEditing && isOwnProfile && (
                       <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <Camera className="w-6 h-6 text-white" />
                       </div>
@@ -214,29 +274,33 @@ const Profile = () => {
                   </div>
                 </div>
                 <CardTitle className="text-2xl font-handwritten">
-                  {user.username}
+                  {username}
                 </CardTitle>
                 <CardDescription className="font-handwritten text-lg">
-                  Level {user.stats.level} {roleBadge.label}
-                  {!user.isEmailVerified && (
+                  Level{' '}
+                  {isOwnProfile ? user?.stats.level : publicUser?.stats?.level}{' '}
+                  {roleBadge.label}
+                  {!isOwnProfile && publicUser?.isEmailVerified === false ? (
                     <span className="block text-yellow-600 mt-1">
                       ⚠️ Email not verified
                     </span>
-                  )}
+                  ) : null}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {!user.isEmailVerified && (
-                  <Alert className="border-[3px] bg-yellow-50 text-yellow-800 border-yellow-300">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription className="font-handwritten">
-                      Please verify your email address
-                    </AlertDescription>
-                  </Alert>
-                )}
+                {!isOwnProfile
+                  ? null
+                  : !user.isEmailVerified && (
+                      <Alert className="border-[3px] bg-yellow-50 text-yellow-800 border-yellow-300">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription className="font-handwritten">
+                          Please verify your email address
+                        </AlertDescription>
+                      </Alert>
+                    )}
 
                 {/* Profile Picture */}
-                {isEditing && (
+                {isEditing && isOwnProfile && (
                   <div className="space-y-2">
                     <Label
                       htmlFor="profilePicture"
@@ -308,7 +372,7 @@ const Profile = () => {
                 </div>
 
                 {/* Password Reset Section */}
-                {!isEditing && (
+                {!isEditing && isOwnProfile && (
                   <div className="space-y-2 pt-2 border-t-[3px] border-border">
                     <Label className="font-handwritten text-lg flex items-center gap-2">
                       <Lock className="w-4 h-4" />
@@ -330,36 +394,37 @@ const Profile = () => {
                   </div>
                 )}
 
-                {/* Action Buttons */}
+                {/* Action Buttons - only show for own profile */}
                 <div className="flex gap-3 pt-2">
-                  {!isEditing ? (
-                    <Button
-                      variant="hero"
-                      className="w-full"
-                      onClick={() => setIsEditing(true)}
-                    >
-                      Update Profile
-                    </Button>
-                  ) : (
-                    <>
+                  {isOwnProfile &&
+                    (!isEditing ? (
                       <Button
                         variant="hero"
-                        className="flex-1"
-                        onClick={handleUpdateProfile}
-                        disabled={isUpdating}
+                        className="w-full"
+                        onClick={() => setIsEditing(true)}
                       >
-                        {isUpdating ? 'Saving...' : 'Save Changes'}
+                        Update Profile
                       </Button>
-                      <Button
-                        variant="outline"
-                        className="flex-1 border-[3px]"
-                        onClick={handleCancel}
-                        disabled={isUpdating}
-                      >
-                        Cancel
-                      </Button>
-                    </>
-                  )}
+                    ) : (
+                      <>
+                        <Button
+                          variant="hero"
+                          className="flex-1"
+                          onClick={handleUpdateProfile}
+                          disabled={isUpdating}
+                        >
+                          {isUpdating ? 'Saving...' : 'Save Changes'}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="flex-1 border-[3px]"
+                          onClick={handleCancel}
+                          disabled={isUpdating}
+                        >
+                          Cancel
+                        </Button>
+                      </>
+                    ))}
                 </div>
               </CardContent>
             </Card>
@@ -385,7 +450,9 @@ const Profile = () => {
                     </div>
                     <div className="flex-1">
                       <p className="font-handwritten text-lg font-bold">
-                        {user.stats.skillsMastered}
+                        {isOwnProfile
+                          ? user?.stats.skillsMastered
+                          : publicUser?.stats?.skillsMastered || 0}
                       </p>
                       <p className="font-handwritten text-muted-foreground">
                         Skills Mastered
@@ -398,7 +465,9 @@ const Profile = () => {
                     </div>
                     <div className="flex-1">
                       <p className="font-handwritten text-lg font-bold">
-                        {user.stats.challengesCompleted}
+                        {isOwnProfile
+                          ? user?.stats.challengesCompleted
+                          : publicUser?.stats?.challengesCompleted || 0}
                       </p>
                       <p className="font-handwritten text-muted-foreground">
                         Challenges Completed
@@ -411,7 +480,10 @@ const Profile = () => {
                     </div>
                     <div className="flex-1">
                       <p className="font-handwritten text-lg font-bold">
-                        {user.stats.xpPoints.toLocaleString()}
+                        {(isOwnProfile
+                          ? user?.stats.xpPoints
+                          : publicUser?.stats?.xpPoints || 0
+                        )?.toLocaleString()}
                       </p>
                       <p className="font-handwritten text-muted-foreground">
                         XP Points

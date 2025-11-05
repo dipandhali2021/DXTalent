@@ -84,6 +84,11 @@ const userSchema = new mongoose.Schema(
         type: String,
         default: 'Novice Explorer',
       },
+      league: {
+        type: String,
+        enum: ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'master'],
+        default: 'bronze',
+      },
       xpIntoLevel: {
         type: Number,
         default: 0,

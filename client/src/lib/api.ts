@@ -152,6 +152,14 @@ export const authAPI = {
     }
 };
 
+// Public user API
+export const userAPI = {
+    getUserPublic: async (userId: string) => {
+        const response = await api.get(`/auth/users/${userId}`);
+        return response.data;
+    }
+};
+
 // Lesson API functions
 export const lessonAPI = {
     // Generate lesson structure (3 full + 7 placeholders) with progressive difficulty
@@ -223,6 +231,55 @@ export const seedAPI = {
     // Reset and reseed all lessons
     resetAndSeedLessons: async () => {
         const response = await api.post('/seed/reset-lessons');
+        return response.data;
+    }
+};
+
+// Leaderboard API functions
+export const leaderboardAPI = {
+    // Get global leaderboard with filters
+    getLeaderboard: async (filters?: {
+        league?: string;
+        skill?: string;
+        timeframe?: string;
+        page?: number;
+        limit?: number;
+    }) => {
+        const params = new URLSearchParams();
+        if (filters?.league) params.append('league', filters.league);
+        if (filters?.skill) params.append('skill', filters.skill);
+        if (filters?.timeframe) params.append('timeframe', filters.timeframe);
+        if (filters?.page) params.append('page', String(filters.page));
+        if (filters?.limit) params.append('limit', String(filters.limit));
+
+        const response = await api.get(`/leaderboard${params.toString() ? '?' + params.toString() : ''}`);
+        return response.data;
+    },
+
+    // Get current user's rank and nearby users
+    getMyRank: async () => {
+        const response = await api.get('/leaderboard/my-rank');
+        return response.data;
+    },
+
+    // Get league statistics
+    getLeagueStats: async () => {
+        const response = await api.get('/leaderboard/league-stats');
+        return response.data;
+    },
+
+    // Get skill-specific leaderboard
+    getSkillLeaderboard: async (skill: string, limit?: number) => {
+        const params = new URLSearchParams();
+        if (limit) params.append('limit', String(limit));
+
+        const response = await api.get(`/leaderboard/skills/${skill}${params.toString() ? '?' + params.toString() : ''}`);
+        return response.data;
+    },
+
+    // Get AI-powered insights
+    getInsights: async () => {
+        const response = await api.get('/leaderboard/insights');
         return response.data;
     }
 };

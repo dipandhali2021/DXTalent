@@ -12,6 +12,7 @@ import {
   resetPassword,
   updateUserRole,
   updateProfile,
+  getUserById,
 } from '../controllers/authController.js';
 import { authMiddleware, roleMiddleware } from '../middleware/auth.js';
 import {
@@ -72,6 +73,9 @@ router.post('/reset-password', resetPasswordValidation, resetPassword);
 router.post('/logout', authMiddleware, logout);
 
 router.get('/me', authMiddleware, getCurrentUser);
+
+// Public route to get a user's public profile
+router.get('/users/:userId', getUserById);
 
 router.put('/profile', authMiddleware, updateProfile);
 

@@ -56,6 +56,14 @@ const App = () => (
                 }
               />
               <Route
+                path="/profile/:id"
+                element={
+                  <ProtectedRoute requireAuth={true}>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/dashboard"
                 element={
                   <ProtectedRoute requireAuth={true}>

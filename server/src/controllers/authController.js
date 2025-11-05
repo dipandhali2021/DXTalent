@@ -738,3 +738,47 @@ export const updateUserRole = async (req, res) => {
     });
   }
 };
+
+// @desc    Get public user profile by id (limited fields)
+// @route   GET /api/auth/users/:userId
+// @access  Public
+export const getUserById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId).select(
+      'username profilePicture role stats isEmailVerified createdAt'
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Return limited public fields only
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user._id,
+          username: user.username,
+          profilePicture: user.profilePicture,
+          role: user.role,
+          stats: {
+            level: user.stats.level,
+            xpPoints: user.stats.xpPoints,
+            league: user.stats.league,
+            currentStreak: user.stats.currentStreak,
+          },
+          isEmailVerified: user.isEmailVerified,
+          joinedAt: user.createdAt,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Get user by id error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch user' });
+  }
+};

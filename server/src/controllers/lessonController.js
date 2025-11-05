@@ -6,6 +6,7 @@ import {
 } from '../utils/gemini.js';
 import { computeLevelFromXP, calculateLessonXP } from '../utils/level.js';
 import { updateStreak, getActivityData } from '../utils/streak.js';
+import { calculateLeague } from './leaderboardController.js';
 
 /**
  * Generate initial lesson structure with first 3 lessons fully generated
@@ -495,10 +496,16 @@ const completeLesson = async (req, res) => {
     user.stats.xpForNextLevel = levelInfo.xpForNextLevel;
     user.stats.xpProgress = levelInfo.xpProgress;
 
+    // Calculate and update league based on XP
+    const previousLeague = user.stats.league;
+    const newLeague = calculateLeague(user.stats.xpPoints);
+    user.stats.league = newLeague;
+
     await user.save();
 
     // Check if user leveled up
     const leveledUp = levelInfo.level > previousLevel;
+    const leagueChanged = previousLeague !== newLeague;
 
     res.status(200).json({
       success: true,
@@ -514,6 +521,9 @@ const completeLesson = async (req, res) => {
         xpForNextLevel: levelInfo.xpForNextLevel,
         xpProgress: levelInfo.xpProgress,
         nextLevelName: levelInfo.nextLevelName,
+        league: newLeague,
+        leagueChanged,
+        previousLeague,
         correctAnswers,
         totalQuestions,
         accuracy,
