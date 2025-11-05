@@ -274,21 +274,27 @@ const Leaderboard = () => {
 
                     {/* Skill Filter Buttons */}
                     <div className="flex gap-2 flex-wrap">
-                      {['all', 'Marketing', 'Development', 'Data', 'Business', 'Design', 'Other'].map(
-                        (skill) => (
-                          <Button
-                            key={skill}
-                            variant={
-                              selectedSkill === skill ? 'default' : 'outline'
-                            }
-                            size="sm"
-                            onClick={() => setSelectedSkill(skill)}
-                            className="capitalize"
-                          >
-                            {skill === 'all' ? 'All Skills' : skill}
-                          </Button>
-                        )
-                      )}
+                      {[
+                        'all',
+                        'Marketing',
+                        'Development',
+                        'Data',
+                        'Business',
+                        'Design',
+                        'Other',
+                      ].map((skill) => (
+                        <Button
+                          key={skill}
+                          variant={
+                            selectedSkill === skill ? 'default' : 'outline'
+                          }
+                          size="sm"
+                          onClick={() => setSelectedSkill(skill)}
+                          className="capitalize"
+                        >
+                          {skill === 'all' ? 'All Skills' : skill}
+                        </Button>
+                      ))}
                     </div>
                   </div>
 

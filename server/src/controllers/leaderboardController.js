@@ -45,17 +45,18 @@ const getUserSkills = async (userId) => {
     if (completion.lessonId && completion.lessonId.category) {
       // Use the category field directly - it already contains the main DX categories
       const category = completion.lessonId.category;
-      
+
       // Map to the 6 main DX skill categories
       let skill = '';
-      
+
       if (category === 'Marketing') skill = 'Marketing';
       else if (category === 'Development') skill = 'Development';
-      else if (category === 'Data Science' || category === 'Data') skill = 'Data';
+      else if (category === 'Data Science' || category === 'Data')
+        skill = 'Data';
       else if (category === 'Business') skill = 'Business';
       else if (category === 'Design') skill = 'Design';
       else skill = 'Other';
-      
+
       if (skill) {
         skillsMap.set(skill, (skillsMap.get(skill) || 0) + 1);
       }
