@@ -1,40 +1,42 @@
-import { ArrowRight } from "lucide-react";
-
-const steps = [
-  {
-    number: "1",
-    emoji: "📝",
-    title: "Sign Up & Choose Path",
-    description: "Join as a learner or recruiter. Pick your skill focus area and start your journey.",
-  },
-  {
-    number: "2",
-    emoji: "🎯",
-    title: "Complete Challenges",
-    description: "Tackle real-world DX problems. Earn points, badges, and climb the leaderboard.",
-  },
-  {
-    number: "3",
-    emoji: "🏆",
-    title: "Get Recognized",
-    description: "Top performers get noticed by recruiters. Showcase verified skills, not just claims.",
-  },
-];
+import { ArrowRight } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function HowItWorks() {
+  const { t } = useLanguage();
+
+  const steps = [
+    {
+      number: '1',
+      emoji: '📝',
+      title: t('howitworks.step1.title'),
+      description: t('howitworks.step1.desc'),
+    },
+    {
+      number: '2',
+      emoji: '🎯',
+      title: t('howitworks.step2.title'),
+      description: t('howitworks.step2.desc'),
+    },
+    {
+      number: '3',
+      emoji: '🏆',
+      title: t('howitworks.step3.title'),
+      description: t('howitworks.step3.desc'),
+    },
+  ];
   return (
     <section className="py-20 px-4 bg-muted">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center space-y-4 mb-16">
           <div className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-full brutal-border brutal-shadow rotate-playful-1 text-sm font-bold">
-            🎮 Simple Process
+            {t('howitworks.badge')}
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-foreground rotate-playful-2">
-            How It Works
+            {t('howitworks.title')}
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Three simple steps to master DX skills and get discovered
+            {t('howitworks.subtitle')}
           </p>
         </div>
 
@@ -44,7 +46,11 @@ export default function HowItWorks() {
             <div key={index} className="relative">
               <div
                 className={`bg-card brutal-border brutal-shadow rounded-xl p-8 hover:brutal-shadow-lg hover:-translate-y-1 transition-all ${
-                  index === 0 ? "rotate-playful-1" : index === 1 ? "rotate-playful-2" : "rotate-playful-3"
+                  index === 0
+                    ? 'rotate-playful-1'
+                    : index === 1
+                    ? 'rotate-playful-2'
+                    : 'rotate-playful-3'
                 }`}
               >
                 {/* Step Number Badge */}
@@ -53,11 +59,17 @@ export default function HowItWorks() {
                 </div>
 
                 {/* Emoji */}
-                <div className="text-6xl mb-4 animate-bounce-slow">{step.emoji}</div>
+                <div className="text-6xl mb-4 animate-bounce-slow">
+                  {step.emoji}
+                </div>
 
                 {/* Content */}
-                <h3 className="text-2xl font-bold text-foreground mb-3">{step.title}</h3>
-                <p className="text-muted-foreground text-lg">{step.description}</p>
+                <h3 className="text-2xl font-bold text-foreground mb-3">
+                  {step.title}
+                </h3>
+                <p className="text-muted-foreground text-lg">
+                  {step.description}
+                </p>
               </div>
 
               {/* Arrow between steps (hidden on mobile and last item) */}

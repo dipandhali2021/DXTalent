@@ -2,10 +2,12 @@ import { Button } from '@/components/ui/button';
 import { Sparkles, Trophy, Target } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { useLanguage } from '@/context/LanguageContext';
 import logo from '@/assets/logo.png';
 
 export default function Hero() {
   const { isAuthenticated, user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const handleStartLearning = () => {
@@ -81,19 +83,25 @@ export default function Hero() {
         {/* Tag */}
         <div className="inline-block">
           <span className="px-4 py-2 bg-primary text-primary-foreground rounded-full brutal-border brutal-shadow rotate-playful-1 inline-block text-sm font-bold">
-            🚀 Level Up Your DX Skills
+            {t('hero.badge')}
           </span>
         </div>
 
         {/* Main Heading */}
         <div className="relative">
           <h1 className="text-5xl md:text-7xl font-bold text-foreground rotate-playful-1 leading-tight">
-            Master Digital Skills
+            {t('hero.title')}
             <br />
-            Through{' '}
             <span className="relative inline-block">
-              <span className="relative z-10">Gamified Learning</span>
-              <div className="absolute -bottom-2 left-0 right-0 h-4 bg-accent -rotate-1 -z-0"></div>
+              <span className="relative z-10">
+                {t('hero.subtitle_before')}
+                <span className="relative inline-block">
+                  <span className="relative z-10">
+                    {t('hero.subtitle_highlight')}
+                  </span>
+                  <div className="absolute -bottom-2 left-0 right-0 h-4 bg-accent -rotate-1 -z-0"></div>
+                </span>
+              </span>
             </span>
           </h1>
           <div className="absolute -right-8 top-0 text-5xl rotate-12 animate-bounce-slow">
@@ -106,9 +114,7 @@ export default function Hero() {
 
         {/* Subtitle */}
         <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto rotate-playful-2">
-          Discover motivated talent by teaching and evaluating DX-related skills
-          through our gamified e-learning platform. Recruiters discover top
-          performers. Learners earn recognition.
+          {t('hero.description')}
         </p>
 
         {/* CTA Buttons */}
@@ -122,7 +128,7 @@ export default function Hero() {
                 onClick={handleStartLearning}
               >
                 <Target className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
-                Start Learning
+                {t('hero.start_learning')}
               </Button>
               <Button
                 variant="outline-brutal"
@@ -131,7 +137,7 @@ export default function Hero() {
                 onClick={handleForRecruiters}
               >
                 <Trophy className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                For Recruiters
+                {t('hero.for_recruiters')}
               </Button>
             </>
           ) : user?.role === 'recruiter' ? (
@@ -143,7 +149,7 @@ export default function Hero() {
                 onClick={handleForRecruiters}
               >
                 <Trophy className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                Go to Dashboard
+                {t('hero.go_to_dashboard')}
               </Button>
             </>
           ) : (
@@ -154,7 +160,7 @@ export default function Hero() {
               onClick={handleStartLearning}
             >
               <Target className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
-              Go to Dashboard
+              {t('hero.go_to_dashboard')}
             </Button>
           )}
         </div>
@@ -162,9 +168,9 @@ export default function Hero() {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12 max-w-4xl mx-auto">
           {[
-            { icon: '🎮', label: 'Gamified Challenges', value: '50+' },
-            { icon: '👨‍💻', label: 'Active Learners', value: '10K+' },
-            { icon: '🏢', label: 'Recruiting Partners', value: '200+' },
+            { icon: '🎮', label: t('hero.challenges'), value: '50+' },
+            { icon: '👨‍💻', label: t('hero.learners'), value: '10K+' },
+            { icon: '🏢', label: t('hero.partners'), value: '200+' },
           ].map((stat, i) => (
             <div
               key={i}

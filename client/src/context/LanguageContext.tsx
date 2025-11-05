@@ -5,7 +5,7 @@ type Language = 'en' | 'jp';
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, vars?: Record<string, string | number>) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
@@ -17,17 +17,22 @@ const translations = {
     // Hero Section
     'hero.badge': '🚀 Level Up Your DX Skills',
     'hero.title': 'Master Digital Skills',
-    'hero.subtitle': 'Through Gamified Learning',
+    // Subtitle is split so we can highlight (underline) only part of it
+    'hero.subtitle_before': 'Through ',
+    'hero.subtitle_highlight': 'Gamified Learning',
     'hero.description':
       'Discover motivated talent by teaching and evaluating DX-related skills through our gamified e-learning platform. Recruiters discover top performers. Learners earn recognition.',
     'hero.dashboard': '🏆 Go to Dashboard',
     'hero.challenges': '50+ Gamified Challenges',
     'hero.learners': '10K+ Active Learners',
     'hero.partners': '200+ Recruiting Partners',
+    'hero.start_learning': 'Start Learning',
+    'hero.for_recruiters': 'For Recruiters',
 
     // Features Section
     'features.badge': '💡 Why Choose Us',
     'features.title': 'Learning That Actually Works',
+    'features.work': 'Works',
     'features.skill.title': 'Skill Challenges',
     'features.skill.desc':
       'Complete hands-on DX challenges and earn points. Real-world scenarios that matter.',
@@ -67,6 +72,15 @@ const translations = {
     'pricing.title': 'Choose Your Plan',
     'pricing.subtitle':
       'Start for free as a learner, upgrade for pro features, or hire top talent as a recruiter',
+    'pricing.processing': 'Processing...',
+    'pricing.addon': 'Add-on: +{count} generations for ${price}',
+    // Learner feature lines
+    'pricing.learner.feature1': 'Access to 50+ Pre-built Lessons',
+    'pricing.learner.feature2': 'Basic Leaderboard Access',
+    'pricing.learner.feature3': 'Earn Digital Badges',
+    'pricing.learner.feature4': '1 AI Lesson Generation per month',
+    'pricing.learner.feature5': 'Basic Progress Tracking',
+    'pricing.learner.feature6': 'Free 1 Test Generation per month',
     'pricing.popular': 'Most Popular',
     'pricing.learner.title': 'Learner',
     'pricing.learner.subtitle': 'Start your learning journey',
@@ -74,6 +88,11 @@ const translations = {
     'pricing.learner.period': '/month',
     'pricing.learner.note': 'FREE FOREVER',
     'pricing.learner.cta': 'Start Free',
+    // Pro features
+    'pricing.pro.feature1': 'Everything in Learner',
+    'pricing.pro.feature2': '5 AI Lesson Generations per month',
+    'pricing.pro.feature3': 'Multiple Test Generations',
+    'pricing.pro.feature4': 'Priority Support',
     'pricing.pro.title': 'Pro Learner',
     'pricing.pro.subtitle': 'Unlock advanced learning features',
     'pricing.pro.price': '$20',
@@ -85,6 +104,24 @@ const translations = {
     'pricing.recruiter.price': '$50',
     'pricing.recruiter.period': '/month',
     'pricing.recruiter.cta': 'Start Hiring',
+    // Recruiter features
+    'pricing.recruiter.feature1': 'Full Talent Database Access',
+    'pricing.recruiter.feature2': 'Advanced Candidate Filtering',
+    'pricing.recruiter.feature3': 'Direct Candidate Contact',
+    'pricing.recruiter.feature4': 'Performance Analytics',
+    'pricing.recruiter.feature5': 'Skill Assessment Tools',
+    'pricing.recruiter.feature6': 'Unlimited Searches',
+    'pricing.recruiter.feature7': 'Priority Candidate Recommendations',
+
+    // Pricing toasts
+    'pricing.toast.already_free.title': 'Already on Free Plan',
+    'pricing.toast.already_free.desc':
+      'You are already on the free Learner plan!',
+    'pricing.toast.already_subscribed.title': 'Already Subscribed',
+    'pricing.toast.already_subscribed.desc':
+      'You are already on the {plan} plan!',
+    'pricing.toast.checkout_failed.title': 'Checkout Failed',
+    'pricing.toast.checkout_failed.desc': 'Please try again later.',
 
     // CTA Section
     'cta.title': 'Ready to Level Up?',
@@ -106,6 +143,23 @@ const translations = {
     'support.form.subject': 'Subject',
     'support.form.message': 'Message',
     'support.form.submit': '📨 Send Support Ticket',
+    // Placeholders
+    'support.form.placeholder.name': 'Your name',
+    'support.form.placeholder.email': 'your.email@example.com',
+    'support.form.placeholder.subject': 'Brief description of your issue',
+    'support.form.placeholder.message':
+      'Please provide details about your issue...',
+    // Toast messages
+    'support.toast.opened_title': '📧 Gmail opened!',
+    'support.toast.opened_description':
+      'Gmail compose window opened in a new tab. Please send the email to complete your request.',
+    'support.toast.error_title': 'Error',
+    'support.toast.error_description':
+      'Failed to open Gmail. Please email us directly at buemethyl68@gmail.com',
+    // mail subject prefix
+    'support.email.subject_prefix': 'Support Ticket:',
+    // Button state
+    'support.form.sending': 'Opening Email Client...',
     'support.email.title': '📧 Direct Email Support',
     'support.email.subtitle':
       'Prefer to email us directly? Send your questions or issues to:',
@@ -142,8 +196,11 @@ const translations = {
   jp: {
     // Hero Section
     'hero.badge': '🚀 DXスキルをレベルアップ',
-    'hero.title': 'デジタルスキルを習得',
-    'hero.subtitle': 'ゲーミフィケーション学習を通じて',
+    'hero.title': 'ゲーム化された学習を通して',
+    // For Japanese we also split into before/highlight so the highlight styling works
+    // Japanese ordering can differ; by default keep the whole phrase as the highlight
+    'hero.subtitle_before': 'デジタ',
+    'hero.subtitle_highlight': 'ルスキルを習得',
     'hero.description':
       'ゲーミフィケーションされたeラーニングプラットフォームを通じてDX関連スキルを教育・評価し、意欲的な人材を発見します。採用担当者はトップパフォーマーを発見し、学習者は評価を獲得します。',
     'hero.dashboard': '🏆 ダッシュボードへ',
@@ -151,9 +208,15 @@ const translations = {
     'hero.learners': '10,000人以上のアクティブな学習者',
     'hero.partners': '200社以上の採用パートナー',
 
+    // Button texts
+    'hero.start_learning': '学習を開始',
+    'hero.for_recruiters': '採用担当者向け',
+    'hero.go_to_dashboard': 'ダッシュボードへ',
+
     // Features Section
     'features.badge': '💡 選ばれる理由',
-    'features.title': '実際に機能する学習',
+    'features.title': '実際にそれを学ぶ',
+    'features.work': '作品',
     'features.skill.title': 'スキルチャレンジ',
     'features.skill.desc':
       '実践的なDXチャレンジを完了してポイントを獲得。重要な実世界のシナリオ。',
@@ -210,6 +273,38 @@ const translations = {
     'pricing.recruiter.price': '$50',
     'pricing.recruiter.period': '/月',
     'pricing.recruiter.cta': '採用を開始',
+    'pricing.processing': '処理中...',
+    'pricing.addon': 'アドオン: +{count} 世代を ${price} で',
+    // Learner feature lines
+    'pricing.learner.feature1': '50以上の事前構築済みレッスンにアクセス',
+    'pricing.learner.feature2': '基本的なリーダーボードアクセス',
+    'pricing.learner.feature3': 'デジタルバッジを獲得',
+    'pricing.learner.feature4': '月1回のAIレッスン生成',
+    'pricing.learner.feature5': '基本的な進捗トラッキング',
+    'pricing.learner.feature6': '月1回無料のテスト生成',
+    // Pro features
+    'pricing.pro.feature1': '学習者向けのすべての機能',
+    'pricing.pro.feature2': '月5回のAIレッスン生成',
+    'pricing.pro.feature3': '複数のテスト生成',
+    'pricing.pro.feature4': '優先サポート',
+    // Recruiter features
+    'pricing.recruiter.feature1': 'フルタレントデータベースへのアクセス',
+    'pricing.recruiter.feature2': '高度な候補者フィルタリング',
+    'pricing.recruiter.feature3': '候補者への直接連絡',
+    'pricing.recruiter.feature4': 'パフォーマンス分析',
+    'pricing.recruiter.feature5': 'スキル評価ツール',
+    'pricing.recruiter.feature6': '無制限の検索',
+    'pricing.recruiter.feature7': '優先候補者の推薦',
+
+    // Pricing toasts
+    'pricing.toast.already_free.title': '無料プランですでにご利用中',
+    'pricing.toast.already_free.desc':
+      '現在、学習者向けの無料プランをご利用中です！',
+    'pricing.toast.already_subscribed.title': 'すでにサブスクライブ済み',
+    'pricing.toast.already_subscribed.desc':
+      '{plan} プランをすでにご利用中です！',
+    'pricing.toast.checkout_failed.title': 'チェックアウトに失敗しました',
+    'pricing.toast.checkout_failed.desc': '後でもう一度お試しください。',
 
     // CTA Section
     'cta.title': 'レベルアップの準備はできましたか？',
@@ -230,6 +325,23 @@ const translations = {
     'support.form.subject': '件名',
     'support.form.message': 'メッセージ',
     'support.form.submit': '📨 サポートチケットを送信',
+    // Placeholders
+    'support.form.placeholder.name': 'あなたの名前',
+    'support.form.placeholder.email': 'your.email@example.com',
+    'support.form.placeholder.subject': '問題の簡単な説明',
+    'support.form.placeholder.message':
+      '問題の詳細をできるだけ詳しくご記入ください...',
+    // Toast messages
+    'support.toast.opened_title': '📧 Gmailを開きました！',
+    'support.toast.opened_description':
+      'Gmailの作成ウィンドウを新しいタブで開きました。リクエストを完了するにはメールを送信してください。',
+    'support.toast.error_title': 'エラー',
+    'support.toast.error_description':
+      'Gmailを開けませんでした。直接 buemethyl68@gmail.com にメールを送信してください',
+    // mail subject prefix
+    'support.email.subject_prefix': 'サポートチケット：',
+    // Button state
+    'support.form.sending': 'メールクライアントを開いています...',
     'support.email.title': '📧 直接メールサポート',
     'support.email.subtitle':
       '直接メールでお問い合わせをご希望ですか？質問や問題を以下に送信してください：',
@@ -268,8 +380,17 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [language, setLanguage] = useState<Language>('en');
 
-  const t = (key: string): string => {
-    return translations[language][key] || key;
+  const t = (key: string, vars?: Record<string, string | number>): string => {
+    const entry = translations[language][key] || key;
+    if (!vars) return entry;
+
+    // simple interpolation for {name} and ${name} placeholders
+    return Object.keys(vars).reduce((str, k) => {
+      const v = String(vars[k]);
+      return str
+        .replace(new RegExp(`\\{${k}\\}`, 'g'), v)
+        .replace(new RegExp(`\\$\\{${k}\\}`, 'g'), v);
+    }, entry);
   };
 
   return (

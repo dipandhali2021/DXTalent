@@ -13,10 +13,12 @@ import {
 import { LifeBuoy, Mail, MessageSquare, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function SupportTicket() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: user?.username || '',
     email: user?.email || '',
@@ -31,7 +33,9 @@ export default function SupportTicket() {
 
     try {
       // Create Gmail compose URL with form data
-      const subject = encodeURIComponent(`Support Ticket: ${formData.subject}`);
+      const subject = encodeURIComponent(
+        `${t('support.email.subject_prefix')} ${formData.subject}`
+      );
       const body = encodeURIComponent(
         `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
       );
@@ -43,9 +47,8 @@ export default function SupportTicket() {
       );
 
       toast({
-        title: '📧 Gmail opened!',
-        description:
-          'Gmail compose window opened in a new tab. Please send the email to complete your request.',
+        title: t('support.toast.opened_title'),
+        description: t('support.toast.opened_description'),
       });
 
       // Reset form after a delay
@@ -59,9 +62,8 @@ export default function SupportTicket() {
       }, 2000);
     } catch (error) {
       toast({
-        title: 'Error',
-        description:
-          'Failed to open Gmail. Please email us directly at buemethyl68@gmail.com',
+        title: t('support.toast.error_title'),
+        description: t('support.toast.error_description'),
         variant: 'destructive',
       });
     } finally {
@@ -89,11 +91,10 @@ export default function SupportTicket() {
             <LifeBuoy className="w-8 h-8" />
           </div>
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Need Help? We're Here! 🚑
+            {t('support.title')}
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Got questions or running into issues? Submit a support ticket and
-            our team will get back to you ASAP!
+            {t('support.subtitle')}
           </p>
         </div>
 
@@ -103,62 +104,60 @@ export default function SupportTicket() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageSquare className="w-5 h-5" />
-                Submit a Support Ticket
+                {t('support.form.title')}
               </CardTitle>
-              <CardDescription>
-                Fill out the form below and we'll respond as soon as possible
-              </CardDescription>
+              <CardDescription>{t('support.form.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
+                  <Label htmlFor="name">{t('support.form.name')}</Label>
                   <Input
                     id="name"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    placeholder="Your name"
+                    placeholder={t('support.form.placeholder.name')}
                     required
                     className="brutal-border"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('support.form.email')}</Label>
                   <Input
                     id="email"
                     name="email"
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="your.email@example.com"
+                    placeholder={t('support.form.placeholder.email')}
                     required
                     className="brutal-border"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="subject">Subject</Label>
+                  <Label htmlFor="subject">{t('support.form.subject')}</Label>
                   <Input
                     id="subject"
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
-                    placeholder="Brief description of your issue"
+                    placeholder={t('support.form.placeholder.subject')}
                     required
                     className="brutal-border"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="message">Message</Label>
+                  <Label htmlFor="message">{t('support.form.message')}</Label>
                   <Textarea
                     id="message"
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
-                    placeholder="Please provide details about your issue..."
+                    placeholder={t('support.form.placeholder.message')}
                     required
                     rows={6}
                     className="brutal-border"
@@ -173,8 +172,8 @@ export default function SupportTicket() {
                 >
                   <Send className="w-4 h-4 mr-2" />
                   {isSubmitting
-                    ? 'Opening Email Client...'
-                    : 'Send Support Ticket'}
+                    ? t('support.form.sending')
+                    : t('support.form.submit')}
                 </Button>
               </form>
             </CardContent>
@@ -186,63 +185,58 @@ export default function SupportTicket() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Mail className="w-5 h-5" />
-                  Direct Email Support
+                  {t('support.email.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground">
-                  Prefer to email us directly? Send your questions or issues to:
+                  {t('support.email.subtitle')}
                 </p>
-                <div  onClick={() => {
+                <div
+                  onClick={() => {
                     window.open(
                       'https://mail.google.com/mail/?view=cm&fs=1&to=buemethyl68@gmail.com',
                       '_blank'
                     );
-                  }}>
-                <a
-                  href="mailto:buemethyl68@gmail.com"
-                  className="block p-4 bg-primary/10 rounded-lg brutal-border hover:bg-primary/20 transition-colors"
+                  }}
                 >
-                  <p className="font-mono text-lg font-bold text-primary break-all">
-                    buemethyl68@gmail.com
-                  </p>
-                </a>
+                  <a
+                    href="mailto:buemethyl68@gmail.com"
+                    className="block p-4 bg-primary/10 rounded-lg brutal-border hover:bg-primary/20 transition-colors"
+                  >
+                    <p className="font-mono text-lg font-bold text-primary break-all">
+                      buemethyl68@gmail.com
+                    </p>
+                  </a>
                 </div>
-                
+
                 <p className="text-sm text-muted-foreground">
-                  We typically respond within 24-48 hours during business days.
+                  {t('support.email.response')}
                 </p>
               </CardContent>
             </Card>
 
             <Card className="brutal-border brutal-shadow -rotate-playful-1">
               <CardHeader>
-                <CardTitle>📋 Before You Submit</CardTitle>
+                <CardTitle>{t('support.tips.title')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">•</span>
-                    <span>
-                      Check if your question is already answered in our FAQ
-                    </span>
+                    <span>{t('support.tips.check')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">•</span>
-                    <span>
-                      Include relevant details like your username and any error
-                      messages
-                    </span>
+                    <span>{t('support.tips.details')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">•</span>
-                    <span>
-                      Screenshots can be very helpful for technical issues
-                    </span>
+                    <span>{t('support.tips.helpful')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">•</span>
-                    <span>Be as specific as possible about your issue</span>
+                    <span>{t('support.tips.specific')}</span>
                   </li>
                 </ul>
               </CardContent>
