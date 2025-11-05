@@ -119,3 +119,6 @@ export const verifiedEmailMiddleware = (req, res, next) => {
 
   next();
 };
+
+// Export authenticate as an alias for authMiddleware
+export const authenticate = authMiddleware;

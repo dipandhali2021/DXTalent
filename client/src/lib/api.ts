@@ -152,4 +152,48 @@ export const authAPI = {
     }
 };
 
+// Lesson API functions
+export const lessonAPI = {
+    // Generate lesson structure (3 full + 7 placeholders) with progressive difficulty
+    generateLessonStructure: async (topic: string) => {
+        const response = await api.post('/lessons/generate', { topic });
+        return response.data;
+    },
+
+    // Generate content for a placeholder lesson
+    generatePlaceholderContent: async (lessonId: string) => {
+        const response = await api.post(`/lessons/${lessonId}/generate-content`);
+        return response.data;
+    },
+
+    // Get all lessons with optional filters
+    getUserLessons: async (filters?: { category?: string; difficulty?: string; isFullyGenerated?: boolean }) => {
+        const params = new URLSearchParams();
+        if (filters?.category) params.append('category', filters.category);
+        if (filters?.difficulty) params.append('difficulty', filters.difficulty);
+        if (filters?.isFullyGenerated !== undefined) params.append('isFullyGenerated', String(filters.isFullyGenerated));
+
+        const response = await api.get(`/lessons${params.toString() ? '?' + params.toString() : ''}`);
+        return response.data;
+    },
+
+    // Get single lesson with full content
+    getLessonById: async (lessonId: string) => {
+        const response = await api.get(`/lessons/${lessonId}`);
+        return response.data;
+    },
+
+    // Get lesson statistics
+    getLessonStats: async () => {
+        const response = await api.get('/lessons/stats');
+        return response.data;
+    },
+
+    // Delete a lesson
+    deleteLesson: async (lessonId: string) => {
+        const response = await api.delete(`/lessons/${lessonId}`);
+        return response.data;
+    }
+};
+
 export default api;

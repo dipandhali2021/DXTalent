@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import connectDB from './config/database.js';
 import authRoutes from './routes/authRoutes.js';
+import lessonRoutes from './routes/lessonRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -41,6 +42,7 @@ app.use(cookieParser());
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/lessons', lessonRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {
@@ -59,6 +61,7 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       auth: '/api/auth',
+      lessons: '/api/lessons',
       health: '/health',
     },
   });

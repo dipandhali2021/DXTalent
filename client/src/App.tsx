@@ -79,7 +79,7 @@ const App = () => (
                   // </ProtectedRoute>
                 }
               />
-              <Route path="/lesson" element={<Lesson />} />
+              <Route path="/lesson/:lessonId" element={<Lesson />} />
               <Route path="/test" element={<Test />} />
               <Route path="/lessons" element={<LessonsLibrary />} />
               <Route

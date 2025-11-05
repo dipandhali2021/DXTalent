@@ -1,88 +1,46 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { motion, AnimatePresence } from "framer-motion";
-import { Flame, Trophy, CheckCircle2, XCircle, Zap, ArrowRight, Home } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import Confetti from "react-confetti";
-import { useWindowSize } from "react-use";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Flame,
+  Trophy,
+  CheckCircle2,
+  XCircle,
+  Zap,
+  ArrowRight,
+  Home,
+  Loader2,
+} from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import Confetti from 'react-confetti';
+import { useWindowSize } from 'react-use';
+import { lessonAPI } from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 
-// Mock lesson data
-const mockLesson = {
-  skillName: "🎨 Marketing Fundamentals",
-  skillIcon: "🎨",
-  questions: [
-    {
-      id: 1,
-      question: "What is the primary goal of content marketing?",
-      options: [
-        "To increase website traffic",
-        "To provide value and build trust with audience",
-        "To sell products directly",
-        "To create viral videos"
-      ],
-      correctAnswer: 1,
-      explanation: "Content marketing focuses on creating valuable, relevant content to attract and retain a clearly defined audience, ultimately building trust and authority.",
-      xpReward: 15
-    },
-    {
-      id: 2,
-      question: "Which metric measures customer engagement on social media?",
-      options: [
-        "Cost per click",
-        "Bounce rate",
-        "Engagement rate (likes, comments, shares)",
-        "Page views"
-      ],
-      correctAnswer: 2,
-      explanation: "Engagement rate tracks how actively users interact with your content through likes, comments, shares, and saves - a key indicator of content resonance.",
-      xpReward: 15
-    },
-    {
-      id: 3,
-      question: "What does SEO stand for?",
-      options: [
-        "Social Engine Optimization",
-        "Search Engine Optimization",
-        "Sales Engagement Optimization",
-        "Secure Email Operations"
-      ],
-      correctAnswer: 1,
-      explanation: "SEO (Search Engine Optimization) is the practice of optimizing your website to rank higher in search engine results pages.",
-      xpReward: 10
-    },
-    {
-      id: 4,
-      question: "Which platform is best for B2B marketing?",
-      options: [
-        "TikTok",
-        "Instagram",
-        "LinkedIn",
-        "Snapchat"
-      ],
-      correctAnswer: 2,
-      explanation: "LinkedIn is the premier platform for B2B marketing, with over 900 million professionals and robust targeting options for business audiences.",
-      xpReward: 15
-    },
-    {
-      id: 5,
-      question: "What is A/B testing used for?",
-      options: [
-        "Testing server performance",
-        "Comparing two versions to see which performs better",
-        "Checking grammar errors",
-        "Measuring loading speed"
-      ],
-      correctAnswer: 1,
-      explanation: "A/B testing (split testing) compares two versions of a webpage, email, or ad to determine which one performs better based on specific metrics.",
-      xpReward: 20
-    }
-  ]
-};
+interface Question {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+  xpReward: number;
+}
+
+interface LessonData {
+  _id: string;
+  skillName: string;
+  skillIcon: string;
+  questions: Question[];
+}
 
 const Lesson = () => {
   const navigate = useNavigate();
+  const { lessonId } = useParams<{ lessonId: string }>();
   const { width, height } = useWindowSize();
+  const { toast } = useToast();
+
+  const [lesson, setLesson] = useState<LessonData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [hasAnswered, setHasAnswered] = useState(false);
@@ -93,8 +51,54 @@ const Lesson = () => {
   const [correctCount, setCorrectCount] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
 
-  const currentQuestion = mockLesson.questions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / mockLesson.questions.length) * 100;
+  // Fetch lesson data
+  useEffect(() => {
+    const fetchLesson = async () => {
+      if (!lessonId) {
+        toast({
+          title: 'Error',
+          description: 'No lesson ID provided',
+          variant: 'destructive',
+        });
+        navigate('/lessons');
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const response = await lessonAPI.getLessonById(lessonId);
+        if (response.success) {
+          setLesson(response.data);
+        }
+      } catch (error: any) {
+        console.error('Error fetching lesson:', error);
+        toast({
+          title: 'Failed to load lesson',
+          description: error.response?.data?.message || 'Please try again.',
+          variant: 'destructive',
+        });
+        navigate('/lessons');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLesson();
+  }, [lessonId, navigate, toast]);
+
+  if (isLoading || !lesson) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading your lesson...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const currentQuestion = lesson.questions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / lesson.questions.length) * 100;
 
   const handleSelectAnswer = (index: number) => {
     if (!hasAnswered) {
@@ -111,16 +115,16 @@ const Lesson = () => {
 
     if (correct) {
       setEarnedXP(currentQuestion.xpReward);
-      setTotalXP(prev => prev + currentQuestion.xpReward);
-      setCorrectCount(prev => prev + 1);
+      setTotalXP((prev) => prev + currentQuestion.xpReward);
+      setCorrectCount((prev) => prev + 1);
       setShowXPAnimation(true);
       setTimeout(() => setShowXPAnimation(false), 1000);
     }
   };
 
   const handleContinue = () => {
-    if (currentQuestionIndex < mockLesson.questions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
+    if (currentQuestionIndex < lesson.questions.length - 1) {
+      setCurrentQuestionIndex((prev) => prev + 1);
       setSelectedAnswer(null);
       setHasAnswered(false);
       setIsCorrect(false);
@@ -130,7 +134,7 @@ const Lesson = () => {
   };
 
   const handleReturnToDashboard = () => {
-    navigate("/dashboard/learner");
+    navigate('/dashboard/learner');
   };
 
   if (showSummary) {
@@ -152,23 +156,27 @@ const Lesson = () => {
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: "spring", damping: 10, delay: 0.2 }}
+              transition={{ type: 'spring', damping: 10, delay: 0.2 }}
               className="inline-block mb-4"
             >
               <Trophy className="w-24 h-24 text-accent mx-auto" />
             </motion.div>
-            <h1 className="text-4xl font-handwritten font-bold mb-4">Lesson Complete! 🎉</h1>
-            <p className="text-muted-foreground text-lg">Amazing work! Keep up the streak!</p>
+            <h1 className="text-4xl font-handwritten font-bold mb-4">
+              Lesson Complete! 🎉
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              Amazing work! Keep up the streak!
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-8">
             <div className="bg-accent/10 brutal-border p-6 text-center">
               <div className="text-4xl font-handwritten font-bold text-accent mb-2">
-                {correctCount}/{mockLesson.questions.length}
+                {correctCount}/{lesson.questions.length}
               </div>
               <div className="text-sm text-muted-foreground">Score</div>
             </div>
-            
+
             <div className="bg-primary/10 brutal-border p-6 text-center">
               <div className="text-4xl font-handwritten font-bold text-primary mb-2">
                 +{totalXP} XP
@@ -178,7 +186,7 @@ const Lesson = () => {
 
             <div className="bg-secondary/20 brutal-border p-6 text-center">
               <div className="text-4xl font-handwritten font-bold mb-2">
-                {Math.round((correctCount / mockLesson.questions.length) * 100)}%
+                {Math.round((correctCount / lesson.questions.length) * 100)}%
               </div>
               <div className="text-sm text-muted-foreground">Accuracy</div>
             </div>
@@ -192,18 +200,18 @@ const Lesson = () => {
           </div>
 
           <div className="space-y-3">
-            <Button 
-              onClick={handleReturnToDashboard} 
-              className="w-full" 
+            <Button
+              onClick={handleReturnToDashboard}
+              className="w-full"
               size="lg"
             >
               <Home className="mr-2" />
               Back to Dashboard
             </Button>
-            <Button 
-              onClick={() => navigate("/lessons")} 
-              variant="outline" 
-              className="w-full" 
+            <Button
+              onClick={() => navigate('/lessons')}
+              variant="outline"
+              className="w-full"
               size="lg"
             >
               Browse More Lessons
@@ -221,9 +229,9 @@ const Lesson = () => {
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           {/* Skill Name */}
           <div className="flex items-center gap-2">
-            <span className="text-2xl">{mockLesson.skillIcon}</span>
+            <span className="text-2xl">{lesson.skillIcon}</span>
             <h1 className="text-lg font-handwritten font-bold hidden sm:block">
-              {mockLesson.skillName}
+              {lesson.skillName}
             </h1>
           </div>
 
@@ -231,7 +239,7 @@ const Lesson = () => {
           <div className="flex-1 max-w-md">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-sm font-handwritten font-bold">
-                {currentQuestionIndex + 1}/{mockLesson.questions.length}
+                {currentQuestionIndex + 1}/{lesson.questions.length}
               </span>
               <span className="text-xs text-muted-foreground">
                 {Math.round(progress)}%
@@ -243,8 +251,10 @@ const Lesson = () => {
           {/* XP Counter */}
           <div className="flex items-center gap-2 bg-accent/10 brutal-border px-4 py-2 relative">
             <Zap className="w-5 h-5 text-accent" />
-            <span className="font-handwritten font-bold text-lg">{totalXP} XP</span>
-            
+            <span className="font-handwritten font-bold text-lg">
+              {totalXP} XP
+            </span>
+
             <AnimatePresence>
               {showXPAnimation && (
                 <motion.div
@@ -268,7 +278,7 @@ const Lesson = () => {
           key={currentQuestionIndex}
           initial={{ x: 100, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
-          transition={{ type: "spring", damping: 20 }}
+          transition={{ type: 'spring', damping: 20 }}
         >
           {/* Question Card */}
           <div className="bg-card brutal-border brutal-shadow-lg p-8 mb-6 relative rotate-playful-1">
@@ -299,29 +309,39 @@ const Lesson = () => {
                     whileTap={!hasAnswered ? { scale: 0.98 } : {}}
                     className={`w-full text-left p-4 brutal-border transition-all ${
                       showCorrect
-                        ? "bg-green-100 dark:bg-green-900/20 border-green-500"
+                        ? 'bg-green-100 dark:bg-green-900/20 border-green-500'
                         : showWrong
-                        ? "bg-red-100 dark:bg-red-900/20 border-red-500"
+                        ? 'bg-red-100 dark:bg-red-900/20 border-red-500'
                         : isSelected
-                        ? "bg-primary/10 border-primary"
-                        : "bg-background hover:bg-muted"
-                    } ${!hasAnswered ? "hover:shadow-brutal-hover hover:-translate-y-1" : ""}`}
+                        ? 'bg-primary/10 border-primary'
+                        : 'bg-background hover:bg-muted'
+                    } ${
+                      !hasAnswered
+                        ? 'hover:shadow-brutal-hover hover:-translate-y-1'
+                        : ''
+                    }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 brutal-border rounded-full flex items-center justify-center font-handwritten font-bold ${
-                        showCorrect
-                          ? "bg-green-500 text-white"
-                          : showWrong
-                          ? "bg-red-500 text-white"
-                          : isSelected
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
-                      }`}>
+                      <div
+                        className={`w-8 h-8 brutal-border rounded-full flex items-center justify-center font-handwritten font-bold ${
+                          showCorrect
+                            ? 'bg-green-500 text-white'
+                            : showWrong
+                            ? 'bg-red-500 text-white'
+                            : isSelected
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted'
+                        }`}
+                      >
                         {String.fromCharCode(65 + index)}
                       </div>
                       <span className="flex-1 font-medium">{option}</span>
-                      {showCorrect && <CheckCircle2 className="w-6 h-6 text-green-500" />}
-                      {showWrong && <XCircle className="w-6 h-6 text-red-500" />}
+                      {showCorrect && (
+                        <CheckCircle2 className="w-6 h-6 text-green-500" />
+                      )}
+                      {showWrong && (
+                        <XCircle className="w-6 h-6 text-red-500" />
+                      )}
                     </div>
                   </motion.button>
                 );
@@ -338,8 +358,8 @@ const Lesson = () => {
                 exit={{ y: 20, opacity: 0 }}
                 className={`brutal-border brutal-shadow-lg p-6 mb-6 ${
                   isCorrect
-                    ? "bg-green-100 dark:bg-green-900/20 border-green-500"
-                    : "bg-red-100 dark:bg-red-900/20 border-red-500"
+                    ? 'bg-green-100 dark:bg-green-900/20 border-green-500'
+                    : 'bg-red-100 dark:bg-red-900/20 border-red-500'
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -350,7 +370,7 @@ const Lesson = () => {
                   )}
                   <div className="flex-1">
                     <h3 className="font-handwritten font-bold text-xl mb-2">
-                      {isCorrect ? "Correct! 🎉" : "Not quite right 🤔"}
+                      {isCorrect ? 'Correct! 🎉' : 'Not quite right 🤔'}
                     </h3>
                     <p className="text-muted-foreground mb-3">
                       {currentQuestion.explanation}
@@ -379,11 +399,7 @@ const Lesson = () => {
                 Check Answer
               </Button>
             ) : (
-              <Button
-                onClick={handleContinue}
-                size="lg"
-                className="px-12"
-              >
+              <Button onClick={handleContinue} size="lg" className="px-12">
                 Continue
                 <ArrowRight className="ml-2" />
               </Button>
