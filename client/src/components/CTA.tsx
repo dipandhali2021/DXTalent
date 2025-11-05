@@ -58,7 +58,7 @@ export default function CTA() {
                 size="lg"
                 onClick={handleBookDemo}
               >
-                Book a Demo
+                Demo
               </Button>
             </div>
           </div>

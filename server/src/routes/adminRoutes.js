@@ -7,6 +7,7 @@ import {
   getTopLessons,
   getAllUsers,
   updateUser,
+  updateUserRole,
   deleteUser,
   suspendUser,
   activateUser,
@@ -36,6 +37,7 @@ router.get('/dashboard/top-lessons', getTopLessons);
 router.get('/users', getAllUsers);
 router.get('/users/:userId', getUserDetails);
 router.put('/users/:userId', updateUser);
+router.put('/users/:userId/role', updateUserRole);
 router.delete('/users/:userId', deleteUser);
 router.post('/users/:userId/suspend', suspendUser);
 router.post('/users/:userId/activate', activateUser);

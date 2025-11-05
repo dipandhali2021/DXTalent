@@ -40,11 +40,13 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
           { to: '/admin/dashboard', icon: Trophy, label: 'Dashboard' },
           { to: '/admin/users', icon: User, label: 'Users' },
           { to: '/admin/payments', icon: CreditCard, label: 'Payments' },
+          { to: '/profile', icon: User, label: 'Profile' },
         ];
       case 'recruiter':
         return [
           { to: '/recruiter/dashboard', icon: Trophy, label: 'Dashboard' },
           { to: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
+          { to: '/profile', icon: User, label: 'Profile' },
         ];
       default:
         return [

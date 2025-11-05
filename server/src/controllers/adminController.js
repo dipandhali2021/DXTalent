@@ -455,6 +455,51 @@ export const updateUser = async (req, res) => {
 };
 
 /**
+ * Update user role (admin only)
+ */
+export const updateUserRole = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { role } = req.body;
+
+    // Validate role
+    const validRoles = ['user', 'recruiter', 'admin'];
+    if (!role || !validRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid role. Must be one of: user, recruiter, admin',
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: { role } },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      message: `User role updated to ${role} successfully`,
+      user,
+    });
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating user role',
+      error: error.message,
+    });
+  }
+};
+
+/**
  * Delete user (admin only)
  */
 export const deleteUser = async (req, res) => {

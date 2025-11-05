@@ -474,6 +474,12 @@ export const adminAPI = {
         return response.data;
     },
 
+    // Update user role
+    updateUserRole: async (userId: string, role: string) => {
+        const response = await api.put(`/admin/users/${userId}/role`, { role });
+        return response.data;
+    },
+
     // Delete user
     deleteUser: async (userId: string) => {
         const response = await api.delete(`/admin/users/${userId}`);

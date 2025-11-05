@@ -290,6 +290,23 @@ const Profile = () => {
   const roleForBadge = isOwnProfile ? user?.role : publicUser?.role;
   const roleBadge = getRoleBadge(roleForBadge || 'user');
 
+  // Check if current logged-in user is a recruiter or admin
+  const isRecruiterOrAdmin =
+    user?.role === 'recruiter' || user?.role === 'admin';
+
+  // Get role-specific dashboard route
+  const getDashboardRoute = () => {
+    if (!user) return '/dashboard';
+    switch (user.role) {
+      case 'admin':
+        return '/admin/dashboard';
+      case 'recruiter':
+        return '/recruiter/dashboard';
+      default:
+        return '/dashboard';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 relative overflow-hidden">
       {/* Playful background decorations */}
@@ -307,7 +324,7 @@ const Profile = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate(getDashboardRoute())}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
@@ -322,9 +339,9 @@ const Profile = () => {
           </Button>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className={isRecruiterOrAdmin ? '' : 'grid gap-6 md:grid-cols-2'}>
           {/* Profile Card */}
-          <div className="rotate-[-1deg]">
+          <div className={isRecruiterOrAdmin ? '' : 'rotate-[-1deg]'}>
             <Card className="border-[3px] border-border shadow-brutal">
               <CardHeader className="text-center">
                 <div className="flex justify-center mb-4">
@@ -351,15 +368,22 @@ const Profile = () => {
                   {username}
                 </CardTitle>
                 <CardDescription className="font-handwritten text-lg">
-                  Level{' '}
-                  {isOwnProfile ? user?.stats.level : publicUser?.stats?.level}{' '}
-                  •{' '}
-                  <span className="capitalize">
-                    {isOwnProfile
-                      ? user?.stats.league
-                      : publicUser?.stats?.league}
-                  </span>{' '}
-                  League {roleBadge.label}
+                  {!isRecruiterOrAdmin && (
+                    <>
+                      Level{' '}
+                      {isOwnProfile
+                        ? user?.stats.level
+                        : publicUser?.stats?.level}{' '}
+                      •{' '}
+                      <span className="capitalize">
+                        {isOwnProfile
+                          ? user?.stats.league
+                          : publicUser?.stats?.league}
+                      </span>{' '}
+                      League •{' '}
+                    </>
+                  )}
+                  {roleBadge.label}
                   {!isOwnProfile && publicUser?.isEmailVerified === false ? (
                     <span className="block text-yellow-600 mt-1">
                       ⚠️ Email not verified
@@ -517,172 +541,181 @@ const Profile = () => {
             </Card>
           </div>
 
-          {/* Stats and Badges */}
-          <div className="space-y-6">
-            {/* Stats Card */}
-            <div className="rotate-[1deg]">
-              <Card className="border-[3px] border-border shadow-brutal">
+          {/* Stats and Badges - Hide for recruiter/admin viewing */}
+          {!isRecruiterOrAdmin && (
+            <div className="space-y-6">
+              {/* Stats Card */}
+              <div className="rotate-[1deg]">
+                <Card className="border-[3px] border-border shadow-brutal">
+                  <CardHeader>
+                    <CardTitle className="font-handwritten text-2xl">
+                      Your Stats
+                    </CardTitle>
+                    <CardDescription className="font-handwritten text-lg">
+                      Keep up the great work!
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center gap-4 p-4 bg-muted border-[3px] border-border rounded-lg rotate-[-1deg]">
+                      <div className="w-12 h-12 bg-primary border-[3px] border-border rounded-full flex items-center justify-center">
+                        <Trophy className="w-6 h-6 text-primary-foreground" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-handwritten text-lg font-bold">
+                          {isOwnProfile
+                            ? user?.stats.skillsMastered
+                            : publicUser?.stats?.skillsMastered || 0}
+                        </p>
+                        <p className="font-handwritten text-muted-foreground">
+                          Skills Mastered
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 p-4 bg-muted border-[3px] border-border rounded-lg rotate-[1deg]">
+                      <div className="w-12 h-12 bg-accent border-[3px] border-border rounded-full flex items-center justify-center">
+                        <Target className="w-6 h-6 text-accent-foreground" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-handwritten text-lg font-bold">
+                          {isOwnProfile
+                            ? user?.stats.challengesCompleted
+                            : publicUser?.stats?.challengesCompleted || 0}
+                        </p>
+                        <p className="font-handwritten text-muted-foreground">
+                          Challenges Completed
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 p-4 bg-muted border-[3px] border-border rounded-lg rotate-[-1deg]">
+                      <div className="w-12 h-12 bg-secondary border-[3px] border-border rounded-full flex items-center justify-center">
+                        <Zap className="w-6 h-6 text-secondary-foreground" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-handwritten text-lg font-bold">
+                          {(isOwnProfile
+                            ? user?.stats.xpPoints
+                            : publicUser?.stats?.xpPoints || 0
+                          )?.toLocaleString()}
+                        </p>
+                        <p className="font-handwritten text-muted-foreground">
+                          XP Points
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Achievements */}
+              <div className="rotate-[-1deg]">
+                <Card className="border-[3px] border-border shadow-brutal">
+                  <CardHeader>
+                    <CardTitle className="font-handwritten text-2xl">
+                      Recent Badges
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingBadges ? (
+                      <div className="text-center py-4">
+                        <p className="font-handwritten">Loading badges...</p>
+                      </div>
+                    ) : (
+                      <BadgeGrid
+                        badges={badges.filter((b) => b.earned).slice(0, 6)}
+                        compact
+                        onBadgeClick={(badge) => {
+                          setSelectedBadge(badge);
+                          setBadgeDialogOpen(true);
+                        }}
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* All Badges Section - Full Width - Hide for recruiter/admin viewing */}
+        {isOwnProfile &&
+          !isRecruiterOrAdmin &&
+          !loadingBadges &&
+          badges.length > 0 && (
+            <div className="max-w-4xl mx-auto mt-8">
+              <Card className="border-[3px] border-border shadow-brutal rotate-[0.5deg]">
                 <CardHeader>
-                  <CardTitle className="font-handwritten text-2xl">
-                    Your Stats
+                  <CardTitle className="font-handwritten text-3xl">
+                    🏆 All Badges
                   </CardTitle>
                   <CardDescription className="font-handwritten text-lg">
-                    Keep up the great work!
+                    Earn badges by completing lessons, maintaining streaks, and
+                    achieving milestones!
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-4 p-4 bg-muted border-[3px] border-border rounded-lg rotate-[-1deg]">
-                    <div className="w-12 h-12 bg-primary border-[3px] border-border rounded-full flex items-center justify-center">
-                      <Trophy className="w-6 h-6 text-primary-foreground" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-handwritten text-lg font-bold">
-                        {isOwnProfile
-                          ? user?.stats.skillsMastered
-                          : publicUser?.stats?.skillsMastered || 0}
-                      </p>
-                      <p className="font-handwritten text-muted-foreground">
-                        Skills Mastered
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 p-4 bg-muted border-[3px] border-border rounded-lg rotate-[1deg]">
-                    <div className="w-12 h-12 bg-accent border-[3px] border-border rounded-full flex items-center justify-center">
-                      <Target className="w-6 h-6 text-accent-foreground" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-handwritten text-lg font-bold">
-                        {isOwnProfile
-                          ? user?.stats.challengesCompleted
-                          : publicUser?.stats?.challengesCompleted || 0}
-                      </p>
-                      <p className="font-handwritten text-muted-foreground">
-                        Challenges Completed
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 p-4 bg-muted border-[3px] border-border rounded-lg rotate-[-1deg]">
-                    <div className="w-12 h-12 bg-secondary border-[3px] border-border rounded-full flex items-center justify-center">
-                      <Zap className="w-6 h-6 text-secondary-foreground" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-handwritten text-lg font-bold">
-                        {(isOwnProfile
-                          ? user?.stats.xpPoints
-                          : publicUser?.stats?.xpPoints || 0
-                        )?.toLocaleString()}
-                      </p>
-                      <p className="font-handwritten text-muted-foreground">
-                        XP Points
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Achievements */}
-            <div className="rotate-[-1deg]">
-              <Card className="border-[3px] border-border shadow-brutal">
-                <CardHeader>
-                  <CardTitle className="font-handwritten text-2xl">
-                    Recent Badges
-                  </CardTitle>
-                </CardHeader>
                 <CardContent>
-                  {loadingBadges ? (
-                    <div className="text-center py-4">
-                      <p className="font-handwritten">Loading badges...</p>
+                  <div className="space-y-6">
+                    {/* Filter Tabs */}
+                    <div className="flex gap-2 flex-wrap">
+                      <Button
+                        variant={badgeFilter === 'all' ? 'default' : 'outline'}
+                        size="sm"
+                        className="border-[3px]"
+                        onClick={() => setBadgeFilter('all')}
+                      >
+                        All ({badges.length})
+                      </Button>
+                      <Button
+                        variant={
+                          badgeFilter === 'earned' ? 'default' : 'outline'
+                        }
+                        size="sm"
+                        className="border-[3px]"
+                        onClick={() => setBadgeFilter('earned')}
+                      >
+                        Earned ({badges.filter((b) => b.earned).length})
+                      </Button>
+                      <Button
+                        variant={
+                          badgeFilter === 'locked' ? 'default' : 'outline'
+                        }
+                        size="sm"
+                        className="border-[3px]"
+                        onClick={() => setBadgeFilter('locked')}
+                      >
+                        Locked ({badges.filter((b) => !b.earned).length})
+                      </Button>
+                      <Button
+                        variant="hero"
+                        size="sm"
+                        className="ml-auto"
+                        onClick={handleCheckBadges}
+                        disabled={checkingBadges}
+                      >
+                        {checkingBadges
+                          ? '🔄 Checking...'
+                          : '🔍 Check for New Badges'}
+                      </Button>
                     </div>
-                  ) : (
+
+                    {/* Badge Grid */}
                     <BadgeGrid
-                      badges={badges.filter((b) => b.earned).slice(0, 6)}
-                      compact
+                      badges={
+                        badgeFilter === 'all'
+                          ? badges
+                          : badgeFilter === 'earned'
+                          ? badges.filter((b) => b.earned)
+                          : badges.filter((b) => !b.earned)
+                      }
                       onBadgeClick={(badge) => {
                         setSelectedBadge(badge);
                         setBadgeDialogOpen(true);
                       }}
                     />
-                  )}
+                  </div>
                 </CardContent>
               </Card>
             </div>
-          </div>
-        </div>
-
-        {/* All Badges Section - Full Width */}
-        {isOwnProfile && !loadingBadges && badges.length > 0 && (
-          <div className="max-w-4xl mx-auto mt-8">
-            <Card className="border-[3px] border-border shadow-brutal rotate-[0.5deg]">
-              <CardHeader>
-                <CardTitle className="font-handwritten text-3xl">
-                  🏆 All Badges
-                </CardTitle>
-                <CardDescription className="font-handwritten text-lg">
-                  Earn badges by completing lessons, maintaining streaks, and
-                  achieving milestones!
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {/* Filter Tabs */}
-                  <div className="flex gap-2 flex-wrap">
-                    <Button
-                      variant={badgeFilter === 'all' ? 'default' : 'outline'}
-                      size="sm"
-                      className="border-[3px]"
-                      onClick={() => setBadgeFilter('all')}
-                    >
-                      All ({badges.length})
-                    </Button>
-                    <Button
-                      variant={badgeFilter === 'earned' ? 'default' : 'outline'}
-                      size="sm"
-                      className="border-[3px]"
-                      onClick={() => setBadgeFilter('earned')}
-                    >
-                      Earned ({badges.filter((b) => b.earned).length})
-                    </Button>
-                    <Button
-                      variant={badgeFilter === 'locked' ? 'default' : 'outline'}
-                      size="sm"
-                      className="border-[3px]"
-                      onClick={() => setBadgeFilter('locked')}
-                    >
-                      Locked ({badges.filter((b) => !b.earned).length})
-                    </Button>
-                    <Button
-                      variant="hero"
-                      size="sm"
-                      className="ml-auto"
-                      onClick={handleCheckBadges}
-                      disabled={checkingBadges}
-                    >
-                      {checkingBadges
-                        ? '🔄 Checking...'
-                        : '🔍 Check for New Badges'}
-                    </Button>
-                  </div>
-
-                  {/* Badge Grid */}
-                  <BadgeGrid
-                    badges={
-                      badgeFilter === 'all'
-                        ? badges
-                        : badgeFilter === 'earned'
-                        ? badges.filter((b) => b.earned)
-                        : badges.filter((b) => !b.earned)
-                    }
-                    onBadgeClick={(badge) => {
-                      setSelectedBadge(badge);
-                      setBadgeDialogOpen(true);
-                    }}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+          )}
 
         {/* Badge Detail Dialog */}
         <Dialog open={badgeDialogOpen} onOpenChange={setBadgeDialogOpen}>

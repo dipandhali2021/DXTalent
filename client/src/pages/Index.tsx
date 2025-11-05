@@ -2,14 +2,19 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { User, LogOut } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { LanguageProvider, useLanguage } from '@/context/LanguageContext';
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
 import HowItWorks from '@/components/HowItWorks';
 import Pricing from '@/components/Pricing';
 import CTA from '@/components/CTA';
+import SupportTicket from '@/components/SupportTicket';
+import Footer from '@/components/Footer';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const Index = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -43,31 +48,35 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
       <nav className="fixed top-0 right-0 w-full flex justify-end items-center gap-2 p-4 z-50">
-        <Button variant="outline-brutal"  onClick={handleViewPricing}>
-          💰 View Pricing
+        {/* Navigation */}
+        <LanguageSwitcher />
+        <Button variant="outline-brutal" onClick={handleViewPricing}>
+          {t('nav.pricing')}
         </Button>
         {isAuthenticated && user ? (
           <>
-            <Button variant="outline" className="gap-2" onClick={handleProfileClick}>
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={handleProfileClick}
+            >
               <User className="w-4 h-4" />
               {user.username}
             </Button>
             <Button variant="hero" className="gap-2" onClick={handleLogout}>
               <LogOut className="w-4 h-4" />
-              Logout
+              {t('nav.logout')}
             </Button>
           </>
         ) : (
           <Link to="/auth">
             <Button variant="hero" className="gap-2">
               <User className="w-4 h-4" />
-              Login / Sign Up
+              {t('nav.login')}
             </Button>
           </Link>
         )}
-        
       </nav>
 
       {/* Sections */}
@@ -76,8 +85,18 @@ const Index = () => {
       <HowItWorks />
       <Pricing />
       <CTA />
+      <SupportTicket />
+      <Footer />
     </div>
   );
 };
 
-export default Index;
+const IndexWithLanguage = () => {
+  return (
+    <LanguageProvider>
+      <Index />
+    </LanguageProvider>
+  );
+};
+
+export default IndexWithLanguage;

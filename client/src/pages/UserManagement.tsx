@@ -116,6 +116,31 @@ const UserManagement = () => {
     }
   };
 
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    try {
+      setActionLoading(userId);
+
+      const response = await adminAPI.updateUserRole(userId, newRole);
+
+      if (response.success) {
+        toast({
+          title: 'Success',
+          description: `User role updated to ${newRole}`,
+        });
+        fetchUsers(); // Refresh the list
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description:
+          error.response?.data?.message || 'Failed to update user role',
+        variant: 'destructive',
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const filteredUsers = users;
 
   const getRoleBadgeVariant = (role: string) => {
@@ -316,15 +341,32 @@ const UserManagement = () => {
                         <span className="text-sm text-muted-foreground">
                           Role
                         </span>
-                        <Badge variant={getRoleBadgeVariant(user.role)}>
-                          {user.role === 'admin' && (
-                            <Shield className="w-3 h-3 mr-1" />
-                          )}
-                          {user.role === 'user'
-                            ? 'Learner'
-                            : user.role.charAt(0).toUpperCase() +
-                              user.role.slice(1)}
-                        </Badge>
+                        <Select
+                          value={user.role}
+                          onValueChange={(newRole) =>
+                            handleRoleChange(user.id, newRole)
+                          }
+                          disabled={actionLoading === user.id}
+                        >
+                          <SelectTrigger className="w-[140px] h-7">
+                            <SelectValue>
+                              <Badge variant={getRoleBadgeVariant(user.role)}>
+                                {user.role === 'admin' && (
+                                  <Shield className="w-3 h-3 mr-1" />
+                                )}
+                                {user.role === 'user'
+                                  ? 'Learner'
+                                  : user.role.charAt(0).toUpperCase() +
+                                    user.role.slice(1)}
+                              </Badge>
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="user">Learner</SelectItem>
+                            <SelectItem value="recruiter">Recruiter</SelectItem>
+                            <SelectItem value="admin">Admin</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
 
                       <div className="flex items-center justify-between">
