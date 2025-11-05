@@ -120,6 +120,23 @@ const userSchema = new mongoose.Schema(
       of: Number,
       default: new Map(),
     },
+    // Challenges tracking
+    challenges: {
+      dailyChallenges: [
+        {
+          type: String,
+        },
+      ],
+      completedChallenges: [
+        {
+          type: String,
+        },
+      ],
+      lastReset: {
+        type: Date,
+        default: null,
+      },
+    },
   },
   {
     timestamps: true,

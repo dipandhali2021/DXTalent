@@ -12,10 +12,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Award, Brain, Calendar, Trophy, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 
 const LearnerDashboard = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [activityData, setActivityData] = useState<
     { date: string; count: number }[]
   >([]);
@@ -35,6 +37,19 @@ const LearnerDashboard = () => {
       xp: number;
       league: string;
       rank: number;
+    }>
+  >([]);
+  const [challenges, setChallenges] = useState<
+    Array<{
+      id: string;
+      title: string;
+      description: string;
+      progress: number;
+      total: number;
+      xpReward: number;
+      type: 'daily' | 'weekly';
+      completed: boolean;
+      claimed?: boolean;
     }>
   >([]);
 
@@ -121,6 +136,64 @@ const LearnerDashboard = () => {
 
     fetchLeaderboard();
   }, []);
+
+  // Fetch challenges
+  useEffect(() => {
+    const fetchChallenges = async () => {
+      try {
+        const response = await api.get('/challenges/daily');
+        if (response.data.success) {
+          setChallenges(response.data.data.challenges);
+        }
+      } catch (error) {
+        console.error('Error fetching challenges:', error);
+        // Set empty challenges on error
+        setChallenges([]);
+      }
+    };
+
+    fetchChallenges();
+  }, []);
+
+  // Claim challenge reward
+  const handleClaimChallenge = async (challengeId: string) => {
+    try {
+      const response = await api.post(`/challenges/${challengeId}/claim`);
+      if (response.data.success) {
+        // Update the local challenge state to show it as claimed
+        setChallenges((prevChallenges) =>
+          prevChallenges.map((challenge) =>
+            challenge.id === challengeId
+              ? { ...challenge, claimed: true }
+              : challenge
+          )
+        );
+
+        // Refresh user data to update XP in header
+        await refreshUser();
+
+        // Refresh challenges from server
+        const challengesResponse = await api.get('/challenges/daily');
+        if (challengesResponse.data.success) {
+          setChallenges(challengesResponse.data.data.challenges);
+        }
+
+        // Show success toast
+        toast({
+          title: '🎉 Challenge Completed!',
+          description: `You earned +${response.data.data.xpEarned} XP! Total: ${response.data.data.totalXP} XP`,
+        });
+      }
+    } catch (error: any) {
+      console.error('Error claiming challenge:', error);
+      toast({
+        title: '❌ Error',
+        description:
+          error.response?.data?.message || 'Failed to claim challenge reward',
+        variant: 'destructive',
+      });
+    }
+  };
 
   // Mock data - Replace with real data from API
   const mockData = {
@@ -418,7 +491,12 @@ const LearnerDashboard = () => {
           transition={{ delay: 0.5 }}
           className="grid grid-cols-1 lg:grid-cols-2 gap-6"
         >
-          <ChallengeCard challenges={mockData.challenges} />
+          <ChallengeCard
+            challenges={
+              challenges.length > 0 ? challenges : mockData.challenges
+            }
+            onClaimReward={handleClaimChallenge}
+          />
           <LeaderboardCard
             users={
               leaderboardData.length > 0

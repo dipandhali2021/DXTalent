@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Target, Clock, CheckCircle2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Target, Clock, CheckCircle2, Gift } from 'lucide-react';
 
 interface Challenge {
   id: string;
@@ -12,13 +13,18 @@ interface Challenge {
   xpReward: number;
   type: 'daily' | 'weekly';
   completed: boolean;
+  claimed?: boolean;
 }
 
 interface ChallengeCardProps {
   challenges: Challenge[];
+  onClaimReward?: (challengeId: string) => void;
 }
 
-export const ChallengeCard = ({ challenges }: ChallengeCardProps) => {
+export const ChallengeCard = ({
+  challenges,
+  onClaimReward,
+}: ChallengeCardProps) => {
   return (
     <Card className="brutal-border brutal-shadow">
       <CardHeader>
@@ -70,9 +76,34 @@ export const ChallengeCard = ({ challenges }: ChallengeCardProps) => {
                   <span className="text-muted-foreground">
                     {challenge.progress} / {challenge.total}
                   </span>
-                  <span className="font-bold text-primary">
-                    +{challenge.xpReward} XP
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-primary">
+                      +{challenge.xpReward} XP
+                    </span>
+                    {challenge.completed &&
+                      onClaimReward &&
+                      (challenge.claimed ? (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          disabled
+                          className="h-7 gap-1"
+                        >
+                          <CheckCircle2 className="w-3 h-3" />
+                          Claimed
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="accent"
+                          onClick={() => onClaimReward(challenge.id)}
+                          className="h-7 gap-1"
+                        >
+                          <Gift className="w-3 h-3" />
+                          Claim
+                        </Button>
+                      ))}
+                  </div>
                 </div>
               </div>
             </div>
