@@ -12,6 +12,7 @@ import challengeRoutes from './routes/challengeRoutes.js';
 import badgeRoutes from './routes/badgeRoutes.js';
 import recruiterRoutes from './routes/recruiterRoutes.js';
 import subscriptionRoutes from './routes/subscriptionRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -62,6 +63,7 @@ app.use('/api/challenges', challengeRoutes);
 app.use('/api/badges', badgeRoutes);
 app.use('/api/recruiter', recruiterRoutes);
 app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {

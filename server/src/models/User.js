@@ -107,6 +107,10 @@ const userSchema = new mongoose.Schema(
     lockUntil: {
       type: Date,
     },
+    lastLogin: {
+      type: Date,
+      default: Date.now,
+    },
     stats: {
       skillsMastered: {
         type: Number,

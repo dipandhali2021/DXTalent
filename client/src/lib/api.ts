@@ -414,4 +414,119 @@ export const subscriptionAPI = {
     }
 };
 
+// Admin API functions
+export const adminAPI = {
+    // Get dashboard statistics
+    getDashboardStats: async () => {
+        const response = await api.get('/admin/dashboard/stats');
+        return response.data;
+    },
+
+    // Get user growth data
+    getUserGrowth: async (months: number = 6) => {
+        const response = await api.get(`/admin/dashboard/user-growth?months=${months}`);
+        return response.data;
+    },
+
+    // Get revenue data
+    getRevenueData: async (months: number = 6) => {
+        const response = await api.get(`/admin/dashboard/revenue?months=${months}`);
+        return response.data;
+    },
+
+    // Get recent users
+    getRecentUsers: async (limit: number = 10) => {
+        const response = await api.get(`/admin/dashboard/recent-users?limit=${limit}`);
+        return response.data;
+    },
+
+    // Get top lessons
+    getTopLessons: async (limit: number = 10) => {
+        const response = await api.get(`/admin/dashboard/top-lessons?limit=${limit}`);
+        return response.data;
+    },
+
+    // Get all users with pagination and filters
+    getAllUsers: async (params?: {
+        page?: number;
+        limit?: number;
+        role?: string;
+        subscriptionType?: string;
+        search?: string;
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+    }) => {
+        const queryString = new URLSearchParams(params as any).toString();
+        const response = await api.get(`/admin/users?${queryString}`);
+        return response.data;
+    },
+
+    // Get user details
+    getUserDetails: async (userId: string) => {
+        const response = await api.get(`/admin/users/${userId}`);
+        return response.data;
+    },
+
+    // Update user
+    updateUser: async (userId: string, updates: any) => {
+        const response = await api.put(`/admin/users/${userId}`, updates);
+        return response.data;
+    },
+
+    // Delete user
+    deleteUser: async (userId: string) => {
+        const response = await api.delete(`/admin/users/${userId}`);
+        return response.data;
+    },
+
+    // Get analytics
+    getAnalytics: async (timeRange: number = 30) => {
+        const response = await api.get(`/admin/analytics?timeRange=${timeRange}`);
+        return response.data;
+    },
+
+    // Payment Management APIs
+
+    // Get all payments with filtering and pagination
+    getAllPayments: async (params?: {
+        page?: number;
+        limit?: number;
+        status?: string;
+        paymentType?: string;
+        startDate?: string;
+        endDate?: string;
+        userId?: string;
+    }) => {
+        const queryString = new URLSearchParams(
+            Object.entries(params || {}).reduce((acc, [key, value]) => {
+                if (value) acc[key] = String(value);
+                return acc;
+            }, {} as Record<string, string>)
+        ).toString();
+        const response = await api.get(`/admin/payments?${queryString}`);
+        return response.data;
+    },
+
+    // Get payment statistics
+    getPaymentStats: async (months: number = 6) => {
+        const response = await api.get(`/admin/payments/stats?months=${months}`);
+        return response.data;
+    },
+
+    // Get payment details
+    getPaymentDetails: async (paymentId: string) => {
+        const response = await api.get(`/admin/payments/${paymentId}`);
+        return response.data;
+    },
+
+    // Process refund
+    processRefund: async (paymentId: string, refundData: {
+        refundAmount: number;
+        refundReason: string;
+    }) => {
+        const response = await api.post(`/admin/payments/${paymentId}/refund`, refundData);
+        return response.data;
+    }
+};
+
 export default api;

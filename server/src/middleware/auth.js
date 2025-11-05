@@ -122,3 +122,44 @@ export const verifiedEmailMiddleware = (req, res, next) => {
 
 // Export authenticate as an alias for authMiddleware
 export const authenticate = authMiddleware;
+
+// Protect routes - alias for authMiddleware
+export const protect = authMiddleware;
+
+// Admin only middleware
+export const adminOnly = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required.',
+    });
+  }
+
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. Admin privileges required.',
+    });
+  }
+
+  next();
+};
+
+// Recruiter only middleware
+export const recruiterOnly = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required.',
+    });
+  }
+
+  if (req.user.role !== 'recruiter' && req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. Recruiter privileges required.',
+    });
+  }
+
+  next();
+};

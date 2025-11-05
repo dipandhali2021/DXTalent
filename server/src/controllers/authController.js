@@ -141,6 +141,10 @@ export const login = async (req, res) => {
     // Reset login attempts on successful login
     await user.resetLoginAttempts();
 
+    // Update last login time
+    user.lastLogin = new Date();
+    await user.save();
+
     // Generate tokens
     const accessToken = generateAccessToken(user._id, user.role);
     const refreshToken = generateRefreshToken(user._id);

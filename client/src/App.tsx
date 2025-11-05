@@ -15,6 +15,7 @@ import NotFound from './pages/NotFound';
 import LearnerDashboard from './pages/LearnerDashboard';
 import RecruiterDashboard from './pages/RecruiterDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminPayments from './pages/AdminPayments';
 import Lesson from './pages/Lesson';
 import Test from './pages/Test';
 import LessonsLibrary from './pages/LessonsLibrary';
@@ -85,6 +86,14 @@ const App = () => (
                 element={
                   <ProtectedRoute requireAuth={true}>
                     <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/payments"
+                element={
+                  <ProtectedRoute requireAuth={true}>
+                    <AdminPayments />
                   </ProtectedRoute>
                 }
               />

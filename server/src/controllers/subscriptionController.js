@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import User from '../models/User.js';
+import Payment from '../models/Payment.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -187,7 +188,16 @@ async function handleCheckoutSessionCompleted(session) {
     return;
   }
 
+  // Determine payment amount
+  let amount = 0;
+  let paymentType = '';
+  let plan = 'basic';
+
   if (isAddon) {
+    amount = ADDON_CONFIG.price;
+    paymentType = 'subscription';
+    plan = user.subscriptionType || 'basic';
+
     // Add addon generations
     user.generationLimits.addonGenerations += ADDON_CONFIG.generations;
     console.log(
@@ -196,6 +206,13 @@ async function handleCheckoutSessionCompleted(session) {
   } else {
     // Update subscription
     const tier = SUBSCRIPTION_TIERS[subscriptionType];
+    amount = tier.price;
+    paymentType =
+      user.subscriptionType && user.subscriptionType !== 'free'
+        ? 'role_upgrade'
+        : 'subscription';
+    plan = subscriptionType;
+
     user.subscriptionType = subscriptionType;
     user.role = tier.role;
     user.subscriptionStatus = 'active';
@@ -210,6 +227,45 @@ async function handleCheckoutSessionCompleted(session) {
   }
 
   await user.save();
+
+  // Create payment record
+  try {
+    // Check if payment already exists for this transaction
+    const existingPayment = await Payment.findOne({
+      transactionId: session.id,
+    });
+
+    if (!existingPayment) {
+      await Payment.create({
+        user: userId,
+        amount: amount,
+        currency: 'USD',
+        paymentType: paymentType,
+        plan: plan,
+        role: user.role,
+        status: 'completed',
+        paymentMethod: 'stripe',
+        transactionId: session.id,
+        description: isAddon
+          ? `Addon: ${ADDON_CONFIG.generations} AI lesson generations`
+          : `Subscription: ${SUBSCRIPTION_TIERS[subscriptionType].name}`,
+        metadata: {
+          stripeSessionId: session.id,
+          stripeSubscriptionId: session.subscription || null,
+          isAddon: isAddon,
+        },
+      });
+      console.log(
+        `Payment record created for user ${userId}, amount: $${amount}`
+      );
+    } else {
+      console.log(
+        `Payment record already exists for transaction ${session.id}, skipping creation`
+      );
+    }
+  } catch (error) {
+    console.error('Error creating payment record:', error);
+  }
 }
 
 // Helper: Handle subscription update
@@ -413,14 +469,30 @@ export const verifySession = async (req, res) => {
     const subscriptionType = session.metadata.subscriptionType;
     const isAddon = session.metadata.isAddon === 'true';
 
+    // Determine payment amount
+    let amount = 0;
+    let paymentType = '';
+    let plan = 'basic';
+
     // Update user based on session
     if (isAddon) {
+      amount = ADDON_CONFIG.price;
+      paymentType = 'subscription';
+      plan = user.subscriptionType || 'basic';
+
       user.generationLimits.addonGenerations += ADDON_CONFIG.generations;
       console.log(
         `Added ${ADDON_CONFIG.generations} addon generations to user ${userId} via session verification`
       );
     } else {
       const tier = SUBSCRIPTION_TIERS[subscriptionType];
+      amount = tier.price;
+      paymentType =
+        user.subscriptionType && user.subscriptionType !== 'free'
+          ? 'role_upgrade'
+          : 'subscription';
+      plan = subscriptionType;
+
       user.subscriptionType = subscriptionType;
       user.role = tier.role;
       user.subscriptionStatus = 'active';
@@ -437,6 +509,46 @@ export const verifySession = async (req, res) => {
     }
 
     await user.save();
+
+    // Create payment record
+    try {
+      // Check if payment already exists for this transaction
+      const existingPayment = await Payment.findOne({
+        transactionId: session.id,
+      });
+
+      if (!existingPayment) {
+        const payment = await Payment.create({
+          user: userId,
+          amount: amount,
+          currency: 'USD',
+          paymentType: paymentType,
+          plan: plan,
+          role: user.role,
+          status: 'completed',
+          paymentMethod: 'stripe',
+          transactionId: session.id,
+          description: isAddon
+            ? `Addon: ${ADDON_CONFIG.generations} AI lesson generations`
+            : `Subscription: ${SUBSCRIPTION_TIERS[subscriptionType].name}`,
+          metadata: {
+            stripeSessionId: session.id,
+            stripeSubscriptionId: session.subscription || null,
+            isAddon: isAddon,
+          },
+        });
+        console.log(
+          `Payment record created for user ${userId}, amount: $${amount}, paymentId: ${payment._id}`
+        );
+      } else {
+        console.log(
+          `Payment record already exists for transaction ${session.id}, skipping creation`
+        );
+      }
+    } catch (error) {
+      console.error('Error creating payment record:', error);
+      // Don't fail the request if payment record creation fails
+    }
 
     res.status(200).json({
       success: true,
