@@ -8,7 +8,8 @@
 */
 @font-face {
   font-family: 'Comic Sans MS';
-  src: url('../fonts/fonnts.com-Comic_Sans_MS_W05_Regular.ttf') format('truetype');
+  src: url('../fonts/fonnts.com-Comic_Sans_MS_W05_Regular.ttf')
+    format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -16,7 +17,8 @@
 
 @font-face {
   font-family: 'Comic Sans MS';
-  src: url('../fonts/fonnts.com-Comic_Sans_MS_W05_Italic.ttf') format('truetype');
+  src: url('../fonts/fonnts.com-Comic_Sans_MS_W05_Italic.ttf')
+    format('truetype');
   font-weight: 400;
   font-style: italic;
   font-display: swap;
@@ -32,7 +34,8 @@
 
 @font-face {
   font-family: 'Comic Sans MS';
-  src: url('../fonts/fonnts.com-Comic_Sans_MS_W05_Bold_Italic.ttf') format('truetype');
+  src: url('../fonts/fonnts.com-Comic_Sans_MS_W05_Bold_Italic.ttf')
+    format('truetype');
   font-weight: 700;
   font-style: italic;
   font-display: swap;
@@ -81,10 +84,10 @@ All colors MUST be HSL.
     /* Gamification colors */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
-    
+
     --warning: 38 92% 50%;
     --warning-foreground: 240 10% 10%;
-    
+
     --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
 
@@ -133,10 +136,10 @@ All colors MUST be HSL.
 
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
-    
+
     --warning: 38 92% 50%;
     --warning-foreground: 240 10% 10%;
-    
+
     --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
 
@@ -153,8 +156,6 @@ All colors MUST be HSL.
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
-
-
 
 @layer base {
   * {
@@ -197,7 +198,6 @@ All colors MUST be HSL.
   .font-handwritten .font-bold {
     /* Stronger visual weight for headings using the handwritten font */
     font-weight: 900;
-
   }
 
   .rotate-playful-2 {
