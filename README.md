@@ -7,11 +7,11 @@
 [![React](https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org)
 [![MongoDB](https://img.shields.io/badge/MongoDB-6+-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Run in Postman](https://run.pstmn.io/button.svg)](docs/DXTalent_Complete_API_Collection.postman_collection.json)
+[![Run in Postman](https://run.pstmn.io/button.svg)](docs/DXTalent_Complete_API_Collection.postman_collection.json) [![Figma Design](https://img.shields.io/badge/Figma-Design-black?style=for-the-badge&logo=figma&logoColor=white)](https://www.figma.com/design/zF0IwLYMCjo3JKKABGa11u/DXTalent?node-id=0-1&t=z5RlYbceR3jrwodc-1)
 
 **A modern, gamified learning platform with AI-powered lesson generation, real-time leaderboards, and comprehensive progress tracking.**
 
-[🚀 Live Demo](#) • [� Postman Collection](docs/DXTalent_Complete_API_Collection.postman_collection.json)
+[🚀 Live Demo](#) • [🎨 Figma Design](https://www.figma.com/design/zF0IwLYMCjo3JKKABGa11u/DXTalent?node-id=0-1&t=z5RlYbceR3jrwodc-1) • [� Postman Collection](docs/DXTalent_Complete_API_Collection.postman_collection.json)
 
 </div>
 
@@ -1372,7 +1372,6 @@ userSchema.index({ 'stats.league': 1 });
 lessonSchema.index({ userId: 1, category: 1 });
 lessonSchema.index({ topic: 1 });
 ```
-
 
 **2. Query Optimization**
 
