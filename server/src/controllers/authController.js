@@ -15,6 +15,7 @@ import {
   sendPasswordResetEmail,
   sendWelcomeEmail,
 } from '../utils/email.js';
+import { getUserBadgesWithProgress } from '../utils/badgeService.js';
 
 // @desc    Register new user
 // @route   POST /api/auth/register
@@ -791,6 +792,16 @@ export const getUserById = async (req, res) => {
       isEmailVerified: user.isEmailVerified,
       joinedAt: user.createdAt,
     };
+
+    // Include earned badges for public profile (full badge objects with progress)
+    try {
+      const badges = await getUserBadgesWithProgress(userId);
+      // Only expose earned badges on public profile
+      userData.badges = badges.filter((b) => b.earned);
+    } catch (badgeErr) {
+      console.error('Failed to load user badges for public profile', badgeErr);
+      userData.badges = [];
+    }
 
     // Include email if requester is recruiter or admin
     if (isRecruiterOrAdmin) {

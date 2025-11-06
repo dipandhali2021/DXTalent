@@ -84,6 +84,9 @@ const Profile = () => {
             // Set email if it's provided (for recruiters/admins viewing profiles)
             setEmail(pu.email || '');
             setProfilePicture(pu.profilePicture || '');
+            // Populate badges for the viewed user (earned badges)
+            setBadges(Array.isArray(pu.badges) ? pu.badges : []);
+            setLoadingBadges(false);
           }
         } catch (err) {
           console.error('Failed to load public profile', err);
