@@ -4,10 +4,11 @@ import { useAuth } from '@/context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '@/context/LanguageContext';
 import logo from '@/assets/logo.png';
+import logoJp from '@/assets/logo-jp.png';
 
 export default function Hero() {
   const { isAuthenticated, user } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
 
   const handleStartLearning = () => {
@@ -60,7 +61,11 @@ export default function Hero() {
         aria-label="Home"
         className="flex items-center absolute left-4 top-4"
       >
-        <img src={logo} alt="DXTalent" className="h-16 ml-4 object-contain" />
+        <img
+          src={language === 'jp' ? logoJp : logo}
+          alt="DXTalent"
+          className="h-16 ml-4 object-contain"
+        />
       </Link>
 
       {/* Decorative background elements */}
@@ -113,7 +118,7 @@ export default function Hero() {
         </div>
 
         {/* Subtitle */}
-        <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto rotate-playful-2">
+        <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto rotate-playful-2 font-normal">
           {t('hero.description')}
         </p>
 

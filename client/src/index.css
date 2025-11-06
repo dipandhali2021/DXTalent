@@ -2,6 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Load bundled Comic Sans font family (regular, italic, bold, bold italic).
+   Mapping each file to the appropriate font-weight & font-style lets the
+   browser pick the correct face when you use `font-weight` and `font-style`.
+*/
+@font-face {
+  font-family: 'Comic Sans MS';
+  src: url('../fonts/fonnts.com-Comic_Sans_MS_W05_Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Comic Sans MS';
+  src: url('../fonts/fonnts.com-Comic_Sans_MS_W05_Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Comic Sans MS';
+  src: url('../fonts/fonnts.com-Comic_Sans_MS_W05_Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Comic Sans MS';
+  src: url('../fonts/fonnts.com-Comic_Sans_MS_W05_Bold_Italic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
@@ -118,6 +154,8 @@ All colors MUST be HSL.
   }
 }
 
+
+
 @layer base {
   * {
     @apply border-border;
@@ -129,7 +167,7 @@ All colors MUST be HSL.
 
   /* Handwritten font stack */
   .font-handwritten {
-    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', cursive, sans-serif;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', sans-serif;
   }
 
   /* Neo-brutalist utilities */
@@ -152,6 +190,14 @@ All colors MUST be HSL.
   /* Playful rotations */
   .rotate-playful-1 {
     transform: rotate(-1deg);
+  }
+
+  /* If the bundled TTF doesn't include a bold variant, help headings look bold by
+     adding a subtle stroke/shadow for elements that use Tailwind's `font-bold` */
+  .font-handwritten .font-bold {
+    /* Stronger visual weight for headings using the handwritten font */
+    font-weight: 900;
+
   }
 
   .rotate-playful-2 {
