@@ -71,7 +71,7 @@ export default function Hero() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto text-center space-y-6 sm:space-y-8 pt-12 sm:pt-0">
+      <div className="max-w-6xl mx-auto text-center space-y-6 sm:space-y-8 pt-12 sm:pt-0 mt-12">
         {/* Tag */}
         <div className="inline-block">
           <span className="px-3 py-1.5 sm:px-4 sm:py-2 bg-primary text-primary-foreground rounded-full brutal-border brutal-shadow rotate-playful-1 inline-block text-xs sm:text-sm font-bold">
