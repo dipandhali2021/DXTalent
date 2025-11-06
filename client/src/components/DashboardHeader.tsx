@@ -68,7 +68,7 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
             <img
               src={logo}
               alt="DXTalent"
-              className="h-16 ml-4 object-contain"
+              className="h-12 md:h-16 ml-2 md:ml-4 object-contain"
             />
           </Link>
 
@@ -193,6 +193,65 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
             )}
           </Button>
         </div>
+
+        {/* Mobile Stats Bar - only show for regular users */}
+        {role === 'user' && (
+          <div className="md:hidden flex items-center justify-center gap-2 mt-3 pb-2">
+            {/* Level Display - Mobile */}
+            <div
+              className="brutal-border brutal-shadow bg-card rounded-lg px-3 py-2 flex items-center gap-2 transform -rotate-[0.5deg] transition-transform duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:rotate-0 cursor-pointer flex-1 max-w-[140px]"
+              title={`${
+                (user as any)?.stats?.levelName ?? 'Novice Explorer'
+              } - ${(user as any)?.stats?.xpProgress ?? 0}% to next level`}
+              aria-label="Level"
+            >
+              <Award className="w-4 h-4 text-purple-500 flex-shrink-0" />
+              <div className="leading-none flex-1 min-w-0">
+                <div className="text-sm font-bold">
+                  Lvl {(user as any)?.stats?.level ?? 1}
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-1 mt-1">
+                  <div
+                    className="bg-purple-500 h-1 rounded-full transition-all duration-300"
+                    style={{
+                      width: `${(user as any)?.stats?.xpProgress ?? 0}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* XP - Mobile */}
+            <div
+              className="brutal-border brutal-shadow bg-card rounded-lg px-3 py-2 flex items-center gap-2 transform rotate-[1deg] transition-transform duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:rotate-0 cursor-pointer"
+              title={`${(user as any)?.stats?.xpPoints ?? 0} XP`}
+              aria-label="XP"
+            >
+              <Zap className="w-4 h-4 text-yellow-500" />
+              <div className="leading-none">
+                <div className="text-sm font-bold">
+                  {(user as any)?.stats?.xpPoints ?? 0}
+                </div>
+                <div className="text-[10px] text-muted-foreground">XP</div>
+              </div>
+            </div>
+
+            {/* Streak - Mobile */}
+            <div
+              className="brutal-border brutal-shadow bg-card rounded-lg px-3 py-2 flex items-center gap-2 transform rotate-[1deg] transition-transform duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:rotate-0 cursor-pointer"
+              title={`Streak: ${(user as any)?.stats?.currentStreak ?? 0} days`}
+              aria-label="Streak"
+            >
+              <Calendar className="w-4 h-4 text-blue-500" />
+              <div className="leading-none">
+                <div className="text-sm font-bold">
+                  {(user as any)?.stats?.currentStreak ?? 0}d
+                </div>
+                <div className="text-[10px] text-muted-foreground">Streak</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Mobile Menu */}
         {sidebarOpen && (
