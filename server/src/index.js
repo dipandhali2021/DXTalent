@@ -31,14 +31,25 @@ app.use(
 );
 
 // CORS configuration
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'https://dxtalent.vercel.app',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['set-cookie'],
-};
-app.use(cors(corsOptions));
+const allowedOrigins = [
+  'http://localhost:8080',
+  'https://dxtalent.vercel.app',
+  process.env.FRONTEND_URL,
+];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
 
 // Stripe webhook needs raw body - must be before express.json()
 app.use(
