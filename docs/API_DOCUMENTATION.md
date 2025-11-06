@@ -33,7 +33,6 @@
   - [Seed](#seed-endpoints)
   - [Admin](#admin-endpoints)
 - [Postman Collection](#-postman-collection)
-- [WebSocket Events](#-websocket-events)
 
 ---
 
@@ -1924,49 +1923,6 @@ The collection automatically saves tokens after login:
 - Lesson generation → saves `lessonId`
 - Test generation → saves `testId`
 - Checkout session → saves `sessionId`
-
----
-
-## 🔌 WebSocket Events
-
-### Connection
-
-```javascript
-const socket = io('http://localhost:5000', {
-  auth: {
-    token: 'your_access_token',
-  },
-});
-```
-
-### Events
-
-#### Badge Earned
-
-```javascript
-socket.on('badge:earned', (data) => {
-  console.log('New badge earned!', data);
-  // { badgeId, badgeName, description, icon }
-});
-```
-
-#### Level Up
-
-```javascript
-socket.on('user:levelup', (data) => {
-  console.log('Level up!', data);
-  // { newLevel, xp, rewards }
-});
-```
-
-#### League Promotion
-
-```javascript
-socket.on('league:promotion', (data) => {
-  console.log('League promotion!', data);
-  // { newLeague, requirements }
-});
-```
 
 ---
 

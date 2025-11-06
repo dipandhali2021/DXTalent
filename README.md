@@ -861,7 +861,6 @@ const userResponse = await fetch('http://localhost:5000/api/auth/me', {
 ✅ **Filtering & Sorting** on list endpoints  
 ✅ **Auto-save Tokens** in Postman collection  
 ✅ **Comprehensive Error Handling** with proper HTTP codes  
-✅ **WebSocket Support** for real-time events
 
 ### Rate Limits
 

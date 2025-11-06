@@ -183,8 +183,24 @@ const translations = {
 
     // Navigation
     'nav.pricing': '💰 View Pricing',
+    'nav.dashboard': 'Dashboard',
+    'nav.users': 'Users',
+    'nav.payments': 'Payments',
+    'nav.profile': 'Profile',
+    'nav.lessons': 'Lessons',
+    'nav.leaderboard': 'Leaderboard',
+    'nav.subscription': 'Subscription',
     'nav.logout': 'Logout',
     'nav.login': 'Login / Sign Up',
+
+    // Stats labels
+    'stats.lvl': 'Lvl',
+    'stats.xp': 'XP',
+    'stats.streak': 'Streak',
+    'stats.total_xp': 'Total XP',
+    'stats.league': 'League',
+    'stats.day_streak': 'Day Streak',
+    'stats.badges': 'Badges',
 
     // Auth (Login / Register)
     'auth.back_home': 'Back to Home',
@@ -394,8 +410,25 @@ const translations = {
 
     // Navigation
     'nav.pricing': '💰 価格を見る',
+    'nav.dashboard': 'ダッシュボード',
+    'nav.users': 'ユーザー',
+    'nav.payments': '支払い',
+    'nav.profile': 'プロフィール',
+    'nav.lessons': 'レッスン',
+    'nav.leaderboard': 'リーダーボード',
+    'nav.subscription': 'サブスクリプション',
     'nav.logout': 'ログアウト',
     'nav.login': 'ログイン / サインアップ',
+
+    // Stats labels
+    'stats.lvl': 'レベル',
+    'stats.xp': 'XP',
+    'stats.streak': '連続',
+    'stats.total_xp': '総XP',
+    'stats.league': 'リーグ',
+    'stats.day_streak': '日連続',
+    'stats.badges': 'バッジ',
+
 
     // Auth (Login / Register)
     'auth.back_home': 'ホームへ戻る',

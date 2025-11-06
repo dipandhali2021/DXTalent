@@ -26,7 +26,7 @@ interface DashboardHeaderProps {
 
 const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
   const { logout, user } = useAuth();
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -44,23 +44,23 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
     switch (role) {
       case 'admin':
         return [
-          { to: '/admin/dashboard', icon: Trophy, label: 'Dashboard' },
-          { to: '/admin/users', icon: User, label: 'Users' },
-          { to: '/admin/payments', icon: CreditCard, label: 'Payments' },
-          { to: '/profile', icon: User, label: 'Profile' },
+          { to: '/admin/dashboard', icon: Trophy, label: 'nav.dashboard' },
+          { to: '/admin/users', icon: User, label: 'nav.users' },
+          { to: '/admin/payments', icon: CreditCard, label: 'nav.payments' },
+          { to: '/profile', icon: User, label: 'nav.profile' },
         ];
       case 'recruiter':
         return [
-          { to: '/recruiter/dashboard', icon: Trophy, label: 'Dashboard' },
-          { to: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
-          { to: '/profile', icon: User, label: 'Profile' },
+          { to: '/recruiter/dashboard', icon: Trophy, label: 'nav.dashboard' },
+          { to: '/leaderboard', icon: Trophy, label: 'nav.leaderboard' },
+          { to: '/profile', icon: User, label: 'nav.profile' },
         ];
       default:
         return [
-          { to: '/dashboard', icon: Trophy, label: 'Dashboard' },
-          { to: '/lessons', icon: BookOpen, label: 'Lessons' },
-          { to: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
-          { to: '/profile', icon: User, label: 'Profile' },
+          { to: '/dashboard', icon: Trophy, label: 'nav.dashboard' },
+          { to: '/lessons', icon: BookOpen, label: 'nav.lessons' },
+          { to: '/leaderboard', icon: Trophy, label: 'nav.leaderboard' },
+          { to: '/profile', icon: User, label: 'nav.profile' },
         ];
     }
   };
@@ -80,15 +80,17 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
           </Link>
 
           {/* Navigation Menu */}
-          <nav className="hidden md:flex items-center gap-2">
+          <nav className="hidden md:flex items-center gap-2 flex-wrap ml-3">
             {navigationItems.map((item) => (
               <Link key={item.to} to={item.to}>
                 <Button
                   variant="ghost"
-                  className="brutal-border brutal-shadow bg-card rounded-lg px-2 py-1 flex items-center transform rotate-[1deg] transition-transform duration-200 ease-in-out hover:scale-100 hover:-translate-y-1 hover:rotate-0 cursor-pointer gap-2"
+                  className="min-w-0 brutal-border brutal-shadow bg-card rounded-lg px-2 py-1 flex items-center transform rotate-[1deg] transition-transform duration-200 ease-in-out hover:scale-100 hover:-translate-y-1 hover:rotate-0 cursor-pointer gap-2"
                 >
                   <item.icon className="w-4 h-4" />
-                  {item.label}
+                  <span className="truncate max-w-[120px] block">
+                    {t(item.label)}
+                  </span>
                 </Button>
               </Link>
             ))}
@@ -106,7 +108,9 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
                   <Award className="w-4 h-4 text-purple-500" />
                   <div className="leading-none flex-1">
                     <div className="text-sm font-bold flex items-center gap-1">
-                      <span>Lvl {(user as any)?.stats?.level ?? 1}</span>
+                      <span>
+                        {t('stats.lvl')} {(user as any)?.stats?.level ?? 1}
+                      </span>
                     </div>
                     <div className="text-[10px] text-muted-foreground truncate max-w-[80px]">
                       {(user as any)?.stats?.levelName ?? 'Novice Explorer'}
@@ -133,7 +137,9 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
                     <div className="text-sm font-bold">
                       {(user as any)?.stats?.xpPoints ?? 0}
                     </div>
-                    <div className="text-[10px] text-muted-foreground">XP</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      {t('stats.xp')}
+                    </div>
                   </div>
                 </div>
 
@@ -150,7 +156,7 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
                       {(user as any)?.stats?.currentStreak ?? 0}d
                     </div>
                     <div className="text-[10px] text-muted-foreground">
-                      Streak
+                      {t('stats.streak')}
                     </div>
                   </div>
                 </div>
@@ -164,11 +170,13 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
                 <Link to="/subscription">
                   <Button
                     variant="outline-brutal"
-                    className="gap-2 bg-primary/10 hover:bg-primary/20 border-primary"
+                    className="min-w-0 gap-2 bg-primary/10 hover:bg-primary/20 border-primary"
                     title="Manage Subscription"
                   >
                     <CreditCard className="w-4 h-4" />
-                    <span className="hidden lg:inline">Subscription</span>
+                    <span className="hidden lg:inline truncate max-w-[140px]">
+                      {t('nav.subscription')}
+                    </span>
                   </Button>
                 </Link>
                 <Separator orientation="vertical" className="h-6 mx-2" />
@@ -189,12 +197,14 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
 
             <Button
               variant="outline-brutal"
-              className="gap-2 group hover:bg-red-600 hover:border-red-700 hover:text-white transition-colors"
+              className="min-w-0 gap-2 group hover:bg-red-600 hover:border-red-700 hover:text-white transition-colors"
               onClick={handleLogout}
               title="Logout"
             >
               <LogOut className="w-4 h-4" />
-              Logout
+              <span className="truncate max-w-[120px] block">
+                {t('nav.logout')}
+              </span>
             </Button>
           </nav>
 
@@ -227,7 +237,7 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
               <Award className="w-4 h-4 text-purple-500 flex-shrink-0" />
               <div className="leading-none flex-1 min-w-0">
                 <div className="text-sm font-bold">
-                  Lvl {(user as any)?.stats?.level ?? 1}
+                  {t('stats.lvl')} {(user as any)?.stats?.level ?? 1}
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-1 mt-1">
                   <div
@@ -251,7 +261,9 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
                 <div className="text-sm font-bold">
                   {(user as any)?.stats?.xpPoints ?? 0}
                 </div>
-                <div className="text-[10px] text-muted-foreground">XP</div>
+                <div className="text-[10px] text-muted-foreground">
+                  {t('stats.xp')}
+                </div>
               </div>
             </div>
 
@@ -266,7 +278,9 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
                 <div className="text-sm font-bold">
                   {(user as any)?.stats?.currentStreak ?? 0}d
                 </div>
-                <div className="text-[10px] text-muted-foreground">Streak</div>
+                <div className="text-[10px] text-muted-foreground">
+                  {t('stats.streak')}
+                </div>
               </div>
             </div>
           </div>
@@ -283,7 +297,7 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
               <Link key={item.to} to={item.to}>
                 <Button variant="ghost" className="w-full justify-start gap-2">
                   <item.icon className="w-4 h-4" />
-                  {item.label}
+                  {t(item.label)}
                 </Button>
               </Link>
             ))}
@@ -293,7 +307,7 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
               <Link to="/subscription">
                 <Button variant="ghost" className="w-full justify-start gap-2">
                   <CreditCard className="w-4 h-4" />
-                  Subscription
+                  {t('nav.subscription')}
                 </Button>
               </Link>
             )}
@@ -305,7 +319,7 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
               title="Logout"
             >
               <LogOut className="w-4 h-4" />
-              Logout
+              {t('nav.logout')}
             </Button>
 
             {/* Language Switcher - Mobile */}
