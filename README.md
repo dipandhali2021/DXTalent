@@ -3,7 +3,7 @@
 <div align="center">
 
 ![DXTalent Banner](https://img.shields.io/badge/DXTalent-Learning_Platform-blue?style=for-the-badge)
-[![Node](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
+[![Node](https://img.shields.io/badge/Node.js-20+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
 [![React](https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org)
 [![MongoDB](https://img.shields.io/badge/MongoDB-6+-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
@@ -277,7 +277,7 @@ graph TB
 ```mermaid
 graph TB
     subgraph "Runtime & Framework"
-        A[Node.js 18+]
+        A[Node.js 20+]
         B[Express 5]
     end
 
@@ -328,7 +328,7 @@ graph TB
 
 **Core Technologies:**
 
-- 🟢 **Node.js 18+** - Runtime
+- 🟢 **Node.js 20+** - Runtime
 - 🚂 **Express.js 5** - Web framework
 - 🍃 **MongoDB 8** - Database
 - 🔐 **JWT + OAuth** - Authentication
@@ -340,7 +340,6 @@ graph TB
 
 ### DevOps & Tools
 
-- 🐳 **Docker** - Containerization (optional)
 - 🔄 **Git** - Version control
 - 📮 **Postman** - API testing
 - 🌐 **Vercel** - Frontend hosting
@@ -455,12 +454,12 @@ graph TB
 
 Before you begin, ensure you have the following installed:
 
-- ✅ **Node.js 18+** ([Download](https://nodejs.org/))
+- ✅ **Node.js 20+** ([Download](https://nodejs.org/))
 - ✅ **MongoDB 6+** ([Download](https://www.mongodb.com/try/download/community))
 - ✅ **Git** ([Download](https://git-scm.com/))
 - ✅ **Gmail Account** (for email verification)
-- ✅ **Stripe Account** (optional, for payments)
-- ✅ **Google Cloud Project** (optional, for OAuth)
+- ✅ **Stripe Account** (for payments)
+- ✅ **Google Cloud Project** (for OAuth)
 
 ### Quick Start (5 Minutes)
 
@@ -798,440 +797,83 @@ sequenceDiagram
 
 ---
 
-## 📡 API Documentation
+## � API Documentation
 
-### Base URL
+### Complete API Reference
 
-```
-Development: http://localhost:5000/api
-Production: https://your-domain.com/api
-```
+For detailed API documentation including all endpoints, request/response examples, and authentication flows, see:
 
-### Authentication Endpoints
+**[📖 Complete API Documentation](docs/API_DOCUMENTATION.md)**
 
-#### Register User
+### Quick Links
 
-```http
-POST /api/auth/register
-Content-Type: application/json
+- **[Postman Collection](docs/DXTalent_Complete_API_Collection.postman_collection.json)** - Import into Postman for instant API testing
+- **Base URL (Development):** `http://localhost:5000/api`
+- **Base URL (Production):** `https://dxtalent-server.vercel.app/api`
 
-{
-  "username": "johndoe",
-  "email": "john@example.com",
-  "password": "SecurePass123",
-  "role": "user" // optional: user, recruiter
-}
+### API Overview
 
-Response: 201 Created
-{
-  "success": true,
-  "message": "Registration successful! Please check your email to verify your account.",
-  "data": {
-    "user": {
-      "id": "507f1f77bcf86cd799439011",
-      "username": "johndoe",
-      "email": "john@example.com",
-      "role": "user",
-      "isEmailVerified": false
-    }
-  }
-}
-```
+The DXTalent API provides 77+ endpoints organized into 10 main categories:
 
-#### Login
+| Category              | Endpoints | Description                                          |
+| --------------------- | --------- | ---------------------------------------------------- |
+| 🔐 **Authentication** | 14        | User registration, login, OAuth, password management |
+| 📚 **Lessons**        | 18        | AI lesson generation, content management, tests      |
+| 🏆 **Leaderboard**    | 5         | Global rankings, league stats, skill-based boards    |
+| 🎯 **Challenges**     | 2         | Daily challenges and reward claiming                 |
+| 🎖️ **Badges**         | 5         | Badge progress, claiming, and notifications          |
+| 💼 **Recruiter**      | 4         | Talent discovery, trending skills, candidate search  |
+| 💳 **Subscriptions**  | 5         | Stripe checkout, payment verification, status        |
+| 🌱 **Seed**           | 2         | Default lesson seeding and data management           |
+| 👨‍💼 **Admin**          | 17        | User management, analytics, payment processing       |
+| ❤️ **Health Check**   | 2         | Server status and API information                    |
 
-```http
-POST /api/auth/login
-Content-Type: application/json
+### Authentication Example
 
-{
-  "email": "john@example.com",
-  "password": "SecurePass123"
-}
+```javascript
+// 1. Login
+const loginResponse = await fetch('http://localhost:5000/api/auth/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    email: 'user@example.com',
+    password: 'SecurePass123!',
+  }),
+});
 
-Response: 200 OK
-{
-  "success": true,
-  "message": "Login successful",
-  "data": {
-    "user": { ... },
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  }
-}
+const { data } = await loginResponse.json();
+const { accessToken, refreshToken } = data;
+
+// 2. Use access token for API requests
+const userResponse = await fetch('http://localhost:5000/api/auth/me', {
+  headers: {
+    Authorization: `Bearer ${accessToken}`,
+  },
+});
 ```
 
-#### Google OAuth
+### Key Features
 
-```http
-POST /api/auth/google
-Content-Type: application/json
+✅ **JWT Authentication** with access & refresh tokens  
+✅ **Rate Limiting** to prevent abuse  
+✅ **Input Validation** with detailed error messages  
+✅ **Pagination** for large datasets  
+✅ **Filtering & Sorting** on list endpoints  
+✅ **Auto-save Tokens** in Postman collection  
+✅ **Comprehensive Error Handling** with proper HTTP codes  
+✅ **WebSocket Support** for real-time events
 
-{
-  "credential": "google_oauth_credential",
-  "email": "john@gmail.com",
-  "name": "John Doe",
-  "picture": "https://..."
-}
-```
+### Rate Limits
 
-#### Verify Email
-
-```http
-GET /api/auth/verify/:token
-
-Response: 200 OK
-{
-  "success": true,
-  "message": "Email verified successfully! You can now login."
-}
-```
-
-#### Refresh Access Token
-
-```http
-POST /api/auth/refresh
-Cookie: refreshToken=...
-
-Response: 200 OK
-{
-  "success": true,
-  "data": {
-    "accessToken": "new_access_token"
-  }
-}
-```
-
-#### Forgot Password
-
-```http
-POST /api/auth/forgot-password
-Content-Type: application/json
-
-{
-  "email": "john@example.com"
-}
-```
-
-#### Reset Password
-
-```http
-POST /api/auth/reset-password
-Content-Type: application/json
-
-{
-  "token": "reset_token_from_email",
-  "newPassword": "NewSecurePass123"
-}
-```
-
-### Lesson Endpoints
-
-#### Generate Lesson Structure
-
-```http
-POST /api/lessons/generate
-Authorization: Bearer {accessToken}
-Content-Type: application/json
-
-{
-  "topic": "Machine Learning Basics"
-}
-
-Response: 201 Created
-{
-  "success": true,
-  "message": "Lesson structure generated successfully",
-  "data": {
-    "topic": "Machine Learning Basics",
-    "category": "Development",
-    "skillIcon": "🤖",
-    "totalLessons": 10,
-    "generatedLessons": 3,
-    "placeholderLessons": 7,
-    "lessons": [ ... ],
-    "creditsUsed": 1.0,
-    "creditsRemaining": 4.0
-  }
-}
-```
-
-#### Get All User Lessons
-
-```http
-GET /api/lessons?category=Marketing&difficulty=Beginner&isFullyGenerated=true
-Authorization: Bearer {accessToken}
-
-Response: 200 OK
-{
-  "success": true,
-  "data": {
-    "lessons": [ ... ],
-    "total": 25
-  }
-}
-```
-
-#### Get Single Lesson
-
-```http
-GET /api/lessons/:lessonId
-Authorization: Bearer {accessToken}
-
-Response: 200 OK
-{
-  "success": true,
-  "data": {
-    "lesson": {
-      "_id": "...",
-      "skillName": "Introduction to React",
-      "category": "Development",
-      "difficulty": "Beginner",
-      "questions": [ ... ],
-      "completionStatus": {
-        "isCompleted": true,
-        "completionCount": 2,
-        "bestScore": {
-          "accuracy": 95,
-          "correctAnswers": 19,
-          "totalQuestions": 20
-        }
-      }
-    }
-  }
-}
-```
-
-#### Complete Lesson
-
-```http
-POST /api/lessons/:lessonId/complete
-Authorization: Bearer {accessToken}
-Content-Type: application/json
-
-{
-  "correctAnswers": 18,
-  "totalQuestions": 20,
-  "timeTaken": 450,
-  "answers": [0, 2, 1, 3, ...]
-}
-
-Response: 200 OK
-{
-  "success": true,
-  "message": "Lesson completed successfully!",
-  "data": {
-    "xpEarned": 120,
-    "totalXP": 2450,
-    "level": 8,
-    "levelName": "Code Enthusiast",
-    "currentStreak": 5,
-    "newBadges": [
-      {
-        "id": "streak_starter",
-        "name": "Streak Starter",
-        "emoji": "🔥",
-        "xpReward": 150
-      }
-    ],
-    "isFirstCompletion": true,
-    "accuracy": 90
-  }
-}
-```
-
-#### Generate Placeholder Content
-
-```http
-POST /api/lessons/:lessonId/generate-content
-Authorization: Bearer {accessToken}
-
-Response: 200 OK
-{
-  "success": true,
-  "message": "Lesson content generated successfully",
-  "data": {
-    "lesson": { ... },
-    "creditsUsed": 0.5,
-    "creditsRemaining": 3.5
-  }
-}
-```
-
-#### Generate/Regenerate Test
-
-```http
-POST /api/lessons/:lessonId/generate-test
-Authorization: Bearer {accessToken}
-Content-Type: application/json
-
-{
-  "questionCount": 20,
-  "forceNew": false
-}
-
-Response: 200 OK
-{
-  "success": true,
-  "message": "Test ready!",
-  "data": {
-    "test": {
-      "_id": "...",
-      "questions": [ ... ]
-    },
-    "isNewTest": false,
-    "totalAttempts": 2,
-    "creditsUsed": 0,
-    "creditsRemaining": 4.0,
-    "isFirstTest": true
-  }
-}
-```
-
-#### Get AI Recommendation
-
-```http
-GET /api/lessons/ai-recommendation
-Authorization: Bearer {accessToken}
-
-Response: 200 OK
-{
-  "success": true,
-  "data": {
-    "recommendation": {
-      "lessonId": "...",
-      "title": "Advanced React Patterns",
-      "category": "Development",
-      "difficulty": "Advanced",
-      "estimatedTime": "25 min",
-      "xpReward": 150,
-      "reason": "Based on your strong React fundamentals, you're ready for advanced patterns. This builds on your recent component work."
-    }
-  }
-}
-```
-
-#### Continue Journey
-
-```http
-GET /api/lessons/continue-journey
-Authorization: Bearer {accessToken}
-
-Response: 200 OK
-{
-  "success": true,
-  "data": {
-    "lessonId": "...",
-    "topic": "Digital Marketing",
-    "progress": 40,
-    "isFirst": false,
-    "message": "Continue your Digital Marketing journey"
-  }
-}
-```
-
-#### Get User Activity (Heatmap)
-
-```http
-GET /api/lessons/activity?month=10&year=2025
-Authorization: Bearer {accessToken}
-
-Response: 200 OK
-{
-  "success": true,
-  "data": {
-    "activity": [
-      { "date": "2025-11-01", "count": 3 },
-      { "date": "2025-11-02", "count": 5 },
-      ...
-    ],
-    "currentStreak": 7,
-    "longestStreak": 14
-  }
-}
-```
-
-### Leaderboard Endpoints
-
-#### Get Global Leaderboard
-
-```http
-GET /api/leaderboard?league=platinum&skill=React&timeframe=weekly&page=1&limit=50
-Authorization: Bearer {accessToken}
-
-Response: 200 OK
-{
-  "success": true,
-  "data": {
-    "leaderboard": [
-      {
-        "rank": 1,
-        "username": "code_ninja",
-        "xp": 15420,
-        "league": "platinum",
-        "streak": 21,
-        "accuracy": 94,
-        "skills": ["React", "Node.js", "MongoDB"],
-        "promotion": "up"
-      },
-      ...
-    ],
-    "total": 342,
-    "page": 1,
-    "pages": 7
-  }
-}
-```
-
-#### Get User Rank
-
-```http
-GET /api/leaderboard/rank
-Authorization: Bearer {accessToken}
-
-Response: 200 OK
-{
-  "success": true,
-  "data": {
-    "rank": 42,
-    "totalUsers": 1250,
-    "percentile": 97,
-    "xp": 8750,
-    "league": "gold",
-    "accuracy": 88,
-    "skills": ["Marketing", "SEO"],
-    "streak": 12,
-    "nearbyUsers": [ ... ]
-  }
-}
-```
-
-#### Get League Statistics
-
-```http
-GET /api/leaderboard/league-stats
-Authorization: Bearer {accessToken}
-
-Response: 200 OK
-{
-  "success": true,
-  "data": {
-    "leagues": [
-      {
-        "league": "bronze",
-        "totalUsers": 450,
-        "avgXP": 350,
-        "activeUsers": 280
-      },
-      ...
-    ]
-  }
-}
-```
+| Endpoint Type  | Limit   | Window |
+| -------------- | ------- | ------ |
+| Authentication | 5 req   | 15 min |
+| Login          | 10 req  | 15 min |
+| General API    | 100 req | 15 min |
 
 ---
 
-## 🗄️ Database Schema
+## �🗄️ Database Schema
 
 ### Entity-Relationship Diagram
 
@@ -1420,250 +1062,6 @@ db.refreshTokens.createIndex({ userId: 1 }); // User's sessions
 db.refreshTokens.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL index
 ```
 
-### User Model
-
-```javascript
-{
-  _id: ObjectId,
-  username: String (unique, 3-30 chars),
-  email: String (unique, validated),
-  password: String (hashed, optional for OAuth),
-  role: String (enum: ['user', 'recruiter', 'admin']),
-  accountStatus: String (enum: ['active', 'suspended', 'pending']),
-
-  // Subscription
-  subscriptionType: String (enum: ['free', 'pro', 'recruiter']),
-  stripeCustomerId: String,
-  stripeSubscriptionId: String,
-  subscriptionStatus: String,
-  subscriptionStartDate: Date,
-  subscriptionEndDate: Date,
-
-  // Generation Limits
-  generationLimits: {
-    aiLessonsPerMonth: Number (default: 1),
-    currentMonthGenerations: Number,
-    lastResetDate: Date,
-    addonGenerations: Number
-  },
-
-  // OAuth
-  googleId: String (unique, sparse),
-  profilePicture: String,
-
-  // Email Verification
-  isEmailVerified: Boolean,
-  emailVerificationToken: String,
-
-  // Password Reset
-  passwordResetToken: String,
-  passwordResetExpires: Date,
-
-  // Security
-  loginAttempts: Number,
-  lockUntil: Date,
-  lastLogin: Date,
-
-  // Stats
-  stats: {
-    skillsMastered: Number,
-    challengesCompleted: Number,
-    xpPoints: Number,
-    level: Number,
-    levelName: String,
-    league: String (enum),
-    xpIntoLevel: Number,
-    xpForNextLevel: Number,
-    xpProgress: Number,
-    currentStreak: Number,
-    longestStreak: Number,
-    lastLessonDate: Date
-  },
-
-  // Daily Activity Tracking
-  dailyActivity: Map<String, Number>, // { "2025-11-05": 3 }
-
-  // XP History
-  xpHistory: [{
-    amount: Number,
-    source: String (enum: ['lesson', 'challenge', 'badge', 'streak']),
-    description: String,
-    timestamp: Date
-  }],
-
-  // Badges
-  badges: [{
-    badgeId: String,
-    earnedAt: Date,
-    claimed: Boolean
-  }],
-
-  // Badge Stats (for progress tracking)
-  badgeStats: {
-    lessonsCompletedTotal: Number,
-    lessonsCompletedToday: Number,
-    lastLessonCompletionDate: Date,
-    perfectTestsCount: Number,
-    categoriesExplored: [String],
-    skillsMastered: Number,
-    highestLeaderboardRank: Number
-  },
-
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
-### Lesson Model
-
-```javascript
-{
-  _id: ObjectId,
-  userId: ObjectId (ref: 'User'),
-  topic: String, // For grouping lessons
-  skillName: String,
-  skillIcon: String (emoji),
-  category: String (enum: ['Marketing', 'Development', 'Data', 'Business', 'Design', 'Other']),
-  difficulty: String (enum: ['Beginner', 'Intermediate', 'Advanced']),
-  description: String,
-  duration: String, // e.g., "15 min"
-  totalXP: Number,
-
-  // Content
-  questions: [{
-    question: String,
-    options: [String], // 4 options
-    correctAnswer: Number, // Index 0-3
-    explanation: String,
-    xpReward: Number
-  }],
-
-  // Generation Status
-  isFullyGenerated: Boolean,
-  placeholder: Boolean,
-  isDefault: Boolean, // Pre-built lessons
-
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
-### LessonCompletion Model
-
-```javascript
-{
-  _id: ObjectId,
-  userId: ObjectId (ref: 'User'),
-  lessonId: ObjectId (ref: 'Lesson'),
-
-  // Completion Stats
-  completionCount: Number,
-  firstCompletionDate: Date,
-  lastCompletionDate: Date,
-
-  // Best Score
-  bestScore: {
-    accuracy: Number,
-    correctAnswers: Number,
-    totalQuestions: Number,
-    timeTaken: Number,
-    achievedAt: Date
-  },
-
-  // All Attempts
-  completions: [{
-    completedAt: Date,
-    score: Number,
-    correctAnswers: Number,
-    totalQuestions: Number,
-    timeTaken: Number,
-    xpEarned: Number,
-    answers: [Number]
-  }],
-
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
-### Test Model
-
-```javascript
-{
-  _id: ObjectId,
-  lessonId: ObjectId (ref: 'Lesson'),
-  userId: ObjectId (ref: 'User'),
-
-  // Test Content
-  questions: [{
-    question: String,
-    options: [String],
-    correctAnswer: Number,
-    explanation: String
-  }],
-
-  // Test Stats
-  totalAttempts: Number,
-  bestScore: {
-    accuracy: Number,
-    correctAnswers: Number,
-    completedAt: Date
-  },
-
-  // Attempts
-  attempts: [{
-    attemptedAt: Date,
-    score: Number,
-    correctAnswers: Number,
-    timeTaken: Number,
-    passed: Boolean,
-    answers: [Number]
-  }],
-
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
-### Payment Model
-
-```javascript
-{
-  _id: ObjectId,
-  user: ObjectId (ref: 'User'),
-  amount: Number,
-  currency: String (default: 'USD'),
-  paymentType: String (enum: ['subscription', 'role_upgrade', 'renewal', 'refund']),
-  plan: String (enum: ['free', 'basic', 'pro', 'recruiter']),
-  role: String,
-  status: String (enum: ['pending', 'completed', 'failed', 'refunded']),
-  paymentMethod: String (default: 'stripe'),
-  transactionId: String,
-  description: String,
-  metadata: Object,
-  refundedAt: Date,
-
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
-### RefreshToken Model
-
-```javascript
-{
-  _id: ObjectId,
-  token: String (unique),
-  userId: ObjectId (ref: 'User'),
-  expiresAt: Date,
-  deviceInfo: String,
-  ipAddress: String,
-
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
 # 🎓 DXTalent - Part 2: Security, Deployment & Advanced Features
 
 ---
@@ -1797,7 +1195,6 @@ graph LR
 - ✅ Domain name with SSL certificate
 - ✅ MongoDB Atlas account (or self-hosted MongoDB)
 - ✅ Vercel account (frontend) or similar
-- ✅ Heroku/Railway/Render (backend) or similar
 - ✅ Gmail account with App Password
 - ✅ Stripe account with live keys
 - ✅ Google Cloud project with OAuth credentials
@@ -1871,125 +1268,6 @@ vercel --prod
 }
 ```
 
-### Backend Deployment (Railway/Heroku/Render)
-
-#### 1. Prepare for Production
-
-**Update package.json:**
-
-```json
-{
-  "scripts": {
-    "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  }
-}
-```
-
-**Environment Variables (Production):**
-
-```env
-# Database
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/dxtalent?retryWrites=true&w=majority
-
-# Server
-PORT=5000
-NODE_ENV=production
-FRONTEND_URL=https://your-frontend-domain.com
-
-# JWT Secrets (Use strong random strings)
-JWT_ACCESS_SECRET=your_production_access_secret_32_chars
-JWT_REFRESH_SECRET=your_production_refresh_secret_32_chars
-
-# Email
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_SECURE=false
-EMAIL_USER=your-production-email@gmail.com
-EMAIL_PASSWORD=your_gmail_app_password
-EMAIL_FROM=DXTalent <your-production-email@gmail.com>
-
-# Google Gemini AI
-GEMINI_API_KEY=your_production_gemini_api_key
-
-# Stripe (Live Keys)
-STRIPE_SECRET_KEY=sk_live_...
-STRIPE_WEBHOOK_SECRET=whsec_live_...
-STRIPE_PRICE_PRO_LEARNER=price_live_...
-STRIPE_PRICE_RECRUITER=price_live_...
-STRIPE_PRICE_ADDON=price_live_...
-
-# Google OAuth
-GOOGLE_CLIENT_ID=your_production_google_client_id
-GOOGLE_CLIENT_SECRET=your_production_google_client_secret
-```
-
-#### 2. Deploy to Railway
-
-```bash
-# Install Railway CLI
-npm install -g @railway/cli
-
-# Login
-railway login
-
-# Initialize project
-cd server
-railway init
-
-# Link to project
-railway link
-
-# Set environment variables
-railway variables set MONGODB_URI="mongodb+srv://..."
-railway variables set NODE_ENV="production"
-# ... set all other variables
-
-# Deploy
-railway up
-```
-
-#### 3. Deploy to Heroku
-
-```bash
-# Install Heroku CLI
-npm install -g heroku
-
-# Login
-heroku login
-
-# Create app
-cd server
-heroku create your-app-name
-
-# Set environment variables
-heroku config:set MONGODB_URI="mongodb+srv://..."
-heroku config:set NODE_ENV="production"
-# ... set all other variables
-
-# Deploy
-git push heroku main
-
-# View logs
-heroku logs --tail
-```
-
-#### 4. Deploy to Render
-
-1. Go to [Render Dashboard](https://dashboard.render.com/)
-2. Click "New" → "Web Service"
-3. Connect your GitHub repository
-4. Configure:
-   - Name: dxtalent-api
-   - Environment: Node
-   - Build Command: `npm install`
-   - Start Command: `npm start`
-   - Add all environment variables
-5. Click "Create Web Service"
-
 ### Database Setup (MongoDB Atlas)
 
 #### 1. Create Cluster
@@ -2003,14 +1281,6 @@ heroku logs --tail
 
 ```
 mongodb+srv://username:password@cluster.mongodb.net/dxtalent?retryWrites=true&w=majority
-```
-
-#### 3. Seed Initial Data (Optional)
-
-```bash
-# Run seed scripts
-node src/utils/seedLessons.js
-node src/utils/migrateBadgeStats.js
 ```
 
 ### Stripe Webhook Configuration
@@ -2046,20 +1316,6 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 
 - Automatic SSL via Let's Encrypt
 - Custom domain SSL configured automatically
-
-**For Backend (Let's Encrypt with Certbot):**
-
-```bash
-# Install Certbot
-sudo apt-get update
-sudo apt-get install certbot python3-certbot-nginx
-
-# Obtain certificate
-sudo certbot --nginx -d your-api-domain.com
-
-# Auto-renewal
-sudo certbot renew --dry-run
-```
 
 ### Performance Optimization
 
@@ -2117,30 +1373,8 @@ lessonSchema.index({ userId: 1, category: 1 });
 lessonSchema.index({ topic: 1 });
 ```
 
-**2. Caching Strategy**
 
-```javascript
-// Cache frequently accessed data
-import NodeCache from 'node-cache';
-
-const cache = new NodeCache({ stdTTL: 600 }); // 10 minutes
-
-// Cache leaderboard
-app.get('/api/leaderboard', async (req, res) => {
-  const cacheKey = `leaderboard_${req.query.league}`;
-  const cached = cache.get(cacheKey);
-
-  if (cached) {
-    return res.json(cached);
-  }
-
-  const data = await fetchLeaderboard(req.query);
-  cache.set(cacheKey, data);
-  res.json(data);
-});
-```
-
-**3. Query Optimization**
+**2. Query Optimization**
 
 ```javascript
 // Use lean() for read-only queries
@@ -2154,7 +1388,7 @@ const lessons = await Lesson.find({ userId })
   .limit(50);
 ```
 
-**4. Connection Pooling**
+**3. Connection Pooling**
 
 ```javascript
 // MongoDB connection with pooling
@@ -2188,196 +1422,6 @@ pm2 logs
 pm2 startup
 pm2 save
 ```
-
-**PM2 Configuration (ecosystem.config.js):**
-
-```javascript
-module.exports = {
-  apps: [
-    {
-      name: 'dxtalent-api',
-      script: './src/index.js',
-      instances: 'max',
-      exec_mode: 'cluster',
-      env: {
-        NODE_ENV: 'production',
-      },
-      error_file: './logs/err.log',
-      out_file: './logs/out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      merge_logs: true,
-    },
-  ],
-};
-```
-
-#### 2. Error Tracking
-
-**Sentry Integration:**
-
-```bash
-npm install @sentry/node
-```
-
-```javascript
-import * as Sentry from '@sentry/node';
-
-Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  environment: process.env.NODE_ENV,
-  tracesSampleRate: 1.0,
-});
-
-// Error handler
-app.use(Sentry.Handlers.errorHandler());
-```
-
-#### 3. Logging
-
-**Winston Logger:**
-
-```javascript
-import winston from 'winston';
-
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.json(),
-  transports: [
-    new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' }),
-  ],
-});
-
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(
-    new winston.transports.Console({
-      format: winston.format.simple(),
-    })
-  );
-}
-```
-
----
-
-## 🧪 Testing
-
-### Backend Testing
-
-**Install Testing Dependencies:**
-
-```bash
-npm install --save-dev jest supertest mongodb-memory-server
-```
-
-**Example Test (auth.test.js):**
-
-```javascript
-import request from 'supertest';
-import app from '../src/index';
-import User from '../src/models/User';
-
-describe('Auth API', () => {
-  beforeEach(async () => {
-    await User.deleteMany({});
-  });
-
-  describe('POST /api/auth/register', () => {
-    it('should register a new user', async () => {
-      const res = await request(app).post('/api/auth/register').send({
-        username: 'testuser',
-        email: 'test@example.com',
-        password: 'Test123456',
-      });
-
-      expect(res.statusCode).toBe(201);
-      expect(res.body.success).toBe(true);
-      expect(res.body.data.user.username).toBe('testuser');
-    });
-
-    it('should not register with duplicate email', async () => {
-      await User.create({
-        username: 'existing',
-        email: 'test@example.com',
-        password: 'Test123456',
-      });
-
-      const res = await request(app).post('/api/auth/register').send({
-        username: 'newuser',
-        email: 'test@example.com',
-        password: 'Test123456',
-      });
-
-      expect(res.statusCode).toBe(400);
-      expect(res.body.message).toContain('already registered');
-    });
-  });
-
-  describe('POST /api/auth/login', () => {
-    it('should login with valid credentials', async () => {
-      const user = await User.create({
-        username: 'testuser',
-        email: 'test@example.com',
-        password: 'Test123456',
-        isEmailVerified: true,
-      });
-
-      const res = await request(app).post('/api/auth/login').send({
-        email: 'test@example.com',
-        password: 'Test123456',
-      });
-
-      expect(res.statusCode).toBe(200);
-      expect(res.body.data.accessToken).toBeDefined();
-    });
-  });
-});
-```
-
-**Run Tests:**
-
-```bash
-npm test
-```
-
-### Frontend Testing
-
-**Install Testing Dependencies:**
-
-```bash
-npm install --save-dev @testing-library/react @testing-library/jest-dom vitest
-```
-
-**Example Test (Auth.test.tsx):**
-
-```typescript
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
-import Auth from './Auth';
-
-describe('Auth Component', () => {
-  it('should render login form by default', () => {
-    render(<Auth />);
-    expect(screen.getByText('Welcome Back')).toBeInTheDocument();
-  });
-
-  it('should switch to register form', () => {
-    render(<Auth />);
-    const signUpButton = screen.getByText("Don't have an account? Sign up");
-    fireEvent.click(signUpButton);
-    expect(screen.getByText('Create Account')).toBeInTheDocument();
-  });
-
-  it('should show validation errors', async () => {
-    render(<Auth />);
-    const loginButton = screen.getByText('Login');
-    fireEvent.click(loginButton);
-
-    expect(await screen.findByText('Email is required')).toBeInTheDocument();
-  });
-});
-```
-
----
 
 ## 📊 Advanced Features
 
@@ -2454,41 +1498,6 @@ graph TD
     I --> J[Factor in Time of Day]
     J --> K[Return Top Recommendation]
     K --> L[Include Reasoning]
-```
-
-**Gemini Prompt Example:**
-
-```javascript
-const prompt = `
-Analyze this learner's progress and recommend the best next lesson:
-
-Completed Lessons:
-- Introduction to React (Beginner, 95% accuracy)
-- React Components (Beginner, 88% accuracy)
-- State Management (Intermediate, 76% accuracy)
-
-Available Lessons:
-1. React Hooks (Intermediate)
-2. React Router (Intermediate)
-3. Redux Basics (Advanced)
-4. Testing React Apps (Advanced)
-
-User Stats:
-- Total XP: 3,500
-- Level: 12
-- Preferred categories: Development
-- Average study time: 20 minutes
-
-Return JSON:
-{
-  "lessonId": "selected_lesson_id",
-  "title": "Lesson title",
-  "difficulty": "level",
-  "estimatedTime": "duration",
-  "xpReward": number,
-  "reason": "1-2 sentences explaining why"
-}
-`;
 ```
 
 #### 2. Dynamic Test Generation
@@ -2706,18 +1715,6 @@ git checkout -b feature/your-feature-name
 - Add tests for new features
 - Update documentation
 
-4. **Test Your Changes**
-
-```bash
-# Backend tests
-cd server
-npm test
-
-# Frontend tests
-cd client
-npm test
-```
-
 5. **Commit and Push**
 
 ```bash
@@ -2732,34 +1729,6 @@ git push origin feature/your-feature-name
 - Describe your changes
 - Link related issues
 - Wait for review
-
-### Code Style Guidelines
-
-**JavaScript/TypeScript:**
-
-- Use ES6+ features
-- Follow Airbnb style guide
-- Use meaningful variable names
-- Add JSDoc comments for functions
-
-**React Components:**
-
-- Use functional components with hooks
-- Keep components small and focused
-- Use TypeScript for type safety
-- Follow component naming conventions
-
-**Git Commit Messages:**
-
-```
-feat: add new feature
-fix: bug fix
-docs: documentation update
-style: formatting changes
-refactor: code refactoring
-test: add tests
-chore: maintenance tasks
-```
 
 ### Areas We Need Help With
 
@@ -2815,15 +1784,6 @@ SOFTWARE.
 - **Tailwind CSS** - For utility-first styling
 
 ---
-
-## 📞 Support & Contact
-
-### Get Help
-
-- 📧 **Email**: support@dxtalent.com
-- 💬 **Discord**: [Join our community](#)
-- 🐦 **Twitter**: [@DXTalent](#)
-- 📖 **Documentation**: [docs.dxtalent.com](#)
 
 ### Report Issues
 
