@@ -30,7 +30,8 @@ const lessonSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      required: false, // Not required for global default lessons
+      index: true,
     },
     topic: {
       type: String,

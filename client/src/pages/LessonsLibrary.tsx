@@ -34,7 +34,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import DashboardHeader from '@/components/DashboardHeader';
 import GenerateLessonDialog from '@/components/GenerateLessonDialog';
-import { lessonAPI, seedAPI } from '@/lib/api';
+import { lessonAPI } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
 interface Lesson {
@@ -159,34 +159,9 @@ const LessonsLibrary = () => {
     try {
       const response = await lessonAPI.getUserLessons();
       if (response.success) {
-        // If no lessons, seed default lessons
-        if (response.data.length === 0) {
-          try {
-            const seedResponse = await seedAPI.seedDefaultLessons();
-            if (seedResponse.success) {
-              toast({
-                title: 'Welcome! 🎉',
-                description: `We've loaded ${seedResponse.data.count} sample lessons across 5 categories to get you started!`,
-              });
-              // Fetch lessons again after seeding
-              const newResponse = await lessonAPI.getUserLessons();
-              if (newResponse.success) {
-                setLessons(newResponse.data);
-                const grouped = groupLessonsByTopic(newResponse.data);
-                setTopicCategories(grouped);
-              }
-            }
-          } catch (seedError) {
-            console.error('Error seeding lessons:', seedError);
-            // Continue anyway, just show empty state
-            setLessons([]);
-            setTopicCategories([]);
-          }
-        } else {
-          setLessons(response.data);
-          const grouped = groupLessonsByTopic(response.data);
-          setTopicCategories(grouped);
-        }
+        setLessons(response.data);
+        const grouped = groupLessonsByTopic(response.data);
+        setTopicCategories(grouped);
       }
     } catch (error: any) {
       console.error('Error fetching lessons:', error);

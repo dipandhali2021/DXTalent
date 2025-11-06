@@ -288,17 +288,31 @@ const getUserLessons = async (req, res) => {
     const userId = req.user.id;
     const { category, difficulty, isFullyGenerated } = req.query;
 
-    const filter = { userId };
+    // Build filter for user-specific and global default lessons
+    const userFilter = { userId };
+    const globalFilter = { userId: null, isDefault: true };
 
-    if (category) filter.category = category;
-    if (difficulty) filter.difficulty = difficulty;
+    if (category) {
+      userFilter.category = category;
+      globalFilter.category = category;
+    }
+    if (difficulty) {
+      userFilter.difficulty = difficulty;
+      globalFilter.difficulty = difficulty;
+    }
     if (isFullyGenerated !== undefined) {
-      filter.isFullyGenerated = isFullyGenerated === 'true';
+      userFilter.isFullyGenerated = isFullyGenerated === 'true';
+      globalFilter.isFullyGenerated = isFullyGenerated === 'true';
     }
 
-    const lessons = await Lesson.find(filter)
-      .sort({ createdAt: -1 })
-      .select('-questions'); // Exclude questions for list view
+    // Fetch both user-specific and global default lessons
+    const [userLessons, defaultLessons] = await Promise.all([
+      Lesson.find(userFilter).sort({ createdAt: -1 }).select('-questions'),
+      Lesson.find(globalFilter).sort({ createdAt: -1 }).select('-questions'),
+    ]);
+
+    // Combine lessons (user-specific first, then defaults)
+    const lessons = [...userLessons, ...defaultLessons];
 
     // Get completion status for all lessons
     const LessonCompletion = (await import('../models/LessonCompletion.js'))
@@ -358,7 +372,17 @@ const getLessonById = async (req, res) => {
     const { lessonId } = req.params;
     const userId = req.user.id;
 
-    const lesson = await Lesson.findOne({ _id: lessonId, userId });
+    // Try to find user-specific lesson first, then global default lesson
+    let lesson = await Lesson.findOne({ _id: lessonId, userId });
+
+    if (!lesson) {
+      // Check if it's a global default lesson
+      lesson = await Lesson.findOne({
+        _id: lessonId,
+        userId: null,
+        isDefault: true,
+      });
+    }
 
     if (!lesson) {
       return res.status(404).json({
@@ -433,23 +457,54 @@ const getLessonStats = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const totalLessons = await Lesson.countDocuments({ userId });
-    const fullyGenerated = await Lesson.countDocuments({
+    // Convert userId to ObjectId for aggregation
+    const mongoose = await import('mongoose');
+    const userObjectId = new mongoose.default.Types.ObjectId(userId);
+
+    // Count user-specific lessons
+    const userLessons = await Lesson.countDocuments({ userId });
+    const userFullyGenerated = await Lesson.countDocuments({
       userId,
       isFullyGenerated: true,
     });
-    const placeholders = await Lesson.countDocuments({
+    const userPlaceholders = await Lesson.countDocuments({
       userId,
       placeholder: true,
     });
 
+    // Count global default lessons
+    const globalLessons = await Lesson.countDocuments({
+      userId: null,
+      isDefault: true,
+    });
+    const globalFullyGenerated = await Lesson.countDocuments({
+      userId: null,
+      isDefault: true,
+      isFullyGenerated: true,
+    });
+
+    // Total counts
+    const totalLessons = userLessons + globalLessons;
+    const fullyGenerated = userFullyGenerated + globalFullyGenerated;
+    const placeholders = userPlaceholders;
+
+    // Category breakdown (both user and global lessons)
     const categoryBreakdown = await Lesson.aggregate([
-      { $match: { userId: userId } },
+      {
+        $match: {
+          $or: [{ userId: userObjectId }, { userId: null, isDefault: true }],
+        },
+      },
       { $group: { _id: '$category', count: { $sum: 1 } } },
     ]);
 
+    // Difficulty breakdown (both user and global lessons)
     const difficultyBreakdown = await Lesson.aggregate([
-      { $match: { userId: userId } },
+      {
+        $match: {
+          $or: [{ userId: userObjectId }, { userId: null, isDefault: true }],
+        },
+      },
       { $group: { _id: '$difficulty', count: { $sum: 1 } } },
     ]);
 
@@ -459,6 +514,8 @@ const getLessonStats = async (req, res) => {
         totalLessons,
         fullyGenerated,
         placeholders,
+        userLessons,
+        globalLessons,
         categoryBreakdown,
         difficultyBreakdown,
       },
@@ -491,8 +548,18 @@ const completeLesson = async (req, res) => {
       });
     }
 
-    // Verify lesson exists and belongs to user
-    const lesson = await Lesson.findOne({ _id: lessonId, userId });
+    // Verify lesson exists (user-specific or global)
+    let lesson = await Lesson.findOne({ _id: lessonId, userId });
+
+    if (!lesson) {
+      // Check if it's a global default lesson
+      lesson = await Lesson.findOne({
+        _id: lessonId,
+        userId: null,
+        isDefault: true,
+      });
+    }
+
     if (!lesson) {
       return res.status(404).json({
         success: false,
@@ -1015,10 +1082,20 @@ const getAIRecommendation = async (req, res) => {
       }));
 
     // Get available lessons (not completed or completed but can be retaken)
-    const allLessons = await Lesson.find({
-      userId,
-      isFullyGenerated: true,
-    }).select('_id skillName category difficulty duration');
+    // Include both user-specific and global default lessons
+    const [userLessons, globalLessons] = await Promise.all([
+      Lesson.find({
+        userId,
+        isFullyGenerated: true,
+      }).select('_id skillName category difficulty duration'),
+      Lesson.find({
+        userId: null,
+        isDefault: true,
+        isFullyGenerated: true,
+      }).select('_id skillName category difficulty duration'),
+    ]);
+
+    const allLessons = [...userLessons, ...globalLessons];
 
     // Get completed lesson IDs
     const completedLessonIds = completions.map((c) =>
@@ -1092,11 +1169,20 @@ const getContinueJourney = async (req, res) => {
       .limit(1);
 
     if (!lastCompletion || !lastCompletion.lessonId) {
-      // No completed lessons, get the first available lesson
-      const firstLesson = await Lesson.findOne({
+      // No completed lessons, get the first available lesson (user-specific or global)
+      let firstLesson = await Lesson.findOne({
         userId,
         isFullyGenerated: true,
       }).sort({ createdAt: 1 });
+
+      if (!firstLesson) {
+        // Try global default lessons
+        firstLesson = await Lesson.findOne({
+          userId: null,
+          isDefault: true,
+          isFullyGenerated: true,
+        }).sort({ createdAt: 1 });
+      }
 
       if (!firstLesson) {
         return res.status(200).json({
@@ -1126,19 +1212,39 @@ const getContinueJourney = async (req, res) => {
 
     const lastLesson = lastCompletion.lessonId;
 
-    // Find the next lesson in the same topic
-    const nextLessonInTopic = await Lesson.findOne({
+    // Find the next lesson in the same topic (from user lessons or global lessons)
+    let nextLessonInTopic = await Lesson.findOne({
       userId,
       topic: lastLesson.topic,
       isFullyGenerated: true,
       createdAt: { $gt: lastLesson.createdAt }, // Get lessons created after the last one
     }).sort({ createdAt: 1 });
 
-    // Get all lessons in this topic to calculate progress
-    const allTopicLessons = await Lesson.find({
-      userId,
-      topic: lastLesson.topic,
-    }).sort({ createdAt: 1 });
+    if (!nextLessonInTopic) {
+      // Check global default lessons
+      nextLessonInTopic = await Lesson.findOne({
+        userId: null,
+        isDefault: true,
+        topic: lastLesson.topic,
+        isFullyGenerated: true,
+        createdAt: { $gt: lastLesson.createdAt },
+      }).sort({ createdAt: 1 });
+    }
+
+    // Get all lessons in this topic to calculate progress (both user and global)
+    const [userTopicLessons, globalTopicLessons] = await Promise.all([
+      Lesson.find({
+        userId,
+        topic: lastLesson.topic,
+      }).sort({ createdAt: 1 }),
+      Lesson.find({
+        userId: null,
+        isDefault: true,
+        topic: lastLesson.topic,
+      }).sort({ createdAt: 1 }),
+    ]);
+
+    const allTopicLessons = [...userTopicLessons, ...globalTopicLessons];
 
     // Get completed lessons in this topic
     const completedInTopic = await LessonCompletion.find({
@@ -1169,16 +1275,26 @@ const getContinueJourney = async (req, res) => {
     }
 
     // No next lesson in current topic
-    // Look for any incomplete lesson from other topics
+    // Look for any incomplete lesson from other topics (user or global)
     const allCompletedIds = (await LessonCompletion.find({ userId })).map(
       (c) => c.lessonId
     );
 
-    const firstIncompleteLesson = await Lesson.findOne({
+    let firstIncompleteLesson = await Lesson.findOne({
       userId,
       isFullyGenerated: true,
       _id: { $nin: allCompletedIds },
     }).sort({ createdAt: 1 });
+
+    if (!firstIncompleteLesson) {
+      // Check global default lessons
+      firstIncompleteLesson = await Lesson.findOne({
+        userId: null,
+        isDefault: true,
+        isFullyGenerated: true,
+        _id: { $nin: allCompletedIds },
+      }).sort({ createdAt: 1 });
+    }
 
     if (firstIncompleteLesson) {
       // Found an incomplete lesson in another topic

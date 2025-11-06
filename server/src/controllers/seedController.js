@@ -4,26 +4,31 @@ import { defaultLessons } from '../utils/seedLessons.js';
 /**
  * Seed default lessons for a user
  * POST /api/seed/default-lessons
+ * NOTE: This endpoint is deprecated. Default lessons are now seeded globally on server startup.
  */
 export const seedDefaultLessons = async (req, res) => {
   try {
-    const userId = req.user?.id || '507f1f77bcf86cd799439011';
+    // Check if global default lessons exist
+    const existingDefaultLessons = await Lesson.countDocuments({
+      isDefault: true,
+      userId: null,
+    });
 
-    // Check if user already has lessons
-    const existingLessons = await Lesson.countDocuments({ userId });
-
-    if (existingLessons > 0) {
+    if (existingDefaultLessons > 0) {
       return res.status(200).json({
         success: true,
-        message: 'User already has lessons',
-        data: { count: existingLessons },
+        message: 'Default lessons already available',
+        data: {
+          count: existingDefaultLessons,
+          note: 'Default lessons are now global and shared across all users',
+        },
       });
     }
 
-    // Create default lessons for the user
+    // Create global default lessons (without userId)
     const lessonsToCreate = defaultLessons.map((lesson) => ({
       ...lesson,
-      userId,
+      userId: null, // Global lesson - no specific user
       isDefault: true,
     }));
 
@@ -50,18 +55,17 @@ export const seedDefaultLessons = async (req, res) => {
 /**
  * Reset and reseed all lessons (admin only)
  * POST /api/seed/reset-lessons
+ * NOTE: This will delete ALL lessons (user-specific and global) and reseed global defaults
  */
 export const resetAndSeedLessons = async (req, res) => {
   try {
-    const userId = req.user?.id || '507f1f77bcf86cd799439011';
+    // Delete all existing lessons
+    const deleteResult = await Lesson.deleteMany({});
 
-    // Delete all existing lessons for the user
-    await Lesson.deleteMany({ userId });
-
-    // Create default lessons
+    // Create global default lessons
     const lessonsToCreate = defaultLessons.map((lesson) => ({
       ...lesson,
-      userId,
+      userId: null, // Global lesson - no specific user
       isDefault: true,
     }));
 
@@ -69,9 +73,10 @@ export const resetAndSeedLessons = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: `Successfully reset and seeded ${createdLessons.length} lessons`,
+      message: `Successfully reset and seeded ${createdLessons.length} global default lessons`,
       data: {
-        count: createdLessons.length,
+        deleted: deleteResult.deletedCount,
+        created: createdLessons.length,
         categories: ['Marketing', 'Development', 'Data', 'Business', 'Design'],
       },
     });
