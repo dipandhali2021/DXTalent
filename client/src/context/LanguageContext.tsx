@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 
 type Language = 'en' | 'jp';
 
@@ -32,7 +38,7 @@ const translations = {
 
     // Features Section
     'features.badge': '💡 Why Choose Us',
-    'features.title': 'Learning That Actually Works',
+    'features.title': 'Learning That Actually',
     'features.work': 'Works',
     'features.skill.title': 'Skill Challenges',
     'features.skill.desc':
@@ -180,6 +186,37 @@ const translations = {
     'nav.logout': 'Logout',
     'nav.login': 'Login / Sign Up',
 
+    // Auth (Login / Register)
+    'auth.back_home': 'Back to Home',
+    'auth.welcome_back': 'Welcome Back!',
+    'auth.join_fun': 'Join the Fun!',
+    'auth.login_desc': 'Login to continue your journey',
+    'auth.signup_desc': 'Create your account and start learning',
+    'auth.username': 'Username',
+    'auth.email': 'Email',
+    'auth.password': 'Password',
+    'auth.confirm_password': 'Confirm Password',
+    'auth.placeholder.username': 'johndoe',
+    'auth.placeholder.email': 'you@example.com',
+    'auth.placeholder.password': '••••••••',
+    'auth.placeholder.confirm_password': '••••••••',
+    'auth.info_signup':
+      "💡 You'll start as a <strong>Learner</strong>. Upgrade to Pro or become a Recruiter through our pricing plans after signing up!",
+    'auth.processing': 'Processing...',
+    'auth.login_btn': 'Login',
+    'auth.signup_btn': 'Sign Up',
+    'auth.or': 'or',
+    'auth.continue_with_google': 'Continue with Google',
+    'auth.toggle_to_signup': "Don't have an account? Sign up",
+    'auth.toggle_to_login': 'Already have an account? Login',
+    // Auth validation messages
+    'auth.error.username_required': 'Username is required',
+    'auth.error.email_required': 'Email is required',
+    'auth.error.email_invalid': 'Email is invalid',
+    'auth.error.password_required': 'Password is required',
+    'auth.error.password_min': 'Password must be at least 6 characters',
+    'auth.error.passwords_mismatch': 'Passwords do not match',
+
     // Footer
     'footer.about':
       'Master DX skills, earn badges, and get discovered by top tech companies.',
@@ -216,8 +253,8 @@ const translations = {
 
     // Features Section
     'features.badge': '💡 選ばれる理由',
-    'features.title': '実際にそれを学ぶ',
-    'features.work': '作品',
+    'features.title': '実際に効果のある',
+    'features.work': '学習',
     'features.skill.title': 'スキルチャレンジ',
     'features.skill.desc':
       '実践的なDXチャレンジを完了してポイントを獲得。重要な実世界のシナリオ。',
@@ -255,7 +292,7 @@ const translations = {
     'pricing.badge': '💰 透明な価格設定',
     'pricing.title': 'プランを選択',
     'pricing.subtitle':
-      '学習者として無料で始め、プロ機能にアップグレード、または採用担当者としてトップタレントを採用',
+      '学習者として無料で開始し、プロ機能にアップグレードするか、リクルーターとして優秀な人材を採用しましょう',
     'pricing.popular': '最も人気',
     'pricing.learner.title': '学習者',
     'pricing.learner.subtitle': '学習の旅を始める',
@@ -280,7 +317,7 @@ const translations = {
     'pricing.learner.feature1': '50以上の事前構築済みレッスンにアクセス',
     'pricing.learner.feature2': '基本的なリーダーボードアクセス',
     'pricing.learner.feature3': 'デジタルバッジを獲得',
-    'pricing.learner.feature4': '月1回のAIレッスン生成',
+    'pricing.learner.feature4': '月 1 回のAIレッスン生成',
     'pricing.learner.feature5': '基本的な進捗トラッキング',
     'pricing.learner.feature6': '月1回無料のテスト生成',
     // Pro features
@@ -360,6 +397,37 @@ const translations = {
     'nav.logout': 'ログアウト',
     'nav.login': 'ログイン / サインアップ',
 
+    // Auth (Login / Register)
+    'auth.back_home': 'ホームへ戻る',
+    'auth.welcome_back': 'お帰りなさい！',
+    'auth.join_fun': 'さあ、始めよう！',
+    'auth.login_desc': '続けるにはログインしてください',
+    'auth.signup_desc': 'アカウントを作成して学習を始めましょう',
+    'auth.username': 'ユーザー名',
+    'auth.email': 'メールアドレス',
+    'auth.password': 'パスワード',
+    'auth.confirm_password': 'パスワードの確認',
+    'auth.placeholder.username': 'johndoe',
+    'auth.placeholder.email': 'you@example.com',
+    'auth.placeholder.password': '••••••••',
+    'auth.placeholder.confirm_password': '••••••••',
+    'auth.info_signup':
+      '💡 登録すると最初は学習者として開始します。後で料金プランからプロにアップグレードしたり、採用担当者になることができます。',
+    'auth.processing': '処理中...',
+    'auth.login_btn': 'ログイン',
+    'auth.signup_btn': 'サインアップ',
+    'auth.or': 'または',
+    'auth.continue_with_google': 'Googleで続行',
+    'auth.toggle_to_signup': 'アカウントをお持ちでないですか？ サインアップ',
+    'auth.toggle_to_login': 'すでにアカウントをお持ちですか？ ログイン',
+    // Auth validation messages
+    'auth.error.username_required': 'ユーザー名は必須です',
+    'auth.error.email_required': 'メールアドレスは必須です',
+    'auth.error.email_invalid': '無効なメールアドレスです',
+    'auth.error.password_required': 'パスワードは必須です',
+    'auth.error.password_min': 'パスワードは6文字以上である必要があります',
+    'auth.error.passwords_mismatch': 'パスワードが一致しません',
+
     // Footer
     'footer.about':
       'DXスキルを習得し、バッジを獲得し、トップテクノロジー企業に発見されます。',
@@ -379,7 +447,16 @@ const translations = {
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [language, setLanguage] = useState<Language>('en');
+  // Load language from localStorage or default to 'en'
+  const [language, setLanguage] = useState<Language>(() => {
+    const stored = localStorage.getItem('language');
+    return stored === 'en' || stored === 'jp' ? stored : 'en';
+  });
+
+  // Persist language to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('language', language);
+  }, [language]);
 
   const t = (key: string, vars?: Record<string, string | number>): string => {
     const entry = translations[language][key] || key;

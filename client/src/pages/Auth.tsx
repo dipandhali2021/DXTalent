@@ -12,6 +12,7 @@ import {
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { useGoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
@@ -29,6 +30,7 @@ const Auth = () => {
 
   const { login, register, googleLogin } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -44,25 +46,24 @@ const Auth = () => {
 
   const validateForm = () => {
     const newErrors: any = {};
-
     if (!isLogin && !formData.username) {
-      newErrors.username = 'Username is required';
+      newErrors.username = t('auth.error.username_required');
     }
 
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t('auth.error.email_required');
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = t('auth.error.email_invalid');
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = t('auth.error.password_required');
     } else if (formData.password.length < 6 && !isLogin) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = t('auth.error.password_min');
     }
 
     if (!isLogin && formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = t('auth.error.passwords_mismatch');
     }
 
     setErrors(newErrors);
@@ -183,7 +184,7 @@ const Auth = () => {
           className="inline-flex items-center gap-2 mb-6 font-handwritten text-foreground hover:text-primary transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Home
+          {t('auth.back_home')}
         </Link>
 
         <div className="relative rotate-[-1deg]">
@@ -195,12 +196,10 @@ const Auth = () => {
                 </div>
               </div>
               <CardTitle className="text-3xl font-handwritten">
-                {isLogin ? 'Welcome Back!' : 'Join the Fun!'}
+                {isLogin ? t('auth.welcome_back') : t('auth.join_fun')}
               </CardTitle>
               <CardDescription className="font-handwritten text-lg">
-                {isLogin
-                  ? 'Login to continue your journey'
-                  : 'Create your account and start learning'}
+                {isLogin ? t('auth.login_desc') : t('auth.signup_desc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -211,12 +210,12 @@ const Auth = () => {
                       htmlFor="username"
                       className="font-handwritten text-lg"
                     >
-                      Username
+                      {t('auth.username')}
                     </Label>
                     <Input
                       id="username"
                       type="text"
-                      placeholder="johndoe"
+                      placeholder={t('auth.placeholder.username')}
                       value={formData.username}
                       onChange={handleChange}
                       className={`border-[3px] border-border font-handwritten ${
@@ -232,12 +231,12 @@ const Auth = () => {
                 )}
                 <div className="space-y-2">
                   <Label htmlFor="email" className="font-handwritten text-lg">
-                    Email
+                    {t('auth.email')}
                   </Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder={t('auth.placeholder.email')}
                     value={formData.email}
                     onChange={handleChange}
                     className={`border-[3px] border-border font-handwritten ${
@@ -255,12 +254,12 @@ const Auth = () => {
                     htmlFor="password"
                     className="font-handwritten text-lg"
                   >
-                    Password
+                    {t('auth.password')}
                   </Label>
                   <Input
                     id="password"
                     type="password"
-                    placeholder="••••••••"
+                    placeholder={t('auth.placeholder.password')}
                     value={formData.password}
                     onChange={handleChange}
                     className={`border-[3px] border-border font-handwritten ${
@@ -280,12 +279,12 @@ const Auth = () => {
                         htmlFor="confirmPassword"
                         className="font-handwritten text-lg"
                       >
-                        Confirm Password
+                        {t('auth.confirm_password')}
                       </Label>
                       <Input
                         id="confirmPassword"
                         type="password"
-                        placeholder="••••••••"
+                        placeholder={t('auth.placeholder.confirm_password')}
                         value={formData.confirmPassword}
                         onChange={handleChange}
                         className={`border-[3px] border-border font-handwritten ${
@@ -304,11 +303,12 @@ const Auth = () => {
                 {/* Info message for sign up */}
                 {!isLogin && (
                   <div className="bg-accent/10 brutal-border p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground font-handwritten">
-                      💡 You'll start as a <strong>Learner</strong>. Upgrade to
-                      Pro or become a Recruiter through our pricing plans after
-                      signing up!
-                    </p>
+                    <p
+                      className="text-sm text-muted-foreground font-handwritten"
+                      dangerouslySetInnerHTML={{
+                        __html: t('auth.info_signup'),
+                      }}
+                    />
                   </div>
                 )}
 
@@ -319,7 +319,11 @@ const Auth = () => {
                   size="lg"
                   disabled={loading}
                 >
-                  {loading ? 'Processing...' : isLogin ? 'Login' : 'Sign Up'}
+                  {loading
+                    ? t('auth.processing')
+                    : isLogin
+                    ? t('auth.login_btn')
+                    : t('auth.signup_btn')}
                 </Button>
               </form>
 
@@ -328,7 +332,9 @@ const Auth = () => {
                   <div className="w-full border-t-2 border-border"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-card font-handwritten">or</span>
+                  <span className="px-2 bg-card font-handwritten">
+                    {t('auth.or')}
+                  </span>
                 </div>
               </div>
 
@@ -361,7 +367,7 @@ const Auth = () => {
                     fill="#EA4335"
                   />
                 </svg>
-                Continue with Google
+                {t('auth.continue_with_google')}
               </Button>
 
               <div className="text-center">
@@ -370,8 +376,8 @@ const Auth = () => {
                   className="font-handwritten text-foreground hover:text-primary transition-colors underline"
                 >
                   {isLogin
-                    ? "Don't have an account? Sign up"
-                    : 'Already have an account? Login'}
+                    ? t('auth.toggle_to_signup')
+                    : t('auth.toggle_to_login')}
                 </button>
               </div>
             </CardContent>

@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { User, LogOut } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { LanguageProvider, useLanguage } from '@/context/LanguageContext';
+import { useLanguage } from '@/context/LanguageContext';
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
 import HowItWorks from '@/components/HowItWorks';
@@ -12,10 +12,11 @@ import SupportTicket from '@/components/SupportTicket';
 import Footer from '@/components/Footer';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import logo from '@/assets/logo.png';
+import logoJp from '@/assets/logo-jp.png';
 
 const Index = () => {
   const { user, isAuthenticated, logout } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -54,9 +55,9 @@ const Index = () => {
         <div className="w-full sm:w-auto flex justify-center sm:justify-start items-center">
           <Link to="/" aria-label="Home" className="flex items-center">
             <img
-              src={logo}
+              src={language === 'jp' ? logoJp : logo}
               alt="DXTalent"
-              className="h-14 sm:h-18 md:h-20 object-contain"
+              className="h-12 sm:h-12 md:h-14 object-contain"
             />
           </Link>
         </div>
@@ -121,12 +122,4 @@ const Index = () => {
   );
 };
 
-const IndexWithLanguage = () => {
-  return (
-    <LanguageProvider>
-      <Index />
-    </LanguageProvider>
-  );
-};
-
-export default IndexWithLanguage;
+export default Index;

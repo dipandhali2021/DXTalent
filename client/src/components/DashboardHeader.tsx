@@ -15,8 +15,10 @@ import {
 import { Zap, Calendar } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { motion } from 'framer-motion';
 import logo from '@/assets/logo.png';
+import logoJp from '@/assets/logo-jp.png';
 
 interface DashboardHeaderProps {
   role?: 'user' | 'recruiter' | 'admin';
@@ -24,12 +26,17 @@ interface DashboardHeaderProps {
 
 const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
   const { logout, user } = useAuth();
+  const { language, setLanguage } = useLanguage();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
     navigate('/');
+  };
+
+  const toggleLanguage = () => {
+    setLanguage(language === 'en' ? 'jp' : 'en');
   };
 
   // Define navigation items based on role
@@ -66,7 +73,7 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
         <div className="flex items-center justify-between">
           <Link to="/" aria-label="Home" className="flex items-center">
             <img
-              src={logo}
+              src={language === 'jp' ? logoJp : logo}
               alt="DXTalent"
               className="h-12 md:h-16 ml-2 md:ml-4 object-contain"
             />
@@ -167,6 +174,18 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
                 <Separator orientation="vertical" className="h-6 mx-2" />
               </>
             )}
+            {/* Language Switcher - Circular Button */}
+            <Button
+              variant="outline-brutal"
+              size="icon"
+              className="w-10 h-10 rounded-full p-0 flex items-center justify-center font-bold text-xs hover:scale-110 transition-transform"
+              onClick={toggleLanguage}
+              title={`Switch to ${language === 'en' ? 'Japanese' : 'English'}`}
+            >
+              {language === 'en' ? 'JP' : 'EN'}
+            </Button>
+
+            <div></div>
 
             <Button
               variant="outline-brutal"
@@ -287,6 +306,19 @@ const DashboardHeader = ({ role = 'user' }: DashboardHeaderProps) => {
             >
               <LogOut className="w-4 h-4" />
               Logout
+            </Button>
+
+            {/* Language Switcher - Mobile */}
+            <Button
+              variant="outline-brutal"
+              className="w-full justify-start gap-2"
+              onClick={toggleLanguage}
+              title={`Switch to ${language === 'en' ? 'Japanese' : 'English'}`}
+            >
+              <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                {language === 'en' ? 'JP' : 'EN'}
+              </span>
+              {language === 'en' ? 'Switch to Japanese' : 'Switch to English'}
             </Button>
           </motion.nav>
         )}
