@@ -158,33 +158,33 @@ export default function Pricing() {
   return (
     <section
       id="pricing"
-      className="py-20 px-4 bg-gradient-to-b from-background to-muted/20"
+      className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-muted/20"
     >
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center space-y-6 mb-16">
-          <div className="inline-block px-4 py-2 bg-accent text-accent-foreground rounded-full brutal-border brutal-shadow rotate-playful-1 text-sm font-bold">
+        <div className="text-center space-y-4 sm:space-y-6 mb-10 sm:mb-12 md:mb-16">
+          <div className="inline-block px-3 py-1.5 sm:px-4 sm:py-2 bg-accent text-accent-foreground rounded-full brutal-border brutal-shadow rotate-playful-1 text-xs sm:text-sm font-bold">
             {t('pricing.badge')}
           </div>
-          <div className="relative">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground rotate-playful-2">
+          <div className="relative px-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground rotate-playful-2">
               {t('pricing.title')}
-              <div className="absolute -right-12 top-0 text-4xl rotate-12">
+              <div className="absolute -right-4 sm:-right-8 md:-right-12 top-0 text-2xl sm:text-3xl md:text-4xl rotate-12">
                 ✨
               </div>
-              <div className="absolute -left-8 bottom-0 text-4xl -rotate-12">
+              <div className="absolute -left-4 sm:-left-8 bottom-0 text-2xl sm:text-3xl md:text-4xl -rotate-12">
                 💎
               </div>
             </h2>
-            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-44 h-3 bg-primary opacity-20 rotate-playful-1 rounded-full blur-sm" />
+            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-32 sm:w-44 h-2 sm:h-3 bg-primary opacity-20 rotate-playful-1 rounded-full blur-sm" />
           </div>
-          <p className="text-xl text-muted-foreground rotate-playful-1 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground rotate-playful-1 max-w-2xl mx-auto px-2">
             {t('pricing.subtitle')}
           </p>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           {pricingTiers.map((tier, index) => (
             <div
               key={tier.name}
@@ -197,21 +197,21 @@ export default function Pricing() {
               }`}
             >
               <div
-                className={`absolute inset-0 bg-card border-[3px] ${
+                className={`absolute inset-0 bg-card border-2 sm:border-[3px] ${
                   tier.popular ? 'border-primary' : 'border-border'
                 } rounded-xl brutal-shadow group-hover:brutal-shadow-lg transition-all group-hover:-translate-x-1 group-hover:-translate-y-1`}
               />
 
-              <div className="relative p-8">
+              <div className="relative p-5 sm:p-6 md:p-8">
                 {tier.popular && (
-                  <div className="absolute -top-4 -right-4 bg-primary text-primary-foreground px-4 py-2 rounded-full rotate-12 text-sm brutal-border font-bold shadow-lg">
+                  <div className="absolute -top-3 sm:-top-4 -right-3 sm:-right-4 bg-primary text-primary-foreground px-3 py-1.5 sm:px-4 sm:py-2 rounded-full rotate-12 text-xs sm:text-sm brutal-border font-bold shadow-lg">
                     🔥 {t('pricing.popular')}
                   </div>
                 )}
 
                 {/* Icon */}
                 <div
-                  className={`w-16 h-16 rounded-full mb-6 flex items-center justify-center border-[3px] ${
+                  className={`w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full mb-4 sm:mb-5 md:mb-6 flex items-center justify-center border-2 sm:border-[3px] ${
                     tier.popular
                       ? 'border-primary bg-primary/10'
                       : 'border-border bg-background'
@@ -221,17 +221,19 @@ export default function Pricing() {
                 </div>
 
                 {/* Tier Info */}
-                <h3 className="text-2xl font-bold text-foreground mb-2">
+                <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
                   {tier.name}
                 </h3>
-                <p className="text-muted-foreground mb-6">{tier.description}</p>
+                <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
+                  {tier.description}
+                </p>
 
                 {/* Price */}
-                <div className="mb-6">
-                  <span className="text-5xl font-bold text-foreground">
+                <div className="mb-4 sm:mb-6">
+                  <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground">
                     {tier.priceLabel ?? `$${tier.price}`}
                   </span>
-                  <span className="text-muted-foreground text-lg">
+                  <span className="text-muted-foreground text-base sm:text-lg">
                     {tier.period ?? '/month'}
                   </span>
                   {tier.price === 0 && (
@@ -243,9 +245,9 @@ export default function Pricing() {
 
                 {/* Add-on pricing */}
                 {tier.limits?.addonPrice && (
-                  <div className="mb-4 p-3 bg-accent/10 brutal-border rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      <Zap className="w-4 h-4 inline mr-1" />
+                  <div className="mb-4 p-2.5 sm:p-3 bg-accent/10 brutal-border rounded-lg">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      <Zap className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
                       {t('pricing.addon', {
                         count: tier.limits.addonGenerations,
                         price: tier.limits.addonPrice,
@@ -255,25 +257,30 @@ export default function Pricing() {
                 )}
 
                 {/* Features */}
-                <div className="space-y-3 mb-8">
+                <div className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
                   {tier.features.map((feature) => (
-                    <div key={feature} className="flex items-start gap-3">
+                    <div
+                      key={feature}
+                      className="flex items-start gap-2 sm:gap-3"
+                    >
                       <div
-                        className={`w-6 h-6 rounded-full border-[2px] ${
+                        className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 ${
                           tier.popular
                             ? 'border-primary bg-primary/10'
                             : 'border-border'
                         } flex items-center justify-center mt-0.5 flex-shrink-0 bg-background`}
                       >
                         <Check
-                          className={`w-4 h-4 ${
+                          className={`w-3 h-3 sm:w-4 sm:h-4 ${
                             tier.popular
                               ? 'text-primary'
                               : 'text-muted-foreground'
                           }`}
                         />
                       </div>
-                      <span className="text-foreground text-sm">{feature}</span>
+                      <span className="text-foreground text-xs sm:text-sm">
+                        {feature}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -281,7 +288,7 @@ export default function Pricing() {
                 {/* CTA Button */}
                 <Button
                   variant={tier.popular ? 'hero' : 'outline-brutal'}
-                  className="w-full"
+                  className="w-full text-sm sm:text-base"
                   onClick={() => handlePricingClick(tier)}
                   disabled={loading === tier.subscriptionType}
                 >

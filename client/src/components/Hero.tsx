@@ -54,47 +54,34 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center px-4 py-20 overflow-hidden">
-      {/* Top-left logo (home link) */}
-      <Link
-        to="/"
-        aria-label="Home"
-        className="flex items-center absolute left-4 top-4"
-      >
-        <img
-          src={language === 'jp' ? logoJp : logo}
-          alt="DXTalent"
-          className="h-16 ml-4 object-contain"
-        />
-      </Link>
-
+    <section className="relative min-h-[90vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-20 overflow-hidden">
       {/* Decorative background elements */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute top-20 left-10 text-6xl rotate-12 opacity-30">
+        <div className="absolute top-20 left-4 sm:left-10 text-3xl sm:text-6xl rotate-12 opacity-30">
           ✏️
         </div>
-        <div className="absolute top-40 right-20 text-5xl -rotate-12 opacity-30">
+        <div className="absolute top-40 right-4 sm:right-20 text-2xl sm:text-5xl -rotate-12 opacity-30">
           📚
         </div>
-        <div className="absolute bottom-40 left-20 text-5xl rotate-6 opacity-30">
+        <div className="absolute bottom-40 left-4 sm:left-20 text-2xl sm:text-5xl rotate-6 opacity-30">
           🎯
         </div>
-        <div className="absolute bottom-20 right-10 text-6xl -rotate-6 opacity-30">
+        <div className="absolute bottom-20 right-4 sm:right-10 text-3xl sm:text-6xl -rotate-6 opacity-30">
           🏆
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto text-center space-y-8">
+      <div className="max-w-6xl mx-auto text-center space-y-6 sm:space-y-8 pt-12 sm:pt-0">
         {/* Tag */}
         <div className="inline-block">
-          <span className="px-4 py-2 bg-primary text-primary-foreground rounded-full brutal-border brutal-shadow rotate-playful-1 inline-block text-sm font-bold">
+          <span className="px-3 py-1.5 sm:px-4 sm:py-2 bg-primary text-primary-foreground rounded-full brutal-border brutal-shadow rotate-playful-1 inline-block text-xs sm:text-sm font-bold">
             {t('hero.badge')}
           </span>
         </div>
 
         {/* Main Heading */}
-        <div className="relative">
-          <h1 className="text-5xl md:text-7xl font-bold text-foreground rotate-playful-1 leading-tight">
+        <div className="relative px-2 sm:px-0">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-foreground rotate-playful-1 leading-tight">
             {t('hero.title')}
             <br />
             <span className="relative inline-block">
@@ -109,39 +96,39 @@ export default function Hero() {
               </span>
             </span>
           </h1>
-          <div className="absolute -right-8 top-0 text-5xl rotate-12 animate-bounce-slow">
+          <div className="absolute -right-4 sm:-right-8 top-0 text-2xl sm:text-5xl rotate-12 animate-bounce-slow">
             ⭐
           </div>
-          <div className="absolute -left-8 bottom-0 text-5xl -rotate-12 animate-bounce-slow animation-delay-300">
+          <div className="absolute -left-4 sm:-left-8 bottom-0 text-2xl sm:text-5xl -rotate-12 animate-bounce-slow animation-delay-300">
             ✨
           </div>
         </div>
 
         {/* Subtitle */}
-        <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto rotate-playful-2 font-normal">
+        <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto rotate-playful-2 font-normal px-2 sm:px-4">
           {t('hero.description')}
         </p>
 
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center pt-4 px-2 sm:px-0">
           {!isAuthenticated || user?.role === 'user' ? (
             <>
               <Button
                 variant="hero"
                 size="lg"
-                className="group"
+                className="group w-full sm:w-auto text-sm sm:text-base"
                 onClick={handleStartLearning}
               >
-                <Target className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
+                <Target className="mr-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-12 transition-transform" />
                 {t('hero.start_learning')}
               </Button>
               <Button
                 variant="outline-brutal"
                 size="lg"
-                className="group"
+                className="group w-full sm:w-auto text-sm sm:text-base"
                 onClick={handleForRecruiters}
               >
-                <Trophy className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                <Trophy className="mr-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform" />
                 {t('hero.for_recruiters')}
               </Button>
             </>
@@ -150,10 +137,10 @@ export default function Hero() {
               <Button
                 variant="hero"
                 size="lg"
-                className="group"
+                className="group w-full sm:w-auto text-sm sm:text-base"
                 onClick={handleForRecruiters}
               >
-                <Trophy className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                <Trophy className="mr-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform" />
                 {t('hero.go_to_dashboard')}
               </Button>
             </>
@@ -161,17 +148,17 @@ export default function Hero() {
             <Button
               variant="hero"
               size="lg"
-              className="group"
+              className="group w-full sm:w-auto text-sm sm:text-base"
               onClick={handleStartLearning}
             >
-              <Target className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
+              <Target className="mr-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-12 transition-transform" />
               {t('hero.go_to_dashboard')}
             </Button>
           )}
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 pt-8 sm:pt-12 max-w-4xl mx-auto px-2 sm:px-0">
           {[
             { icon: '🎮', label: t('hero.challenges'), value: '50+' },
             { icon: '👨‍💻', label: t('hero.learners'), value: '10K+' },
@@ -179,7 +166,7 @@ export default function Hero() {
           ].map((stat, i) => (
             <div
               key={i}
-              className={`bg-card brutal-border brutal-shadow rounded-xl p-6 hover:brutal-shadow-lg hover:-translate-y-1 transition-all ${
+              className={`bg-card brutal-border brutal-shadow rounded-xl p-4 sm:p-6 hover:brutal-shadow-lg hover:-translate-y-1 transition-all ${
                 i === 0
                   ? 'rotate-playful-1'
                   : i === 1
@@ -187,11 +174,13 @@ export default function Hero() {
                   : 'rotate-playful-3'
               }`}
             >
-              <div className="text-4xl mb-2">{stat.icon}</div>
-              <div className="text-3xl font-bold text-foreground">
+              <div className="text-3xl sm:text-4xl mb-2">{stat.icon}</div>
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">
                 {stat.value}
               </div>
-              <div className="text-sm text-muted-foreground">{stat.label}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">
+                {stat.label}
+              </div>
             </div>
           ))}
         </div>
