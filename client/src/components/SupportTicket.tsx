@@ -42,7 +42,7 @@ export default function SupportTicket() {
 
       // Open Gmail compose in new tab
       window.open(
-        `https://mail.google.com/mail/?view=cm&fs=1&to=buemethyl68@gmail.com&su=${subject}&body=${body}`,
+        `https://mail.google.com/mail/?view=cm&fs=1&to=bluemethyl68@gmail.com&su=${subject}&body=${body}`,
         '_blank'
       );
 
@@ -195,17 +195,17 @@ export default function SupportTicket() {
                 <div
                   onClick={() => {
                     window.open(
-                      'https://mail.google.com/mail/?view=cm&fs=1&to=buemethyl68@gmail.com',
+                      'https://mail.google.com/mail/?view=cm&fs=1&to=bluemethyl68@gmail.com',
                       '_blank'
                     );
                   }}
                 >
                   <a
-                    href="mailto:buemethyl68@gmail.com"
+                    href="mailto:bluemethyl68@gmail.com"
                     className="block p-4 bg-primary/10 rounded-lg brutal-border hover:bg-primary/20 transition-colors"
                   >
                     <p className="font-mono text-lg font-bold text-primary break-all">
-                      buemethyl68@gmail.com
+                      bluemethyl68@gmail.com
                     </p>
                   </a>
                 </div>

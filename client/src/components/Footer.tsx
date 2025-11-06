@@ -81,11 +81,11 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:buemethyl68@gmail.com"
+                  href="mailto:bluemethyl68@gmail.com"
                   className="text-foreground/80 hover:text-primary hover:underline transition-colors inline-flex items-center gap-2"
                 >
                   <Mail className="w-4 h-4" />
-                  buemethyl68@gmail.com
+                  bluemethyl68@gmail.com
                 </a>
               </li>
             </ul>
@@ -136,10 +136,10 @@ export default function Footer() {
           <p className="text-xs font-medium text-foreground/80 mt-2">
             {t('footer.inquiries')}{' '}
             <a
-              href="mailto:buemethyl68@gmail.com"
+              href="mailto:bluemethyl68@gmail.com"
               className="text-primary hover:underline font-bold"
             >
-              buemethyl68@gmail.com
+              bluemethyl68@gmail.com
             </a>
           </p>
         </div>

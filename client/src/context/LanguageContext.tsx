@@ -162,7 +162,7 @@ const translations = {
       'Gmail compose window opened in a new tab. Please send the email to complete your request.',
     'support.toast.error_title': 'Error',
     'support.toast.error_description':
-      'Failed to open Gmail. Please email us directly at buemethyl68@gmail.com',
+      'Failed to open Gmail. Please email us directly at bluemethyl68@gmail.com',
     // mail subject prefix
     'support.email.subject_prefix': 'Support Ticket:',
     // Button state
@@ -391,7 +391,7 @@ const translations = {
       'Gmailの作成ウィンドウを新しいタブで開きました。リクエストを完了するにはメールを送信してください。',
     'support.toast.error_title': 'エラー',
     'support.toast.error_description':
-      'Gmailを開けませんでした。直接 buemethyl68@gmail.com にメールを送信してください',
+      'Gmailを開けませんでした。直接 bluemethyl68@gmail.com にメールを送信してください',
     // mail subject prefix
     'support.email.subject_prefix': 'サポートチケット：',
     // Button state
@@ -428,7 +428,6 @@ const translations = {
     'stats.league': 'リーグ',
     'stats.day_streak': '日連続',
     'stats.badges': 'バッジ',
-
 
     // Auth (Login / Register)
     'auth.back_home': 'ホームへ戻る',
